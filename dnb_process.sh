@@ -158,7 +158,7 @@ if [ -s $NEW_FILES ]; then
   echo "$(cat $NEW_FILES)"
   echo "Downloading new files...."
   cd "$DESTINATION"
-  #lftp -e "mirror --delete --only-newer ${SOURCE}; exit" -u ${USER},${PASS} ${HOST}
+  lftp -e "mirror --delete --only-newer ${SOURCE}; exit" -u ${USER},${PASS} ${HOST}
 
   echo "Clean up listing of new files"
   cat "$NEW_FILES" | rev | cut -d' ' -f 1 | rev > "$NEW_FILES_CLEAN"
