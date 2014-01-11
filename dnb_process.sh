@@ -4,10 +4,6 @@
 # Author: Yusuf Tran
 # Date: 12/11/2013
 #
-# Cognolink.csv goes into the company DB
-# URL...
-# TICKER...
-# Line Endings = 
 #
 # Changes:
 # 19/11/2013
@@ -19,7 +15,7 @@
 # 09/01/2014
 # - Added 'url' and 'company' procedures, URL file format uses positions within the string to seperate
 # values, to make this work had to use latin1 character set vs utf8, hopefully this won't bite us
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 
 ### Settings ###
 ################
@@ -28,6 +24,7 @@ HOST="ftp.dnb.com"
 USER="cognolnk"
 PASS="mpzhct36"
 ###########
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DESTINATION="/dnb_files" # Somewhere that's accessible for mysql to load the file
 SOURCE="/gets" # on dnb ftp server
 CURRENT_FILES="$DIR/current_files.txt"
@@ -127,7 +124,7 @@ db_loadup () {
 		mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${URL_FILE}' INTO TABLE ${URL_TABLE}_temp FIELDS TERMINATED BY '' LINES TERMINATED BY '\\r\\n';"
 		# Clean up whitespace for domain names
 		for i in $(seq 1 5); do
-		  mysql -e "USE $DB; UPDATE `${URL_TABLE}_temp` SET `domain_${i}` = RTRIM(`domain_${i}`);"
+		  mysql -e "USE $DB; UPDATE '${URL_TABLE}_temp' SET 'domain_${i}' = RTRIM('domain_${i}');"
 		done
 		table_shuffle "${URL_TABLE}" shuffle
 		;;
