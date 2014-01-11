@@ -124,7 +124,7 @@ db_loadup () {
 		mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${URL_FILE}' INTO TABLE ${URL_TABLE}_temp FIELDS TERMINATED BY '' LINES TERMINATED BY '\\r\\n';"
 		# Clean up whitespace for domain names
 		for i in $(seq 1 5); do
-		  mysql -e "USE $DB; UPDATE '${URL_TABLE}_temp' SET 'domain_${i}' = RTRIM('domain_${i}');"
+		  mysql -e "UPDATE ${DB}.${URL_TABLE}_temp SET domain_${i} = RTRIM(domain_${i});"
 		done
 		table_shuffle "${URL_TABLE}" shuffle
 		;;
