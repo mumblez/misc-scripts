@@ -10,7 +10,6 @@ JOB_COUNT_DIR="$DIR/counter"
 MYSQL_DATA_DIR_SOURCE="/var/lib/mysql"
 MAX_THREAD=10
 EXCLUDE_LIST="services service_configuration scheduled_task"
-EXCLUDE_TABLES="emaillog commlog eventlog"
 
 # Check job isn't already running
 [ -e "$EXCLUDE_FILE" ] && { die "Job is already running, quitting..."; }
@@ -28,36 +27,12 @@ qatables () {
     done
 }
 
-# Remove redundant logs from ***REMOVED*** db
-remove_cl_logs () {
-    for TABLE in $EXCLUDE_TABLES; do
-        mysql ***REMOVED*** -e "drop table $TABLE;" && echo "$TABLE" dropped! || echo "ERROR: Failed to drop $TABLE"
-    done
-}
 
 # TO DO:
 # exclude commlog, emaillog and eventlog and drop tables after mysql start (need to test)
 
 [ -d "${JOB_COUNT_DIR}" ] || mkdir "${JOB_COUNT_DIR}"
 
-#cat > ${EXCLUDE_FILE} <<EOF
-#- /cognohr/
-#- /***REMOVED***/commlog*
-#- /***REMOVED***/emaillog*
-#- /***REMOVED***/eventlog*
-#- /***REMOVED***/scheduled_task*
-#- /***REMOVED***/service_configuration*
-#- /***REMOVED***/services*
-#- /debian*
-#- /lost*found/
-#- /master.info 
-#- /mysql*
-#- /percona/
-#- /performance_schema/
-#- /phpmyadmin/
-#- /relay-log.info 
-#- /test/
-#EOF
 
 cat > ${EXCLUDE_FILE} <<EOF
 - /***REMOVED***/scheduled_task*
@@ -116,28 +91,42 @@ qatables backup
 service mysql stop
 echo "Ready to rsync..."
 
+
+# Make directories first (parrallel jobs, can't guarantee sequential order)
+for db_file in ${cleanList}; do
+  if [[ "${db_file: -1}" == "/" ]]; then
+    if [ ! -d "${MYSQL_DATA_DIR_SOURCE}/${db_file}" ]; then
+      echo "MAKING NEW FOLDER: ${MYSQL_DATA_DIR_SOURCE}/${db_file}"
+      mkdir "${MYSQL_DATA_DIR_SOURCE}/${db_file}"
+    fi
+  fi
+done
+
 # Main loop
 for db_file in ${cleanList}; do
-    while [ $(ls $JOB_COUNT_DIR | wc -l ) -eq $MAX_THREAD ];
-    do
-        # As we background the rsync jobs, we can safely wait, and check every 2 seconds
-        # until there are free slots (we check externally via files)
-        sleep 2
-        echo "$dbCounter transfers remain"
-    done
-    db=$(mktemp ${JOB_COUNT_DIR}/$(basename ${db_file})-file.XXXX)
-    #db=$(basename "$db_file") # tables may not be unique across databases
-    touch "${db}"
+  while [ $(ls $JOB_COUNT_DIR | wc -l ) -eq $MAX_THREAD ];
+  do
+      # As we background the rsync jobs, we can safely wait, and check every 2 seconds
+      # until there are free slots (we check externally via files)
+      sleep 2
+      echo "$dbCounter transfers remain"
+  done
+  db=$(mktemp ${JOB_COUNT_DIR}/$(basename ${db_file})-file.XXXX)
+  #db=$(basename "$db_file") # tables may not be unique across databases
+	# Using same cleanList so need to check again for folder
+	if [[ "${db_file: -1}" != "/" ]]; then
+		touch "${db}"
     (
-        /usr/bin/time -f'%E' rsync -rtlzI --inplace --exclude-from="${EXCLUDE_FILE}" "${SSH_USER}"@"${BACKUP_DB_SERVER}":"${REMOTE_MYSQL_DIR}/${db_file}" "${MYSQL_DATA_DIR_SOURCE}/${db_file}" && echo "${db_file} complete"
-        rm -rf "${db}"
+      /usr/bin/time -f'%E' rsync -rtlzI --inplace --exclude-from="${EXCLUDE_FILE}" "${SSH_USER}"@"${BACKUP_DB_SERVER}":"${REMOTE_MYSQL_DIR}/${db_file}" "${MYSQL_DATA_DIR_SOURCE}/${db_file}" && echo "${db_file} complete"
+      rm -rf "${db}"
     ) &
-    let "dbCounter-=1"
-    if [ $dbCounter -lt 10 ]; then
-        echo "$dbCounter transfers remain"
-        echo "In progress...."
-        echo "$(ls -1 $JOB_COUNT_DIR | rev | cut -c 11- | rev)"
-    fi
+	fi
+  let "dbCounter-=1"
+  if [ $dbCounter -lt 10 ]; then
+    echo "$dbCounter transfers remain"
+    echo "In progress...."
+    echo "$(ls -1 $JOB_COUNT_DIR | rev | cut -c 11- | rev)"
+  fi
 done
 
 # Wait til all background rsync jobs complete
@@ -150,7 +139,7 @@ rc "hcp -r /dev/hcp1" || echo "ERROR: Failed to remove remote snapshot!!!!! - RE
 # Assuming it's the only snapshot created!, in future amend if using multiple snapshots.
 
 # Ensure permissions consistent
-chown mysql:mysql /var/lib/mysql -R
+chown mysql:mysql /var/lib/mysql/ -R
 
 # Clear qa tables
 for TABLE in $EXCLUDE_LIST; do
@@ -164,8 +153,6 @@ sleep 5
 
 # Restore our qa tables, if doesn't work will have to go down the discard route
 qatables restore
-# Drop log tables
-remove_cl_logs
 
 # Cleanup
 rm -rf "${EXCLUDE_FILE}"
