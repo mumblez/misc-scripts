@@ -92,8 +92,8 @@ extract_new_files () {
       unrar x "$i" "$EXT_DIR";
     else
       echo "$i is not an archive";
-	  if [[ "$EXTENSION" == "csv" && "$i" == "$TICKER_FILE" ]]; then
-	    ln -s "${DESTINATION}${SOURCE}/$TICKER_FILE" "${EXT_DIR}/${TICKER_FILE}"
+	  if [[ "$EXTENSION" == "csv" ]] && [[ "$i" == "$TICKER_FILE" || "$i" == *icker* ]]; then
+	    ln -s "${DESTINATION}${SOURCE}/$i" "${EXT_DIR}/${TICKER_FILE}"
             echo "symlinked TickerFile to $EXT_DIR/$TICKER_FILE"
 	  fi
     fi;
