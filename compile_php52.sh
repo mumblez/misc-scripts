@@ -54,6 +54,7 @@ libapache2-mod-fast***REMOVED***i \
 ntp \
 libevent-core-2.0-5 \
 libevent-2.0-5 \
+libfreetype6-dev \
 patch \
 memcached -y
 # Download php, suhosin patch and SSL patch
@@ -138,6 +139,7 @@ EXT_CONF="--with-apxs2=/usr/bin/apxs2 \
     --with-bz2 \
     --with-curl \
     --with-gd \
+	--with-freetype-dir \
     --with-gettext \
 	--with-imap \
     --with-imap-ssl \
