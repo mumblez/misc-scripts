@@ -45,6 +45,7 @@ chown "$SITE_USER:$SITE_GROUP" "$DEPLOY_DIR" -R
 
 # symlink parameters
 ln -snf "$DEPLOY_DIR/app/config/parameters.qa.yml" "$DEPLOY_DIR/app/config/parameters.yml"
+chown -h "$SITE_USER":"$SITE_GROUP" "$DEPLOY_DIR/app/config/parameters.yml"
 
 # replace and symlink vendors directory
 rm -rf "$DEPLOY_DIR/vendor"
