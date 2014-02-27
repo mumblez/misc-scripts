@@ -1,0 +1,181 @@
+#!/bin/bash
+#
+# Script to pull latest DNB files and upload into DB
+# Author: Yusuf Tran
+# Date: 12/11/2013
+#
+#
+# Changes:
+# 19/11/2013
+# - Tweaked to use lftp one liners, will simply list and compare directories vs md5sum after download, this will be alot more efficient 
+# 02/01/2014
+# - Correct display / echo statements to show new found files
+# 03/01/2014
+# - Added 'company' restore procedure (still awaiting ticker and url file)
+# 09/01/2014
+# - Added 'url' and 'company' procedures, URL file format uses positions within the string to seperate
+# values, to make this work had to use latin1 character set vs utf8, hopefully this won't bite us
+
+
+### Settings ###
+################
+# DNB FTP #
+HOST="ftp.dnb.com"
+USER="cognolnk"
+PASS="mpzhct36"
+###########
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DESTINATION="/dnb_files" # Somewhere that's accessible for mysql to load the file
+SOURCE="/gets" # on dnb ftp server
+CURRENT_FILES="$DIR/current_files.txt"
+NEW_FILES="$DIR/new_files.txt"
+NEW_FILES_CLEAN="$DIR/new_files_clean.txt"
+EXT_DIR=""
+TB_STRUCTURES_DIR="$DIR/dnb_table_structures"
+## File / DB mappings ##
+DB="dnb"
+COMPANY_FILE="Cognolink.csv"
+COMPANY_TABLE="company"
+COMPANY_TABLE_COLUMNS="(DunsNumber,Name,TradingStyle,StreetAddress1,StreetAddress2,City,State,Postcode,Country,SicCode,EmployeesTotal,AnnualSales,ImmediateParentDunsNumber,ImmediateParentName,ImmediateParentCountry,GlobalParentDunsNumber,GlobalParentName,GlobalParentCountry,MarketabilityIndicator,LocationIndicator)"
+TICKER_FILE="Cognolink_TickerFile.csv"
+TICKER_TABLE="ticker"
+TICKER_TABLE_COLUMNS="(SourceID,Ticker,StockExchange)"
+URL_FILE="URLFile.txt"
+URL_TABLE="url"
+# No columns, the file uses string positioning - https://docs.google.com/a/***REMOVED***.com/spreadsheet/ccc?key=***REMOVED***#gid=0
+# Table crafted within the datatype lengths so when load file data gets put in the right place (Brittle)
+
+### Settings End ###
+####################
+
+### Functions ###
+table_shuffle () {
+	dtable="$1"
+	doption="$2"
+	
+	case $doption in
+	  "create")
+		# Load into temporary table, rename old one, rename new one, drop old one!
+		# #file pattern dnb_<table>_table_structure.sql
+		# table structure files have table names with "_temp" suffix, e.g. url_temp
+		mysql < "$TB_STRUCTURES_DIR/dnb_${dtable}_table_structure.sql"
+		echo "${dtable}_temp table creation complete!"
+		;;
+	  "shuffle")
+	    	echo "${dtable} shuffle start.....!"
+		mysql -e "use ${DB}; RENAME TABLE ${dtable} to ${dtable}_del; RENAME TABLE ${dtable}_temp TO ${dtable}; DROP TABLE ${dtable}_del;"
+		echo "${dtable} shuffle complete!"
+		;;
+	esac
+}
+
+check_new_files () {
+	# Get file listing, compare against current and save newly detected files
+	echo "Checking files..."
+	lftp -e "ls ${SOURCE}; exit" -u ${USER},${PASS} ${HOST} | grep -vE "^total " | grep -vf "$CURRENT_FILES" > "$NEW_FILES"
+}
+
+extract_new_files () {
+  EXT_DIR=$(mktemp -d "$DESTINATION"/extracted.XXXXXX)
+  ### Loop through new files, detect extension and extract accordingly
+  cd "$DESTINATION/$SOURCE"
+  echo "current directory: `pwd`"
+  echo "current files to extract...."
+  echo "$(ls)"
+  while read i; do
+    EXTENSION=$(echo $i | rev | cut -d'.' -f 1 | rev)
+    if [ "$EXTENSION" = "zip" ]; then
+      echo "unzipping $i"
+      unzip "$i" -d "$EXT_DIR";
+    elif [ "$EXTENSION" = "rar" ]; then
+      echo "unraring $i"
+      unrar x "$i" "$EXT_DIR";
+    else
+      echo "$i is not an archive";
+	  if [[ "$EXTENSION" == "csv" ]] && [[ "$i" == "$TICKER_FILE" || "$i" == *icker* ]]; then
+	    ln -s "${DESTINATION}${SOURCE}/$i" "${EXT_DIR}/${TICKER_FILE}"
+            echo "symlinked TickerFile to $EXT_DIR/$TICKER_FILE"
+	  fi
+    fi;
+  done < "$NEW_FILES_CLEAN"
+  chmod +rx "$EXT_DIR" -R
+  ls -ld "$EXT_DIR"
+  ls -l "$EXT_DIR"
+}
+
+db_loadup () {
+  ### Upload to databases 
+  ## File names for url and ticket files may possibly be the same each period,
+  ## relying on the fact that they remove the files, we will use this to detect changes
+  cd "$EXT_DIR"
+  for dnb_file in $(ls); do
+    ### code to import csv / txt files into existing dbs or drop and recreate, confirm with Gyula ###
+	case "$dnb_file" in
+	  "$COMPANY_FILE")
+	    table_shuffle "${COMPANY_TABLE}" create
+	    echo "Loading in 'company' table...."
+	    # Ignore header / 1st line of csv
+		mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${COMPANY_FILE}' INTO TABLE ${COMPANY_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${COMPANY_TABLE_COLUMNS};"
+		table_shuffle "${COMPANY_TABLE}" shuffle
+		;;
+	  "$URL_FILE")
+	    table_shuffle "${URL_TABLE}" create
+	    echo "Loading in 'url' table..."
+		mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${URL_FILE}' INTO TABLE ${URL_TABLE}_temp FIELDS TERMINATED BY '' LINES TERMINATED BY '\\r\\n';"
+		# Clean up whitespace for domain names
+		for i in $(seq 1 5); do
+		  mysql -e "UPDATE ${DB}.${URL_TABLE}_temp SET domain_${i} = RTRIM(domain_${i});"
+		done
+		table_shuffle "${URL_TABLE}" shuffle
+		;;
+	  "$TICKER_FILE")
+	    table_shuffle "${TICKER_TABLE}" create
+	    echo "Loading in 'ticker' table..."
+		mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${TICKER_FILE}' INTO TABLE ${TICKER_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${TICKER_TABLE_COLUMNS};"
+		table_shuffle "${TICKER_TABLE}" shuffle
+		;;
+	esac
+        echo "deleting $dnb_file"
+	rm -f "$dnb_file"
+  done
+}
+
+
+
+### End Functions ####
+
+## MAIN ##
+
+check_new_files
+
+# If new files exist
+if [ -s $NEW_FILES ]; then
+  echo "New files detected!"
+  echo "Files:"
+  echo "$(cat $NEW_FILES)"
+  echo "Downloading new files...."
+  cd "$DESTINATION"
+  lftp -e "mirror --delete --only-newer ${SOURCE}; exit" -u ${USER},${PASS} ${HOST}
+
+  echo "Clean up listing of new files"
+  cat "$NEW_FILES" | rev | cut -d' ' -f 1 | rev > "$NEW_FILES_CLEAN"
+  # Relying on files with same name (URL and Ticker) to be removed so when a new one is uploaded
+  # we notice that it's new, else complicated hashing and storage of past hashes / files must be
+  # performed.
+
+  extract_new_files
+  db_loadup
+
+  # Clean up files
+  echo "Deleting $NEW_FILES"
+  rm -f "$NEW_FILES"
+  echo "Deleting $NEW_FILES_CLEAN"
+  rm -f "$NEW_FILES_CLEAN"
+  echo "Deleting $EXT_DIR"
+  rm -rf "$EXT_DIR"
+
+  # UPDATE current_files.txt
+  ls "${DESTINATION}${SOURCE}" > "${CURRENT_FILES}"
+else
+  echo "No new files"
+fi
