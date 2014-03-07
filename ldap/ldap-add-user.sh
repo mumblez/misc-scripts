@@ -14,38 +14,45 @@ BINDUSER="cn=ldap_mgt,ou=services,o=cl"
 # https://***REMOVED***.***REMOVED***.com/index.php?page=items&group=10&id=17
 BINDPASS=
 USERPASS=
+USERPASSHASH=$(slappasswd -h {sha} -s $USERPASS)
 
 FNAME=Joe # aka givenName
 SNAME=Bloggs
 DISPLAYNAME="$FNAME $SNAME"
-DN="$DISPLAYNAME,$BASEURL"
+DN="cn=$DISPLAYNAME,$BASEURL"
 # lower case names - tr [A-Z] [a-z]
-UID=$(echo $FNAME | tr [A-Z] [a-z]).$(echo $SNAME | tr [A-Z] [a-z])
-EMAIL=$UID@***REMOVED***.com
+LUID="$(echo "$FNAME.$SNAME" | tr [A-Z] [a-z])"
+EMAIL=$LUID@***REMOVED***.com
 
 # check if user exists
 ldapsearch $LDAPOPTIONS $LDAPURL \
 -D $BINDUSER -w $BINDPASS \
 -b $BASEURL \
-'(&(objectClass=inetOrgPerson)(uid='"${UID}"'))' | grep "uid: $UID" && die "ERROR: User already exists"
+'(&(objectClass=inetOrgPerson)(uid='"${LUID}"'))' | grep "uid: $LUID" && die "ERROR: User already exists"
 
 # add user
 ldapadd $LDAPOPTIONS $LDAPURL \
--D $BINDUSER -w $BINDPASS \
--b $BASEURL <<EOF
+-D $BINDUSER -w $BINDPASS <<EOF
 dn: $DN
 givenName: $FNAME
 sn: $SNAME
 cn: $DISPLAYNAME
 displayName: $DISPLAYNAME
-uid: $UID
 mail: $EMAIL
 objectClass: top
 objectClass: inetOrgPerson
 objectClass: person
 objectClass: organizationalPerson
-EOF && "SUCCESS: user $DISPLAYNAME added." || die "ERROR: Failed adding user."
+uid: $LUID
+userPassword: $USERPASSHASH
+EOF
 
+if [ $? = 0 ]
+	then 
+		echo "SUCCESS: user $DISPLAYNAME added."
+	else
+		die "ERROR: Failed adding user."
+fi
 
 # no errors
 exit 0
