@@ -4,6 +4,7 @@
 # hopefully we won't have 2 users with the same names!!!
 
 die() { echo $* 1>&2 ; exit 1 ; }
+DIR=$(cd "$(dirname "$0")" && pwd)
 
 # VALIDATION #
 which tr || die "ERROR: tr needs to be installed"
@@ -13,9 +14,8 @@ which slappasswd || die "ERROR: openldap needs to be installed"
 LDAPURL="ldaps://***REMOVED***.***REMOVED***.com:10636"
 BASEURL="ou=users,o=cl"
 LDAPOPTIONS="-x -H"
-BINDUSER="cn=ldap_mgt,ou=services,o=cl"
 # https://***REMOVED***.***REMOVED***.com/index.php?page=items&group=10&id=17
-BINDPASS=
+. $DIR/.ldapcreds
 USERPASS=
 USERPASSHASH=$(slappasswd -h {sha} -s $USERPASS)
 FNAME=Joe # aka givenName
