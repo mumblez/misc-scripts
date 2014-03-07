@@ -3,6 +3,12 @@
 # Need to ensure we trim and validate fields/input from rundeck
 # hopefully we won't have 2 users with the same names!!!
 
+die() { echo $* 1>&2 ; exit 1 ; }
+
+# VALIDATION #
+which tr || die "ERROR: tr needs to be installed"
+which slappasswd || die "ERROR: openldap needs to be installed"
+
 # SETTINGS #
 LDAPURL="ldaps://***REMOVED***.***REMOVED***.com:10636"
 BASEURL="ou=users,o=cl"
@@ -20,8 +26,7 @@ LUID="$(echo "$FNAME.$SNAME" | tr [A-Z] [a-z])"
 EMAILDOMAIN="@***REMOVED***.com"
 EMAIL=$LUID@$EMAILDOMAIN
 
-# FUNCTIONS #
-die() { echo $* 1>&2 ; exit 1 ; }
+# MORE VALIDATION #
 
 # check if user exists
 ldapsearch $LDAPOPTIONS $LDAPURL \
