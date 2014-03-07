@@ -7,7 +7,7 @@ die() { echo $* 1>&2 ; exit 1 ; }
 DIR=$(cd "$(dirname "$0")" && pwd)
 
 # VALIDATION #
-PATH=$PATH/usr/local/openldap/sbin
+PATH=$PATH:/usr/local/openldap/sbin
 which tr || die "ERROR: tr needs to be installed"
 which slappasswd || die "ERROR: openldap needs to be installed"
 
