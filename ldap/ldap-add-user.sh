@@ -18,8 +18,8 @@ LDAPOPTIONS="-x -H"
 . $DIR/.ldapcreds
 USERPASS=
 USERPASSHASH=$(slappasswd -h {sha} -s $USERPASS)
-FNAME=Joe # aka givenName
-SNAME=Bloggs
+FNAME=$(echo @option.first_Name@ | tr -d ' ') # aka givenName
+SNAME=$(echo @option.last_Name@ | tr -d ' ')
 DISPLAYNAME="$FNAME $SNAME"
 DN="cn=$DISPLAYNAME,$BASEURL"
 LUID="$(echo "$FNAME.$SNAME" | tr [A-Z] [a-z])"
