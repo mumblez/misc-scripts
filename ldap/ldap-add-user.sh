@@ -8,8 +8,8 @@ DIR=$(cd "$(dirname "$0")" && pwd)
 
 # VALIDATION #
 PATH=$PATH:/usr/local/openldap/sbin
-which tr || die "ERROR: tr needs to be installed"
-which slappasswd || die "ERROR: openldap needs to be installed"
+which tr  > /dev/null || die "ERROR: tr needs to be installed"
+which slappasswd  > /dev/null || die "ERROR: openldap needs to be installed"
 
 # SETTINGS #
 LDAPURL="ldaps://***REMOVED***.***REMOVED***.com:10636"
@@ -17,14 +17,14 @@ BASEURL="ou=users,o=cl"
 LDAPOPTIONS="-x -H"
 # https://***REMOVED***.***REMOVED***.com/index.php?page=items&group=10&id=17
 . $DIR/.ldapcreds
-USERPASS=
+USERPASS=@option.last_name@
 USERPASSHASH=$(slappasswd -h {sha} -s $USERPASS)
-FNAME=$(echo @option.first_Name@ | tr -d ' ') # aka givenName
-SNAME=$(echo @option.last_Name@ | tr -d ' ')
+FNAME=$(echo @option.first_name@ | tr -d ' ') # aka givenName
+SNAME=$(echo @option.last_name@ | tr -d ' ')
 DISPLAYNAME="$FNAME $SNAME"
 DN="cn=$DISPLAYNAME,$BASEURL"
 LUID="$(echo "$FNAME.$SNAME" | tr [A-Z] [a-z])"
-EMAILDOMAIN="@***REMOVED***.com"
+EMAILDOMAIN="***REMOVED***.com"
 EMAIL=$LUID@$EMAILDOMAIN
 
 # MORE VALIDATION #
@@ -57,6 +57,22 @@ if [ $? = 0 ]
 		echo "SUCCESS: user $DISPLAYNAME added."
 	else
 		die "ERROR: Failed adding user."
+fi
+
+# add user to core group(s)
+ldapmodify $LDAPOPTIONS $LDAPURL \
+-D $BINDUSER -w $BINDPASS <<EOF
+dn: cn=user,ou=groups,o=cl
+changetype: modify
+add: uniqueMember
+uniqueMember: $DN
+EOF
+
+if [ $? = 0 ]
+	then 
+		echo "SUCCESS: user $DISPLAYNAME added to core groups"
+	else
+		die "ERROR: Failed adding user to core groups"
 fi
 
 # no errors
