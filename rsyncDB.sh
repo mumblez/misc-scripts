@@ -10,24 +10,27 @@ JOB_COUNT_DIR="$DIR/counter"
 MYSQL_DATA_DIR_SOURCE="/var/lib/mysql"
 MAX_THREAD=10
 EXCLUDE_LIST="services service_configuration scheduled_task"
-EMPTYDIR="$DIR/$(mktemp -d empty.XXXX)"
-SOURCE_DIR_LIST="$EMPTYDIR/source.txt"
-REMOTE_DIR_LIST="$EMPTYDIR/remote.txt"
+
+# df -h | awk '/^\/dev\/.*mysql.*/ { print $2 }'
+
+# VALIDATION
+# Can log onto backup server?
+
 
 # Check job isn't already running
 [ -e "$EXCLUDE_FILE" ] && { die "Job is already running, quitting..."; }
 
 # Backup or Restore qa / test specific tables
 qatables () {
-   for TABLE in $EXCLUDE_LIST; do
-      if [ "$1" == "backup" ]; then
-          echo "Backing up ***REMOVED***.$TABLE...$(date)"
-          mysqldump -B ***REMOVED*** --tables "$TABLE" --create-option > /tmp/***REMOVED***."$TABLE".sql
-      elif [ "$1" == "restore" ]; then
-          echo "Restoring ***REMOVED***.$TABLE...$(date)"
-          mysql -B ***REMOVED*** < /tmp/***REMOVED***."$TABLE".sql
-      fi
-    done
+  for TABLE in $EXCLUDE_LIST; do
+    if [ "$1" == "backup" ]; then
+      echo "Backing up ***REMOVED***.$TABLE...$(date)"
+      mysqldump -B ***REMOVED*** --tables "$TABLE" --create-option > /tmp/***REMOVED***."$TABLE".sql
+    elif [ "$1" == "restore" ]; then
+      echo "Restoring ***REMOVED***.$TABLE...$(date)"
+      mysql -B ***REMOVED*** < /tmp/***REMOVED***."$TABLE".sql
+    fi
+  done
 }
 
 
@@ -42,10 +45,9 @@ cat > ${EXCLUDE_FILE} <<EOF
 - /***REMOVED***/service_configuration*
 - /***REMOVED***/services*
 - /mysqld-relay*
-- /mysql-relay*
-- /relay-log.info
+- /relay-log.info 
 - /mysql-bin.*
-- /master.info
+- /master.info 
 EOF
 
 die() { echo $* 1>&2 ; exit 1 ; }
@@ -54,7 +56,7 @@ START_TIME=$(date)
 
 # Prepare our remote commands function
 rc () {
-    ssh ${SSH_USER}@${BACKUP_DB_SERVER} "$@" || { die "Failed executing - $1 - on ${BACKUP_DB_SERVER}"; }
+  ssh ${SSH_USER}@${BACKUP_DB_SERVER} $1 || { die "Failed executing - $1 - on ${BACKUP_DB_SERVER}"; }
 }
 
 # Ensure no snapshot exists
@@ -79,8 +81,7 @@ sleep 10
 
 # Generate Clean list of files to sync
 echo "Generating clean list and db file counter...."
-rsync -rtlIP --inplace -n --exclude-from="${EXCLUDE_FILE}" "$MYSQL_DATA_DIR_SOURCE/" "$EMPTYDIR" | head -n -3 | sed -n '3,$p' > "$SOURCE_DIR_LIST"
-cleanList=$(rsync -rtlIP --inplace -n --exclude-from="${EXCLUDE_FILE}" "${SSH_USER}"@"${BACKUP_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" "${MYSQL_DATA_DIR_SOURCE}/" | head -n -3 | sed -n '3,$p' | tee "$REMOTE_DIR_LIST") || { die "Failed to generate list of files to rsync from remote server"; }
+cleanList=$(rsync -rtlIP --inplace -n --exclude-from="${EXCLUDE_FILE}" "${SSH_USER}"@"${BACKUP_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" "${MYSQL_DATA_DIR_SOURCE}/" | head -n -3 | sed -n '3,$p') || { die "Failed to generate list of files to rsync from remote server"; }
 
 # Get Total number of files to sync
 dbCounter=$(rsync -rtlIP --inplace -n --exclude-from="${EXCLUDE_FILE}" "${SSH_USER}"@"${BACKUP_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" "${MYSQL_DATA_DIR_SOURCE}/" | head -n -3 | sed -n '3,$p' | wc -l) || { die "Failed to count number of files to sync"; }
@@ -108,27 +109,26 @@ done
 for db_file in ${cleanList}; do
   while [ $(ls $JOB_COUNT_DIR | wc -l ) -eq $MAX_THREAD ];
   do
-      # As we background the rsync jobs, we can safely wait, and check every 2 seconds
-      # until there are free slots (we check externally via files)
-      sleep 2
-      echo "$dbCounter transfers remain"
+    # As we background the rsync jobs, we can safely wait, and check every 2 seconds
+    # until there are free slots (we check externally via files)
+    sleep 2
+    echo "$dbCounter transfers remain"
   done
-  
-	if [[ "${db_file: -1}" != "/" ]]; then
+  if [[ "${db_file: -1}" != "/" ]]; then
     db=$(mktemp ${JOB_COUNT_DIR}/$(basename ${db_file})-file.XXXX)
     #db=$(basename "$db_file") # tables may not be unique across databases
     # Using same cleanList so need to check again for folder
-		touch "${db}"
+    touch "${db}"
     (
-      /usr/bin/time -f'%E' rsync -rtlzI --inplace --exclude-from="${EXCLUDE_FILE}" "${SSH_USER}"@"${BACKUP_DB_SERVER}":"${REMOTE_MYSQL_DIR}/${db_file}" "${MYSQL_DATA_DIR_SOURCE}/${db_file}" && echo "${db_file} complete"
-      rm -rf "${db}"
+    /usr/bin/time -f'%E' rsync -rtlzI --inplace --exclude-from="${EXCLUDE_FILE}" "${SSH_USER}"@"${BACKUP_DB_SERVER}":"${REMOTE_MYSQL_DIR}/${db_file}" "${MYSQL_DATA_DIR_SOURCE}/${db_file}" && echo "${db_file} complete"
+    rm -rf "${db}"
     ) &
-	fi
+  fi
   let "dbCounter-=1"
   if [ $dbCounter -lt 10 ]; then
     echo "$dbCounter transfers remain"
     echo "In progress...."
-    echo "--$(ls -1 $JOB_COUNT_DIR | rev | cut -c 11- | rev)"
+    echo "$(ls -1 $JOB_COUNT_DIR | rev | cut -c 11- | rev)"
   fi
 done
 
@@ -142,21 +142,13 @@ rc "hcp -r /dev/hcp1" || echo "ERROR: Failed to remove remote snapshot!!!!! - RE
 # Assuming it's the only snapshot created!, in future amend if using multiple snapshots.
 
 # Ensure permissions consistent
-chown mysql:mysql "${MYSQL_DATA_DIR_SOURCE}/" -R
+chown mysql:mysql /var/lib/mysql/ -R
 
 # Clear qa tables
 for TABLE in $EXCLUDE_LIST; do
-    rm -rf "${MYSQL_DATA_DIR_SOURCE}/***REMOVED***/${TABLE}.ibd"
+  rm -rf "${MYSQL_DATA_DIR_SOURCE}/***REMOVED***/${TABLE}.ibd"
 done
 # Will cause startup errors, dropping and restoring qa tables should fix, need to test
-
-# Clear tables that no longer exist
-for i in $(diff "$SOURCE_DIR_LIST" "$REMOTE_DIR_LIST" | awk '/^</ { print $2 }'); do
-  if [ ! -d "MYSQL_DATA_DIR_SOURCE/$i" ]; then
-    echo "removing $i"
-    rm -f "MYSQL_DATA_DIR_SOURCE/$i"
-  fi
-done
 
 echo "Starting mysql..."
 service mysql start
@@ -165,13 +157,9 @@ sleep 5
 # Restore our qa tables, if doesn't work will have to go down the discard route
 qatables restore
 
-# Kill slave
-mysql -e 'reset slave all;'
-
 # Cleanup
 rm -rf "${EXCLUDE_FILE}"
 rm -rf "${JOB_COUNT_DIR}"
-rm -rf "$EMPTYDIR"
 echo "==========================="
 echo "Start time: $START_TIME"
 echo "End time: $(date)"
