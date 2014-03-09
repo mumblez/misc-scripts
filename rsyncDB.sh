@@ -1,14 +1,18 @@
 #!/bin/bash
 # Rsync the database files from backup server (live-slave) to test server (db3)
+# Job average time is ~50 minutes on a 65GB DB, will be shorter once file repo is removed (-20GB~)
+# COW / Snapshot free space will vary according to how many write operations there are in the time it takes this script to finish,
+# so if there are more users and more write operations, keep an eye on snapshot capacity, 1GB is all thats needed atm but 5GB set
+# as a precautionary number, job could possibly be run during office hours where there could be much more write operations.
 
 
 # SETTINGS #
 DIR=$(cd "$(dirname "$0")" && pwd)
-REMOTE_DB_SERVER="***REMOVED***.230" # generalise in rundeck
+REMOTE_DB_SERVER="***REMOVED***.230" # in future generalise in rundeck
 SSH_USER="***REMOVED***"
 EXCLUDE_FILE="$DIR/excludeFiles.txt"
 JOB_COUNT_DIR="$DIR/counter"
-SNAPSHOT_FREESPACE=5000 # make configurable in rundeck
+SNAPSHOT_FREESPACE=5000 # make configurable in rundeck, will need to be adjusted in future according to how write busy the DB gets
 MAX_RSYNC_THREADS=10 # make configurable in rundeck
 EXCLUDE_LIST="services service_configuration scheduled_task"
 START_TIME=$(date)
@@ -16,7 +20,6 @@ START_TIME=$(date)
 
 # FUNTIONS
 die() { echo $* 1>&2 ; exit 1 ; }
-#verbose() { echo "VERBOSE : $*" 1>&2 ; }
 
 # Prepare our remote commands function
 rc () {
@@ -24,7 +27,7 @@ rc () {
 }
 
 # Backup or Restore qa / test specific tables
-qatables () {
+env_tables () {
   for TABLE in $EXCLUDE_LIST; do
     if [[ "$1" == "backup" && ! -f "$DIR/***REMOVED***.$TABLE" ]]; then
       echo "Backing up ***REMOVED***.$TABLE...$(date)"
@@ -39,7 +42,7 @@ qatables () {
 }
 
 
-# VALIDATION
+# VALIDATION and more settings
 
 # Check job isn't already running
 [ -e "$EXCLUDE_FILE" ] && { die "Job is already running, quitting..."; }
@@ -80,9 +83,10 @@ if [[ $(rc "df -Pm" | awk '/\/srv/ { print $4 }') -lt $SNAPSHOT_FREESPACE ]]; th
   die "ERROR: Not enough free space for snapshot copy on write operations"
 fi
 
+# make directory to contain our list of files to sync, used as a counter and to keep track of what's left to sync (parrallel, non-serial)
 [ -d "${JOB_COUNT_DIR}" ] || mkdir "${JOB_COUNT_DIR}"
 
-
+# What to exclude from rsync operation
 cat > ${EXCLUDE_FILE} <<EOF
 - /***REMOVED***/scheduled_task*
 - /***REMOVED***/service_configuration*
@@ -98,7 +102,7 @@ echo "Confirming there are no existing snapshots...."
 rc "hcp -l" | grep "No Hot Copy sessions" || { die "Snapshot already exist, exiting..."; }
 
 # Flush data to disk before transfer, create snapshot and resume
-echo "Connecting to source database..."
+echo "INFO: Connecting to source database..."
 mysql --defaults-file=/***REMOVED***/.my.cnf.backup -h "$REMOTE_DB_SERVER" << EOF
 STOP SLAVE;
 FLUSH TABLES WITH READ LOCK;
@@ -110,9 +114,8 @@ EOF
 
 [ $? == 0 ] || { die "Failed to connect to remote DB, stop slave, flush, create snapshot, unlock and start slave, logon to source DB and check!!!!"; }
 
-REMOTE_MYSQL_DIR=$(rc "hcp -l" | grep "Mounted:" | awk '{ print $2 }') || { die "Failed to locate snapshot mount point!"; }
-echo "==== Remote snapshot volume: $REMOTE_MYSQL_DIR =========="
-#sleep 10
+REMOTE_MYSQL_DIR=$(rc "hcp -l" | awk '/Mounted:/ { print $2 }') || { die "ERROR: Failed to locate snapshot mount point!"; }
+echo "INFO: Remote snapshot volume: $REMOTE_MYSQL_DIR"
 
 # Generate Clean list of files to sync
 echo "Generating clean list and db file counter...."
@@ -125,11 +128,11 @@ dbCounter=$(rsync -rtlIP --inplace -n --exclude-from="${EXCLUDE_FILE}" "${SSH_US
 droppedTables=$(rsync -rvn --delete "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" "${LOCAL_MYSQL_DIR}/" | awk '/^deleting / { print $2 }')
 
 # Backup QA Tables
-qatables backup
+env_tables backup
 
 # Stop mysql locally
 service mysql stop
-echo "Ready to rsync..."
+echo "INFO: Ready to rsync..."
 
 
 # Make directories first (parrallel jobs, can't guarantee sequential order)
@@ -169,13 +172,17 @@ for db_file in ${cleanList}; do
   fi
 done
 
-# Wait til all background rsync jobs complete
+# Wait until all background rsync jobs complete
 wait
-echo "rsync complete!"
+echo "INFO: rsync complete!"
+
+# Note how big snapshot / COW parition got
+echo "INFO: Snapshot / COW final size..."
+rc "hcp -l" | grep "Changed Blocks"
 
 # Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
-echo "Removing remote snapshot..."
-rc hcp -r /dev/hcp1 > /dev/null || echo "ERROR: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
+echo "INFO: Removing remote snapshot..."
+rc hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
 # Assuming it's the only snapshot created!, in future amend if using multiple snapshots.
 
 # Ensure permissions consistent
@@ -185,7 +192,7 @@ chown mysql:mysql /var/lib/mysql/ -R
 for TABLE in $EXCLUDE_LIST; do
   rm -rf "${LOCAL_MYSQL_DIR}/***REMOVED***/${TABLE}.ibd"
 done
-# Will cause startup errors, dropping and restoring qa tables should fix
+# Will cause startup errors for our excluded tables, restoring backed up env_tables will fix
 
 # Clear tables that have been dropped / removed
 if [ ! -z $droppedTables ]; then
@@ -197,17 +204,18 @@ else
   echo "INFO: no tables to drop!"
 fi
 
-echo "Starting mysql..."
+echo "INFO: Starting mysql..."
 service mysql start
 sleep 5
 
 # Restore our qa tables, if doesn't work will have to go down the discard route
-qatables restore
+env_tables restore
 
 # Cleanup
+echo "INFO: Cleanup operations..."
 rm -rf "${EXCLUDE_FILE}"
 rm -rf "${JOB_COUNT_DIR}"
 echo "==========================="
-echo "Start time: $START_TIME"
-echo "End time: $(date)"
+echo "INFO: Start time: $START_TIME"
+echo "INFO: End time: $(date)"
 echo "======= COMPLETE =========="
