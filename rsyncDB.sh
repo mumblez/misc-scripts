@@ -4,13 +4,10 @@
 
 # SETTINGS #
 DIR=$(cd "$(dirname "$0")" && pwd)
-REMOTE_DB_SERVER="***REMOVED***.230"
-#LVM_MYSQL="/dev/mapper/335302-mysql" # generalise
-#LVM_SNAPSHOT="/dev/mapper/335302-srv" # generalise
+REMOTE_DB_SERVER="***REMOVED***.230" # generalise in rundeck
 SSH_USER="***REMOVED***"
 EXCLUDE_FILE="$DIR/excludeFiles.txt"
 JOB_COUNT_DIR="$DIR/counter"
-#LOCAL_MYSQL_DIR="/var/lib/mysql" # if default location used, no need to change
 SNAPSHOT_FREESPACE=5000 # make configurable in rundeck
 MAX_RSYNC_THREADS=10 # make configurable in rundeck
 EXCLUDE_LIST="services service_configuration scheduled_task"
@@ -70,10 +67,12 @@ fi
 
 # Check data directory location (locally, remote will actually be the snapshot location)
 LOCAL_MYSQL_DIR=$(awk '/^datadir /{ print $3 }' "$LOCAL_MYCNF"); [ -z $LOCAL_MYSQL_DIR ] && die "ERROR: Local mysql datadir could not be located"
-REAL_REMOTE_MYSQL_DIR=$(rc awk '/^datadir /{ print $3 }' "$REMOTE_MYCNF"); [ -z $REMOTE_MYSQL_DIR ] && die "ERROR: Remote mysql datadir could not be located"
+echo "INFO: local mysql datadir: $LOCAL_MYSQL_DIR"
+REAL_REMOTE_MYSQL_DIR=$(rc awk "'/^datadir/{ print \$3 }' "$REMOTE_MYCNF""); [ -z $REAL_REMOTE_MYSQL_DIR ] && die "ERROR: Remote mysql datadir could not be located"
+echo "INFO: remote mysql datadir: $REAL_REMOTE_MYSQL_DIR"
 
-# Check for mysql lvm partition
-LVM_MYSQL=$(rc "df -P" | awk '/'"$REAL_REMOTE_MYSQL_DIR"'/ { print $1 }'); [ -z $LVM_MYSQL ] && die "ERROR: Remote mysql lvm partition could not be located"
+# Check for mysql lvm partition ($0~v awk escape path slashes)
+LVM_MYSQL=$(rc "df -P" | awk '$0~v { print $1 }' v=$REAL_REMOTE_MYSQL_DIR); [ -z $LVM_MYSQL ] && die "ERROR: Remote mysql lvm partition could not be located"
 
 # find srv partition and make sure at least ~5GB free space available
 LVM_SNAPSHOT=$(rc "df -P" | awk '/\/srv/ { print $1 }'); [ -z $LVM_SNAPSHOT ] && die "ERROR: /srv lvm partition could not be located"
@@ -191,8 +190,11 @@ done
 # Clear tables that have been dropped / removed
 if [ ! -z $droppedTables ]; then
   for i in $droppedTables; do
+    echo "INFO: deleting $i"
     rm -rf "${LOCAL_MYSQL_DIR}/$i"
   done
+else
+  echo "INFO: no tables to drop!"
 fi
 
 echo "Starting mysql..."
