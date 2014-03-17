@@ -15,9 +15,13 @@
 # 09/01/2014
 # - Added 'url' and 'company' procedures, URL file format uses positions within the string to seperate
 # values, to make this work had to use latin1 character set vs utf8, hopefully this won't bite us
+# 17/03/2014
+# Make more compatible with rundeck, purposely die on error so can trigger correct alerts / workflow
 
+# TO DO, build in alot more validation checks
 
 ### Settings ###
+die() { echo $* 1>&2 ; exit 1 ; }
 ################
 # DNB FTP #
 HOST="ftp.dnb.com"
@@ -58,12 +62,12 @@ table_shuffle () {
 		# Load into temporary table, rename old one, rename new one, drop old one!
 		# #file pattern dnb_<table>_table_structure.sql
 		# table structure files have table names with "_temp" suffix, e.g. url_temp
-		mysql < "$TB_STRUCTURES_DIR/dnb_${dtable}_table_structure.sql"
+		mysql < "$TB_STRUCTURES_DIR/dnb_${dtable}_table_structure.sql" || die "ERROR: Failed importing dnb_${dtable}_table_structure.sql"
 		echo "${dtable}_temp table creation complete!"
 		;;
 	  "shuffle")
 	    	echo "${dtable} shuffle start.....!"
-		mysql -e "use ${DB}; RENAME TABLE ${dtable} to ${dtable}_del; RENAME TABLE ${dtable}_temp TO ${dtable}; DROP TABLE ${dtable}_del;"
+		mysql -e "use ${DB}; RENAME TABLE ${dtable} to ${dtable}_del; RENAME TABLE ${dtable}_temp TO ${dtable}; DROP TABLE ${dtable}_del;" || die "ERROR: Failed flipping tables with new data"
 		echo "${dtable} shuffle complete!"
 		;;
 	esac
@@ -115,23 +119,23 @@ db_loadup () {
 	    table_shuffle "${COMPANY_TABLE}" create
 	    echo "Loading in 'company' table...."
 	    # Ignore header / 1st line of csv
-		mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${COMPANY_FILE}' INTO TABLE ${COMPANY_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${COMPANY_TABLE_COLUMNS};"
+		mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${COMPANY_FILE}' INTO TABLE ${COMPANY_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${COMPANY_TABLE_COLUMNS};" || die "ERROR: Failed to load data into database - ${COMPANY_TABLE}"
 		table_shuffle "${COMPANY_TABLE}" shuffle
 		;;
 	  "$URL_FILE")
 	    table_shuffle "${URL_TABLE}" create
 	    echo "Loading in 'url' table..."
-		mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${URL_FILE}' INTO TABLE ${URL_TABLE}_temp FIELDS TERMINATED BY '' LINES TERMINATED BY '\\r\\n';"
+		mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${URL_FILE}' INTO TABLE ${URL_TABLE}_temp FIELDS TERMINATED BY '' LINES TERMINATED BY '\\r\\n';" || die "ERROR: Failed to load data into database - ${URL_TABLE}"
 		# Clean up whitespace for domain names
 		for i in $(seq 1 5); do
-		  mysql -e "UPDATE ${DB}.${URL_TABLE}_temp SET domain_${i} = RTRIM(domain_${i});"
+		  mysql -e "UPDATE ${DB}.${URL_TABLE}_temp SET domain_${i} = RTRIM(domain_${i});" || die "ERROR: Failed to clean up whitespace for domains"
 		done
 		table_shuffle "${URL_TABLE}" shuffle
 		;;
 	  "$TICKER_FILE")
 	    table_shuffle "${TICKER_TABLE}" create
 	    echo "Loading in 'ticker' table..."
-		mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${TICKER_FILE}' INTO TABLE ${TICKER_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${TICKER_TABLE_COLUMNS};"
+		mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${TICKER_FILE}' INTO TABLE ${TICKER_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${TICKER_TABLE_COLUMNS};" || die "ERROR: Failed to load data into database - ${URL_TABLE}"
 		table_shuffle "${TICKER_TABLE}" shuffle
 		;;
 	esac
@@ -140,7 +144,27 @@ db_loadup () {
   done
 }
 
+search_reindex () {
+#--after running full index, be sure to stop and start the service again:
+#su sphinxsearch -c "/usr/bin/indexer --config /***REMOVED***/var/sphinx.conf --all" # do index
+#sudo -u sphinxsearch /usr/bin/searchd --config /***REMOVED***/var/sphinx.conf # start searchd
+#/usr/bin/searchd --config /***REMOVED***/var/sphinx.conf --stop # stop searchd
 
+# stop sphinx searchd daemon
+/usr/bin/searchd --config /***REMOVED***/var/sphinx.conf --stop
+# remove pid file incase
+rm -rf /***REMOVED***/var/run/sphinxv2.pid
+
+# Ensure we can write new indexes to directory
+chown sphinxsearch:sphinxsearch /***REMOVED***/var/sphinx -R
+chmod 775 /***REMOVED***/var/sphinx
+find /***REMOVED***/var/sphinx -type f -exec chmod 664 {} \;
+
+# Create new indexes
+su sphinxsearch -c "/usr/bin/indexer --config /***REMOVED***/var/sphinx.conf --all" || die "ERROR: Sphinx search re-index failed."
+sudo -u sphinxsearch /usr/bin/searchd --config /***REMOVED***/var/sphinx.conf || die "ERROR: Sphinx searchd daemon failed to start."
+
+}
 
 ### End Functions ####
 
@@ -155,7 +179,7 @@ if [ -s $NEW_FILES ]; then
   echo "$(cat $NEW_FILES)"
   echo "Downloading new files...."
   cd "$DESTINATION"
-  lftp -e "mirror --delete --only-newer ${SOURCE}; exit" -u ${USER},${PASS} ${HOST}
+  lftp -e "mirror --delete --only-newer ${SOURCE}; exit" -u ${USER},${PASS} ${HOST} || die "ERROR: Failed to mirror / download files from dnb ftp!"
 
   echo "Clean up listing of new files"
   cat "$NEW_FILES" | rev | cut -d' ' -f 1 | rev > "$NEW_FILES_CLEAN"
@@ -176,6 +200,10 @@ if [ -s $NEW_FILES ]; then
 
   # UPDATE current_files.txt
   ls "${DESTINATION}${SOURCE}" > "${CURRENT_FILES}"
+
+  # Create a full sphinx search re-index
+  search_reindex
+
 else
   echo "No new files"
 fi
