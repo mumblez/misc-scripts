@@ -198,8 +198,7 @@ if [ -s $NEW_FILES ]; then
   echo "Deleting $EXT_DIR"
   rm -rf "$EXT_DIR"
 
-  # UPDATE current_files.txt
-  ls "${DESTINATION}${SOURCE}" > "${CURRENT_FILES}"
+
 
   # Create a full sphinx search re-index
   search_reindex
@@ -207,3 +206,6 @@ if [ -s $NEW_FILES ]; then
 else
   echo "No new files"
 fi
+
+# UPDATE current_files.txt
+ls "${DESTINATION}${SOURCE}" > "${CURRENT_FILES}"
