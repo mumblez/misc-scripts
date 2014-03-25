@@ -7,8 +7,8 @@ die() { echo $* 1>&2 ; exit 1 ; }
 SVNPROJECTSBASE="https://***REMOVED***.***REMOVED***.com/svn/trunk/projects"
 AUTHORS_FILE="--authors-file=${DIR}/authors.txt"
 CLONE_OPTIONS="--no-metadata --prefix=svn/"
-PROJECTS="common restserver social zaibatsu"
-CORE_PROJECTS="intranet website"
+PROJECTS="restserver social zaibatsu"
+CORE_PROJECTS="common intranet website"
 WORKDIR="/mnt/ssd/svnwork"
 # Validate
 which svn 2>&1 > /dev/null || die "ERROR: svn application not installed"
@@ -43,8 +43,26 @@ for project in $CORE_PROJECTS; do
   git config --remove-section svn
   git config --remove-section svn-remote.svn
   rm -rf .git/svn .git/{logs/,}refs/remotes/{git-,}svn/
-  # COMBINE REPO's
-  #git remote add origin git@***REMOVED***.***REMOVED***.com:***REMOVED***/${project}.git
+  #git remote add origin git@***REMOVED***.***REMOVED***.com:***REMOVED***/core.git
   #git push -u origin master
   cd -
 done
+
+make_core () {
+  # COMBINE REPO's
+  cd ${WORKDIR}
+  mkdir core
+  cd core
+  git init
+  touch delme.txt
+  git add .
+  git commit -m "Initial dummy commit"
+  for i in intranet website core; do 
+	git remote add -f local_intranet file:///${WORKDIR}/$i
+	git merge local_$i/master
+	mkdir $i
+	
+  done
+  git rm delme.txt
+  git commit -m "Clean up dummy file"
+}
