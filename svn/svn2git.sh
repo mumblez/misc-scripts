@@ -22,6 +22,8 @@ for project in $PROJECTS; do
   #echo $project
   git svn clone ${SVNPROJECTSBASE}/${project} ${AUTHORS_FILE} ${CLONE_OPTIONS} ${project} || die "ERROR: can not clone from svn repo - ${project}"
   cd ${project}
+  # check and add ignored files ######
+  ####################################
   git svn-abandon-fix-refs
   git branch -m git-svn master
   git svn-abandon-cleanup
@@ -37,6 +39,8 @@ for project in $CORE_PROJECTS; do
   #echo $project
   git svn clone ${SVNPROJECTSBASE}/${project} ${AUTHORS_FILE} ${CLONE_OPTIONS} ${project} || die "ERROR: can not clone from svn repo - ${project}"
   cd ${project}
+  # check and add ignored files ######
+  ####################################
   git svn-abandon-fix-refs # pauses on weird error, run on older version of git
   git branch -m git-svn master
   git svn-abandon-cleanup
@@ -57,7 +61,7 @@ make_core () {
   touch delme.txt
   git add .
   git commit -m "Initial dummy commit"
-  for i in intranet website core; do 
+  for i in intranet website common; do 
 	git remote add -f local_$i file://${WORKDIR}/$i
 	git merge local_$i/master -m "Merging $i into core" 
 	mkdir $i
