@@ -9,7 +9,7 @@ AUTHORS_FILE="--authors-file=${DIR}/authors.txt"
 CLONE_OPTIONS="--no-metadata --prefix=svn/"
 PROJECTS="restserver social zaibatsu"
 CORE_PROJECTS="common intranet website"
-WORKDIR="/mnt/ssd/svnwork"
+WORKDIR="$DIR/svnwork"
 # Validate
 which svn 2>&1 > /dev/null || die "ERROR: svn application not installed"
 which git 2>&1 > /dev/null || die "ERROR: svn application not installed"
@@ -37,7 +37,7 @@ for project in $CORE_PROJECTS; do
   #echo $project
   git svn clone ${SVNPROJECTSBASE}/${project} ${AUTHORS_FILE} ${CLONE_OPTIONS} ${project} || die "ERROR: can not clone from svn repo - ${project}"
   cd ${project}
-  git svn-abandon-fix-refs
+  git svn-abandon-fix-refs # pauses on weird error, run on older version of git
   git branch -m git-svn master
   git svn-abandon-cleanup
   git config --remove-section svn
