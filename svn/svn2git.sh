@@ -13,7 +13,7 @@ WORKDIR="$DIR/svnwork"
 # Validate
 which svn 2>&1 > /dev/null || die "ERROR: svn application not installed"
 which git 2>&1 > /dev/null || die "ERROR: svn application not installed"
-[ -d "${WORKDIR}" ] || die "ERROR: ${WORKDIR} directory does not exist"
+[ -d "${WORKDIR}" ] || mkdir "${WORKDIR}"
 
 cd "${WORKDIR}"
 
