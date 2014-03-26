@@ -61,8 +61,14 @@ make_core () {
 	git remote add -f local_intranet file:///${WORKDIR}/$i
 	git merge local_$i/master
 	mkdir $i
-	
+	git mv * $i
+	git commit -m "Move $i files into subdir"
   done
   git rm delme.txt
   git commit -m "Clean up dummy file"
 }
+
+make_core
+
+# cleanup
+# remove core or entire workdir
