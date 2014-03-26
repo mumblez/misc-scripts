@@ -32,7 +32,7 @@ for project in $PROJECTS; do
   git push -u origin master
   cd -
 done
-`n
+
 for project in $CORE_PROJECTS; do
   #echo $project
   git svn clone ${SVNPROJECTSBASE}/${project} ${AUTHORS_FILE} ${CLONE_OPTIONS} ${project} || die "ERROR: can not clone from svn repo - ${project}"
@@ -59,9 +59,10 @@ make_core () {
   git commit -m "Initial dummy commit"
   for i in intranet website core; do 
 	git remote add -f local_$i file://${WORKDIR}/$i
-	git merge local_$i/master
+	git merge local_$i/master -m "Merging $i into core" 
 	mkdir $i
-	git mv * $i
+	#git mv * $i # change as doesn't work
+	for proj_file in `ls -A`; do [[ "$proj_file" != "$i" ]] && [[ "$proj_file" != .git ]] && git mv $proj_file $i; done
 	git commit -m "Move $i files into subdir"
   done
   git rm delme.txt
