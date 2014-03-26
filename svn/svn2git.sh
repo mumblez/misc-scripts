@@ -58,7 +58,7 @@ make_core () {
   git add .
   git commit -m "Initial dummy commit"
   for i in intranet website core; do 
-	git remote add -f local_intranet file:///${WORKDIR}/$i
+	git remote add -f local_$i file:///${WORKDIR}/$i
 	git merge local_$i/master
 	mkdir $i
 	git mv * $i
