@@ -67,6 +67,8 @@ make_core () {
   done
   git rm delme.txt
   git commit -m "Clean up dummy file"
+  git remote add origin git@***REMOVED***.***REMOVED***.com:***REMOVED***/core.git
+  git push -u origin master
 }
 
 make_core
