@@ -6,7 +6,7 @@ die() { echo $* 1>&2 ; exit 1 ; }
 # Settings
 SVNPROJECTSBASE="https://***REMOVED***.***REMOVED***.com/svn/trunk/projects"
 AUTHORS_FILE="--authors-file=${DIR}/authors.txt"
-CLONE_OPTIONS="--no-metadata --prefix=svn/"
+CLONE_OPTIONS="--no-metadata --prefix=svn/ --preserve-empty-dirs"
 PROJECTS="restserver social zaibatsu"
 CORE_PROJECTS="common intranet website"
 WORKDIR="$DIR/svnwork"
