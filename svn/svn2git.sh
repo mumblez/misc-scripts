@@ -31,7 +31,7 @@ for project in $PROJECTS; do
   git config --remove-section svn-remote.svn
   rm -rf .git/svn .git/{logs/,}refs/remotes/{git-,}svn/
   git remote add origin git@***REMOVED***.***REMOVED***.com:***REMOVED***/${project}.git
-  git push -u origin master
+  git push --force -u origin master
   cd -
 done
 
@@ -48,7 +48,7 @@ for project in $CORE_PROJECTS; do
   git config --remove-section svn-remote.svn
   rm -rf .git/svn .git/{logs/,}refs/remotes/{git-,}svn/
   #git remote add origin git@***REMOVED***.***REMOVED***.com:***REMOVED***/core.git
-  #git push -u origin master
+  #git push --force -u origin master
   cd -
 done
 
@@ -62,7 +62,7 @@ make_core () {
   git add .
   git commit -m "Initial dummy commit"
   for i in intranet website common; do
-    cd ${WORKDIR}/core
+    #cd ${WORKDIR}/core
   	git remote add -f local_$i file://${WORKDIR}/$i
   	git merge local_$i/master -m "Merging $i into core" 
   	mkdir $i
@@ -87,3 +87,4 @@ make_core
 
 # cleanup
 # remove core or entire workdir
+rm -rf "${WORKDIR}"
