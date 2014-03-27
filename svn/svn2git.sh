@@ -61,16 +61,24 @@ make_core () {
   touch delme.txt
   git add .
   git commit -m "Initial dummy commit"
-  for i in intranet website common; do 
-	git remote add -f local_$i file://${WORKDIR}/$i
-	git merge local_$i/master -m "Merging $i into core" 
-	mkdir $i
-	#git mv * $i # change as doesn't work
-	for proj_file in `ls -A`; do [[ "$proj_file" != "$i" ]] && [[ "$proj_file" != .git ]] && git mv $proj_file $i; done
-	git commit -m "Move $i files into subdir"
+  for i in intranet website common; do
+    cd ${WORKDIR}/core
+  	git remote add -f local_$i file://${WORKDIR}/$i
+  	git merge local_$i/master -m "Merging $i into core" 
+  	mkdir $i
+    #git mv * $i # change as doesn't work
+    #for proj_file in `ls -A`; do [[ "$proj_file" != "$i" && "$proj_file" != .git ]] && git mv $proj_file $i; done
+    for proj_file in `ls -A`; do
+      if [[ "$proj_file" != "delme.txt" || "$proj_file" != "intranet" && "$proj_file" != "website" && "$proj_file" != "common" && "$proj_file" != ".git" ]]; then
+        git mv $proj_file $i
+      fi
+    done
+    git commit -m "Move $i files into subdir"
   done
   git rm delme.txt
   git commit -m "Clean up dummy file"
+  #git reset --soft HEAD~7
+  #git commit -m "svn 2 git"
   git remote add origin git@***REMOVED***.***REMOVED***.com:***REMOVED***/core.git
   git push --force -u origin master
 }
