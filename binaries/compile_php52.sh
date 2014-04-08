@@ -64,7 +64,7 @@ basicbuildpkgs
 
 # Download php, suhosin patch and SSL patch
 echo "Downloading files..."
-cp /home/***REMOVED***/php-5.2.17.tar.gz $TMPDIR
+cp php-5.2.17.tar.gz $TMPDIR
 cd "$TMPDIR"
 #wget http://museum.php.net/php5/php-5.2.17.tar.gz || die "Failed to find / download php 5.2"
 tar -xzf php-5.2.17.tar.gz
@@ -76,6 +76,7 @@ cd ..
 wget "https://bugs.php.net/patch-display.php?bug_id=54736&patch=debian_patches_disable_SSLv2_for_openssl_1_0_0.patch&revision=1305414559&download=1" -O debian_patches_disable_SSLv2_for_openssl_1_0_0.patch || die "Failed to find / download debian ssl v2 disable patch."
 cd php-5.2.17
 patch -p 1 -i ../debian_patches_disable_SSLv2_for_openssl_1_0_0.patch
+cd ..
 wget "http://php-fpm.org/downloads/php-5.2.17-fpm-0.5.14.diff.gz" || die "Failed to download fpm patch"
 gunzip php-5.2.17-fpm-0.5.14.diff.gz
 cd php-5.2.17
