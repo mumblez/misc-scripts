@@ -78,7 +78,7 @@ echo "INFO: remote mysql datadir: $REAL_REMOTE_MYSQL_DIR"
 LVM_MYSQL=$(rc "df -P" | awk '$0~v { print $1 }' v=$REAL_REMOTE_MYSQL_DIR); [ -z $LVM_MYSQL ] && die "ERROR: Remote mysql lvm partition could not be located"
 
 # find srv partition and make sure at least ~5GB free space available
-LVM_SNAPSHOT=$(rc "df -P" | awk '/\/srv/ { print $1 }'); [ -z $LVM_SNAPSHOT ] && die "ERROR: /srv lvm partition could not be located"
+LVM_SNAPSHOT=$(rc "df -P" | awk '/\/srv|lv_snapshots/ { print $1 }'); [ -z $LVM_SNAPSHOT ] && die "ERROR: /srv lvm partition could not be located"
 if [[ $(rc "df -Pm" | awk '/\/srv/ { print $4 }') -lt $SNAPSHOT_FREESPACE ]]; then
   die "ERROR: Not enough free space for snapshot copy on write operations"
 fi
