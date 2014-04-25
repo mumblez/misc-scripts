@@ -10,8 +10,9 @@ PROJECTS_DIR="/var/lib/webistrano/git"
 GIT_OPTIONS="--force"
 RELEASE="@option.tag@"
 PROJECTS="@option.projects@"
-BUILDSCRIPT="/***REMOVED***/bin/packdist"
+BUILDSCRIPT="/***REMOVED***/bin/packdist-v2"
 APP_ENVIRONMENT="@option.environment@"
+TAG_PREFIX="release-"
 
 ### Validation ###
 echo "Validation checks...."
@@ -35,16 +36,17 @@ git_pull () {
 git_checkout () {
   PROJECT="$1"
   cd "$PROJECTS_DIR/$PROJECT" || die "ERROR: project does not exist @ $PROJECTS_DIR/$PROJECT"
-  echo "INFO: checking out release $GIT_TAG for $PROJECT...."
-  ssh-agent bash -c "ssh-add $DEPLOY_KEY >/dev/null 2>&1 && git checkout $GIT_OPTIONS $RELEASE >/dev/null 2>&1" || die "ERROR: Could not checkout tag:$RELEASE for $PROJECT"
+  echo "INFO: checking out release ${TAG_PREFIX}${RELEASE} for $PROJECT...."
+  ssh-agent bash -c "ssh-add $DEPLOY_KEY >/dev/null 2>&1 && git checkout $GIT_OPTIONS ${TAG_PREFIX}${RELEASE} >/dev/null 2>&1" || die "ERROR: Could not checkout tag:$RELEASE for $PROJECT"
   # If there are issues, as an alternative, blow away folder and do a new pull / clone
 }
 
 build_and_dist () {
 	PROJECT="$1"
 	cd "$PROJECTS_DIR/$PROJECT/build" || die "ERROR: project build directory does not exist @ $PROJECTS_DIR/$PROJECT"
-	echo "INFO: building and distributing $PROJECT"
+	echo "INFO: building and distributing $PROJECT..."
 	$BUILDSCRIPT $APP_ENVIRONMENT >/dev/null 2>&1 || die "ERROR: failed to build and distribute $PROJECT"
+	rm -rf "$PROJECTS_DIR/$PROJECT/build/debian" || echo "WARN: failed to delete debian folder from build directory!"
 
 }
 
