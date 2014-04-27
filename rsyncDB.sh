@@ -211,6 +211,9 @@ sleep 5
 # Restore our qa tables, if doesn't work will have to go down the discard route
 env_tables restore
 
+# Restart again to catch remaining errors
+service mysql restart
+
 # Cleanup
 echo "INFO: Cleanup operations..."
 rm -rf "${EXCLUDE_FILE}"
