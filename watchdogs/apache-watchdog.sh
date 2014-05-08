@@ -27,7 +27,7 @@ if [ ! -e /***REMOVED***/www/intranet/_watchdog.php ]; then
 fi
 
 #if ( wget --timeout=30 -q -P "$THEDIR" "$URLFILE" )
-if ( curl -s "$URLFILE" | grep "watchdog" )
+if ( curl -s "$URLFILE" | grep "watchdog" ) && wget -O - "$URLFILE" 2>&1 | grep -i "200 OK"
 then
     # we are up
     touch ~/.apache-was-up
