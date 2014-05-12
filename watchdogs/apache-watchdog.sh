@@ -32,8 +32,6 @@ then
     # we are up
     touch ~/.apache-was-up
 else
-    if [ -e ~/.apache-was-up ];
-    then
         # write a nice e-mail
         echo -n "apache crashed at " > $THEDIR/mail
         date >> $THEDIR/mail
@@ -61,6 +59,16 @@ else
         tail -n 200 /var/log/***REMOVED***/website/error_log >> $THEDIR/mail
         echo "###########################################################" >> $THEDIR/mail
         echo >> $THEDIR/mail
+        echo "Access log - apache:" >> $THEDIR/mail
+        echo "======================" >> $THEDIR/mail
+        tail -n 200 /var/log/apache/access.log >> $THEDIR/mail
+        echo "###########################################################" >> $THEDIR/mail
+        echo >> $THEDIR/mail
+        echo "Error log - apache:" >> $THEDIR/mail
+        echo "======================" >> $THEDIR/mail
+        tail -n 200 /var/log/apache/error.log >> $THEDIR/mail
+        echo "###########################################################" >> $THEDIR/mail
+        echo >> $THEDIR/mail
         # kick apache
         echo "Now kicking apache - `date` ..." >> $THEDIR/mail
         echo "======================" >> $THEDIR/mail
@@ -81,7 +89,6 @@ else
         echo "======================" >> $THEDIR/mail
         mail -s "Apache crashed and has been restarted on Production - web1" $EMAILS < $THEDIR/mail
         rm ~/.apache-was-up
-    fi
 fi
 
 rm -rf $THEDIR
