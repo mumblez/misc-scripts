@@ -12,7 +12,6 @@ EMAILS="it-monitoring@***REMOVED***.com"
 #URLFILE="https://intranet.***REMOVED***.com/VERSION"
 #use a php file instead as sometimes apache doesn't quite crash but hangs, still serves txt files but not php
 URLFILE="https://intranet.***REMOVED***.com/_watchdog.php"
-#web 1 public IP = 92.52.113.224
 LOCKFILE="/tmp/apacheCheck"
 
 if [ -e "$LOCKFILE" ]; then
@@ -28,7 +27,7 @@ if [ ! -e /***REMOVED***/www/intranet/_watchdog.php ]; then
 fi
 
 #if ( wget --timeout=30 -q -P "$THEDIR" "$URLFILE" )
-if ( curl -s "$URLFILE" | grep "watchdog" ) && wget --timeout=10 -O - "$URLFILE" 2>&1 | grep -i "200 OK"
+if ( curl -s "$URLFILE" | grep "watchdog" ) && wget -O - "$URLFILE" 2>&1 | grep -i "200 OK"
 then
     # we are up
     touch ~/.apache-was-up
@@ -67,13 +66,18 @@ else
         echo "======================" >> $THEDIR/mail
         /etc/init.d/apache2 stop >> $THEDIR/mail 2>&1
         killall -9 apache2 >> $THEDIR/mail 2>&1
-	sleep 5
+	sleep 15
         /etc/init.d/apache2 start >> $THEDIR/mail 2>&1
-        echo "apache restarted - `date`"
+	if [[ "$?" == 0 ]]; then
+          echo "apache restarted - `date`" >> $THEDIR/mail
+	else
+	  echo "apache failed to restart - `date`" >> $THEDIR/mail
+	  /etc/init.d/apache2 restart && echo "apache restarted (2nd try) - `date` " >> $THEDIR/mail
+	fi
         echo "======================" >> $THEDIR/mail
         # send the mail
         echo >> $THEDIR/mail
-        echo "Apache restarted - Good luck troubleshooting!" >> $THEDIR/mail
+        echo "Good luck troubleshooting!" >> $THEDIR/mail
         echo "======================" >> $THEDIR/mail
         mail -s "Apache crashed and has been restarted on Production - web1" $EMAILS < $THEDIR/mail
         rm ~/.apache-was-up
