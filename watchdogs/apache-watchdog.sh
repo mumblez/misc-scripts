@@ -62,12 +62,13 @@ else
         echo "###########################################################" >> $THEDIR/mail
         echo >> $THEDIR/mail
         # kick apache
-        echo "Now kicking apache..." >> $THEDIR/mail
+        echo "Now kicking apache - `date` ..." >> $THEDIR/mail
         echo "======================" >> $THEDIR/mail
         /etc/init.d/apache2 stop >> $THEDIR/mail 2>&1
         killall -9 apache2 >> $THEDIR/mail 2>&1
+	sleep 5
         /etc/init.d/apache2 start >> $THEDIR/mail 2>&1
-        echo "apache restarted"
+        echo "apache restarted - `date`"
         echo "======================" >> $THEDIR/mail
         # send the mail
         echo >> $THEDIR/mail
