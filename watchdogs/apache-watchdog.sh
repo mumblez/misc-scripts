@@ -12,6 +12,7 @@ EMAILS="it-monitoring@***REMOVED***.com"
 #URLFILE="https://intranet.***REMOVED***.com/VERSION"
 #use a php file instead as sometimes apache doesn't quite crash but hangs, still serves txt files but not php
 URLFILE="https://intranet.***REMOVED***.com/_watchdog.php"
+#web 1 public IP = 92.52.113.224
 LOCKFILE="/tmp/apacheCheck"
 
 if [ -e "$LOCKFILE" ]; then
@@ -27,7 +28,7 @@ if [ ! -e /***REMOVED***/www/intranet/_watchdog.php ]; then
 fi
 
 #if ( wget --timeout=30 -q -P "$THEDIR" "$URLFILE" )
-if ( curl -s "$URLFILE" | grep "watchdog" ) && wget -O - "$URLFILE" 2>&1 | grep -i "200 OK"
+if ( curl -s "$URLFILE" | grep "watchdog" ) && wget --timeout=10 -O - "$URLFILE" 2>&1 | grep -i "200 OK"
 then
     # we are up
     touch ~/.apache-was-up
