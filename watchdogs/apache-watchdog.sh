@@ -69,6 +69,11 @@ else
         tail -n 200 /var/log/apache/error.log >> $THEDIR/mail
         echo "###########################################################" >> $THEDIR/mail
         echo >> $THEDIR/mail
+        echo "other vhosts access.log:" >> $THEDIR/mail
+        echo "======================" >> $THEDIR/mail
+        tail -n 200 /var/log/apache2/other_vhosts_access.log >> $THEDIR/mail
+        echo "###########################################################" >> $THEDIR/mail
+        echo >> $THEDIR/mail
         # kick apache
         echo "Now kicking apache - `date` ..." >> $THEDIR/mail
         echo "======================" >> $THEDIR/mail
