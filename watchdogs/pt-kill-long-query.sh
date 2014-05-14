@@ -25,7 +25,7 @@ case "$1" in
       --pid /var/run/pt-kill.pid \
       --daemonize \
       --interval 30s \
-      --busy-time 3600s \
+      --busy-time 600s \
       --wait-after-kill 15s  \
       --ignore-info '(?i-smx:^insert|^update|^delete|^load|mailqueue)' \
       --match-info '(?i-xsm:select)' \
