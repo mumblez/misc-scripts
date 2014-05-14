@@ -33,7 +33,7 @@ case "$1" in
       --match-user '(?i-xsm:sqluser)' \
       --log "$KILLLOG" \
       --print \
-      --execute-command "( echo To: it-monitoring@***REMOVED***.com; echo From: admin@***REMOVED***.com; echo Subject: 'Long Query Killed'; echo; cat /var/log/  mysql-kill.log) | sendmail -t; cat $KILLLOG >> $KILLLOGARCHIVE; > $KILLLOG" \
+      --execute-command "( echo To: it-monitoring@***REMOVED***.com; echo From: admin@***REMOVED***.com; echo Subject: 'Long Query Killed'; echo; cat /var/log/mysql-kill.log) | sendmail -t; cat $KILLLOG >> $KILLLOGARCHIVE; > $KILLLOG" \
       --kill-query
 
     RETVAL=$?
