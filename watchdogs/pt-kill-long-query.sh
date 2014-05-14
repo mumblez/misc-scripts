@@ -26,7 +26,7 @@ case "$1" in
       --daemonize \
       --interval 30s \
       --busy-time 600s \
-      --wait-after-kill 15s  \
+      --wait-after-kill 15s \
       --ignore-info '(?i-smx:^insert|^update|^delete|^load|mailqueue)' \
       --match-info '(?i-xsm:select)' \
       --ignore-user '(?i-xsm:***REMOVED***)' \
