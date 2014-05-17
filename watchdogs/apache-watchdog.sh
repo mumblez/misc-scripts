@@ -59,14 +59,9 @@ else
         tail -n 200 /var/log/***REMOVED***/website/error_log >> $THEDIR/mail
         echo "###########################################################" >> $THEDIR/mail
         echo >> $THEDIR/mail
-        echo "Access log - apache:" >> $THEDIR/mail
-        echo "======================" >> $THEDIR/mail
-        tail -n 200 /var/log/apache/access.log >> $THEDIR/mail
-        echo "###########################################################" >> $THEDIR/mail
-        echo >> $THEDIR/mail
         echo "Error log - apache:" >> $THEDIR/mail
         echo "======================" >> $THEDIR/mail
-        tail -n 200 /var/log/apache/error.log >> $THEDIR/mail
+        tail -n 200 /var/log/apache2/error.log >> $THEDIR/mail
         echo "###########################################################" >> $THEDIR/mail
         echo >> $THEDIR/mail
         echo "other vhosts access.log:" >> $THEDIR/mail
