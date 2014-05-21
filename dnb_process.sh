@@ -19,6 +19,8 @@
 # Make more compatible with rundeck, purposely die on error so can trigger correct alerts / workflow
 # 06/05/2014
 # Updated with new server in France - OVH
+# 21/05/2014 
+# Use 7z (p7zip) instead, normal unzip is unable to decompress sometimes complaining zip is corrupt
 
 # TO DO, build in alot more validation checks
 
@@ -60,6 +62,7 @@ URL_TABLE="url"
 [ -e /usr/bin/indexer ] || die "ERROR: sphinx indexer not found on system"
 [ -e "$CURRENT_FILES" ] || die "ERROR: current_files.txt not found"
 [ -d "$TB_STRUCTURES_DIR" ] || die "ERROR: table structure folder not found"
+which 7za || die "ERROR: 7za not found"
 
 ### Functions ###
 table_shuffle () {
@@ -99,9 +102,12 @@ extract_new_files () {
     EXTENSION=$(echo $i | rev | cut -d'.' -f 1 | rev)
     if [ "$EXTENSION" = "zip" ]; then
       echo "unzipping $i"
-      unzip "$i" -d "$EXT_DIR";
+	  #unzip "$i" -d "$EXT_DIR" || die "ERROR: Failed to unzip $i"
+	  # 7za e Cognolink_20_May_2014.zip [-o<output dir>]
+      #unzip "$i" -d "$EXT_DIR" || die "ERROR: Failed to unzip $i"
+	  7za e Cognolink_20_May_2014.zip -o"$EXT_DIR"
     elif [ "$EXTENSION" = "rar" ]; then
-      echo "unraring $i"
+      echo "unraring $i" || die "ERROR: Failed to unrar $i"
       unrar x "$i" "$EXT_DIR";
     else
       echo "$i is not an archive";
