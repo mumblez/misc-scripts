@@ -27,7 +27,8 @@ if [ ! -e /***REMOVED***/www/intranet/_watchdog.php ]; then
 fi
 
 #if ( wget --timeout=30 -q -P "$THEDIR" "$URLFILE" )
-if ( curl -s "$URLFILE" | grep "watchdog" ) && wget -O - "$URLFILE" 2>&1 | grep -i "200 OK"
+#if ( curl -s "$URLFILE" | grep "watchdog" ) && wget -O - "$URLFILE" 2>&1 | grep -i "200 OK"
+if ( curl --connect-timeout 10 --max-time 15 -s "$URLFILE" | grep "watchdog" ) && wget --timeout=10 -O - "$URLFILE" 2>&1 | grep -i "200 OK"
 then
     # we are up
     touch ~/.apache-was-up
@@ -38,7 +39,7 @@ else
         echo >> $THEDIR/mail
         echo "Access log - Intranet:" >> $THEDIR/mail
         echo "======================" >> $THEDIR/mail
-        tail -n 200 /var/log/***REMOVED***/intranet/access_log >> $THEDIR/mail
+        tail -n 400 /var/log/***REMOVED***/intranet/access_log >> $THEDIR/mail
         echo "###########################################################" >> $THEDIR/mail
         echo >> $THEDIR/mail
         echo "Access log 1 - Website:" >> $THEDIR/mail
