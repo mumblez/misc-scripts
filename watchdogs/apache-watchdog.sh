@@ -7,7 +7,7 @@
 
 PATH=/bin:/usr/bin
 THEDIR=/srv/apache-watchdog
-EMAILS="it-monitoring@***REMOVED***.com"
+EMAILS="it-monitoring@***REMOVED***.com it-team@***REMOVED***.com"
 #EMAILS="***REMOVED***@***REMOVED***.com"
 #URLFILE="https://intranet.***REMOVED***.com/VERSION"
 #use a php file instead as sometimes apache doesn't quite crash but hangs, still serves txt files but not php
@@ -70,6 +70,14 @@ else
         tail -n 200 /var/log/apache2/other_vhosts_access.log >> $THEDIR/mail
         echo "###########################################################" >> $THEDIR/mail
         echo >> $THEDIR/mail
+        echo "System Log:" >> $THEDIR/mail
+        tail -n 200 /var/log/syslog >> $THEDIR/mail
+        echo "###########################################################" >> $THEDIR/mail
+        echo >> $THEDIR/mail
+        echo "Process List:" >> $THEDIR/mail
+        ps aux >> $THEDIR/mail
+        echo "###########################################################" >> $THEDIR/mail
+
         # kick apache
         echo "Now kicking apache - `date` ..." >> $THEDIR/mail
         echo "======================" >> $THEDIR/mail
