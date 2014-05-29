@@ -62,7 +62,7 @@ fi
 # Check my.cnf location locally
 if test -f /etc/mysql/my.cnf; then
     LOCAL_MYCNF="/etc/mysql/my.cnf" # debian
-elif rc test -f /etc/my.cnf; then # redhat / centos
+elif test -f /etc/my.cnf; then # redhat / centos
     LOCAL_MYCNF="/etc/my.cnf"
 else
     die "ERROR: local my.cnf could not be found!"
