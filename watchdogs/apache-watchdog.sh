@@ -78,6 +78,8 @@ else
         ps aux >> $THEDIR/mail
         echo "###########################################################" >> $THEDIR/mail
 
+        # kick php52-fpm
+        /etc/init.d/php52-fpm restart >> $THEDIR/mail 2>&1
         # kick apache
         echo "Now kicking apache - `date` ..." >> $THEDIR/mail
         echo "======================" >> $THEDIR/mail
@@ -99,6 +101,9 @@ else
         mail -s "Apache crashed and has been restarted on Production - web1" $EMAILS < $THEDIR/mail
         rm ~/.apache-was-up
 fi
+
+# email using mutt to add attachments
+# echo bla body | mutt -s "bla bla 222" ***REMOVED***@***REMOVED***.com ***REMOVED***@***REMOVED***.com -a abc.html apc.html
 
 rm -rf $THEDIR
 rm -f "$LOCKFILE"
