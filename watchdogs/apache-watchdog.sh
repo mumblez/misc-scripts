@@ -100,6 +100,9 @@ else
         rm ~/.apache-was-up
 fi
 
+# email using mutt to add attachments
+# echo bla body | mutt -s "bla bla 222" ***REMOVED***@***REMOVED***.com ***REMOVED***@***REMOVED***.com -a abc.html apc.html
+
 rm -rf $THEDIR
 rm -f "$LOCKFILE"
 
