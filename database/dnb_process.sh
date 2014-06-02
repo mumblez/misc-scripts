@@ -102,10 +102,10 @@ extract_new_files () {
     EXTENSION=$(echo $i | rev | cut -d'.' -f 1 | rev)
     if [ "$EXTENSION" = "zip" ]; then
       echo "unzipping $i"
-	  #unzip "$i" -d "$EXT_DIR" || die "ERROR: Failed to unzip $i"
+      #unzip "$i" -d "$EXT_DIR" || die "ERROR: Failed to unzip $i"
 	  # 7za e Cognolink_20_May_2014.zip [-o<output dir>]
       #unzip "$i" -d "$EXT_DIR" || die "ERROR: Failed to unzip $i"
-	  7za e Cognolink_20_May_2014.zip -o"$EXT_DIR"
+	  7za e "$i" -o"$EXT_DIR"
     elif [ "$EXTENSION" = "rar" ]; then
       echo "unraring $i" || die "ERROR: Failed to unrar $i"
       unrar x "$i" "$EXT_DIR";
