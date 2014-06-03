@@ -98,7 +98,8 @@ else
         echo >> $THEDIR/mail
         echo "Good luck troubleshooting!" >> $THEDIR/mail
         echo "======================" >> $THEDIR/mail
-        mail -s "Apache crashed and has been restarted on Production - web1" $EMAILS < $THEDIR/mail
+        #mail -s "Apache crashed and has been restarted on Production - web1 - `date`" $EMAILS < $THEDIR/mail
+        echo "see attached logs" | mutt -s "Apache crashed and has been restarted on Production - web1 - `date`" $EMAILS -a $THEDIR/mail /tmp/apache-stats/apache-stats*
         rm ~/.apache-was-up
 fi
 
