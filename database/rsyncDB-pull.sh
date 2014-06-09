@@ -195,7 +195,7 @@ done
 # Will cause startup errors for our excluded tables, restoring backed up env_tables will fix
 
 # Clear tables that have been dropped / removed
-if [ ! -z $droppedTables ]; then
+if [ ! -z "$droppedTables" ]; then
   for i in $droppedTables; do
     echo "INFO: deleting $i"
     rm -rf "${LOCAL_MYSQL_DIR}/$i"
