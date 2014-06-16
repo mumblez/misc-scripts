@@ -28,13 +28,18 @@
 
 
 # SETTINGS #
-DIR=$(cd "$(dirname "$0")" && pwd)
-REMOTE_DB_SERVER="@option.remote_db_server@" # in future generalise in rundeck
-SSH_USER="@option.ssh_user@" # try different strategies to avoid creating keys
+#DIR=$(cd "$(dirname "$0")" && pwd)
+DIR="/tmp"
+#REMOTE_DB_SERVER="@option.remote_db_server@" # in future generalise in rundeck
+REMOTE_DB_SERVER="***REMOVED***.22"
+#SSH_USER="@option.ssh_user@" # try different strategies to avoid creating keys
+SSH_USER="***REMOVED***"
 EXCLUDE_FILE="$DIR/excludeFiles.txt"
 JOB_COUNT_DIR="$DIR/counter"
-SNAPSHOT_FREESPACE="@option.snapshot_freespace@" # at least 1-2GB to be safe
-MAX_RSYNC_THREADS="@option.rsync_threads@" # stay below 9
+#SNAPSHOT_FREESPACE="@option.snapshot_freespace@" # at least 1-2GB to be safe
+SNAPSHOT_FREESPACE="5000"
+#MAX_RSYNC_THREADS="@option.rsync_threads@" # stay below 9
+MAX_RSYNC_THREADS="8"
 EXCLUDE_LIST="services service_configuration scheduled_task" # turn into RD multi-valued list from high 
                                                       # level job and pass into table backup job as argument
 #START_TIME=$(date)
@@ -52,24 +57,24 @@ rc () {
 
 # Backup or Restore qa / test specific tables - do as seperate RD job reference
 # call snippets/database/table backup or restore RD job
-# env_tables () {
-#   for TABLE in $EXCLUDE_LIST; do
-#     if [[ "$1" == "backup" && ! -f "$DIR/***REMOVED***.$TABLE" ]]; then
-#       echo "Backing up ***REMOVED***.$TABLE...$(date)"
-#       mysqldump -B ***REMOVED*** --tables "$TABLE" --create-option > "$DIR/***REMOVED***.$TABLE.sql"  || die "ERROR: backup of env tables failed"
-#     elif [ "$1" == "restore" ]; then
-#       echo "Restoring ***REMOVED***.$TABLE...$(date)"
-#       mysql -B ***REMOVED*** < "$DIR/***REMOVED***.$TABLE.sql" || die "ERROR: restore of env tables failed"
-#       # cleanup / delete sql file after successful restore
-#       rm -f "$DIR/***REMOVED***.$TABLE"
-#     fi
-#   done
-# }
+env_tables () {
+  for TABLE in $EXCLUDE_LIST; do
+    if [[ "$1" == "backup" && rc test ! -f "$DIR/***REMOVED***.$TABLE" ]]; then
+      echo "Backing up ***REMOVED***.$TABLE...$(date)"
+      rc mysqldump -B ***REMOVED*** --tables "$TABLE" --create-option > "$DIR/***REMOVED***.$TABLE.sql"  || die "ERROR: backup of env tables failed"
+    elif [ "$1" == "restore" ]; then
+      echo "Restoring ***REMOVED***.$TABLE...$(date)"
+      rc mysql -B ***REMOVED*** < "$DIR/***REMOVED***.$TABLE.sql" || die "ERROR: restore of env tables failed"
+      # cleanup / delete sql file after successful restore
+      rc rm -f "$DIR/***REMOVED***.$TABLE"
+    fi
+  done
+}
 
 # VALIDATION and more settings
 
 # Check we can ssh onto remote mysql server
-rc "echo ssh login test"
+rc "hcp -v"
 
 # Check my.cnf location remotely
 if rc test -f /etc/mysql/my.cnf; then
@@ -90,17 +95,18 @@ else
 fi
 
 # Check data directory location (locally, remote will actually be the snapshot location)
-LOCAL_MYSQL_DIR=$(awk '/^datadir /{ print $3 }' "$LOCAL_MYCNF"); [ -z $LOCAL_MYSQL_DIR ] && die "ERROR: Local mysql datadir could not be located"
-echo "INFO: local mysql datadir: $LOCAL_MYSQL_DIR"
-REAL_REMOTE_MYSQL_DIR=$(rc awk "'/^datadir/{ print \$3 }' "$REMOTE_MYCNF""); [ -z $REAL_REMOTE_MYSQL_DIR ] && die "ERROR: Remote mysql datadir could not be located"
-echo "INFO: remote mysql datadir: $REAL_REMOTE_MYSQL_DIR"
+# SWAP - local = snapshot, remote is real
+REMOTE_MYSQL_DIR=$(rc awk "'/^datadir /{ print \$3 }' "$REMOTE_MYCNF""); [ -z $REMOTE_MYSQL_DIR ] && die "ERROR: remote mysql datadir could not be located"
+echo "INFO: remote mysql datadir: $REMOTE_MYSQL_DIR"
+REAL_MYSQL_DIR=$(awk '/^datadir/{ print $3 }' "$LOCAL_MYCNF"); [ -z $REAL_MYSQL_DIR ] && die "ERROR: local mysql datadir could not be located"
+echo "INFO: local mysql datadir: $REAL_MYSQL_DIR"
 
 # Check for mysql lvm partition ($0~v awk escape path slashes) # swap for local
-LVM_MYSQL=$(rc "df -P" | awk '$0~v { print $1 }' v=$REAL_REMOTE_MYSQL_DIR); [ -z $LVM_MYSQL ] && die "ERROR: Remote mysql lvm partition could not be located"
+LVM_MYSQL=$(df -P | awk '$0~v { print $1 }' v=$REAL_MYSQL_DIR); [ -z $LVM_MYSQL ] && die "ERROR: local mysql lvm partition could not be located"
 
 # find srv partition and make sure at least ~5GB free space available # swap for local
-LVM_SNAPSHOT=$(rc "df -P" | awk '/\/srv|lv_snapshots/ { print $1 }'); [ -z $LVM_SNAPSHOT ] && die "ERROR: /srv or ..lv_snapshots lvm partition could not be located"
-if [[ $(rc "df -Pm" | awk '/\/srv/ { print $4 }') -lt $SNAPSHOT_FREESPACE ]]; then # swap for local
+LVM_SNAPSHOT=$(df -P | awk '/\/srv|lv_snapshots/ { print $1 }'); [ -z $LVM_SNAPSHOT ] && die "ERROR: /srv or ..lv_snapshots lvm partition could not be located"
+if [[ $(df -Pm | awk '/\/srv/ { print $4 }') -lt $SNAPSHOT_FREESPACE ]]; then # swap for local
   die "ERROR: Not enough free space for snapshot copy on write operations"
 fi
 
@@ -120,52 +126,54 @@ EOF
 
 # Ensure no snapshot exists # swap for local
 echo "Confirming there are no existing snapshots...."
-rc "hcp -l" | grep "No Hot Copy sessions" || { die "Snapshot already exist, exiting..."; }
+hcp -l | grep "No Hot Copy sessions" || { die "ERROR: Snapshot already exist, exiting..."; }
 
 # Flush data to disk before transfer, create snapshot and resume # swap for local (and no need to specifiy host nor ssh)
 echo "INFO: Connecting to source database..."
-mysql --defaults-file=/***REMOVED***/.my.cnf.backup -h "$REMOTE_DB_SERVER" << EOF
+mysql << EOF
 STOP SLAVE;
 FLUSH TABLES WITH READ LOCK;
-SYSTEM ssh "$SSH_USER"@"$REMOTE_DB_SERVER" "hcp -o $LVM_MYSQL -c $LVM_SNAPSHOT" 2>&1 > /dev/null
+SYSTEM "hcp -o $LVM_MYSQL -c $LVM_SNAPSHOT" 2>&1 > /dev/null
 UNLOCK TABLES;
 START SLAVE;
 quit
 EOF
 
-[ $? == 0 ] || { die "Failed to connect to remote DB, stop slave, flush, create snapshot, unlock and start slave, logon to source DB and check!!!!"; }
+[ $? == 0 ] || { die "ERROR: Failed to stop slave, flush, create snapshot, unlock and start slave, log onto DB and check!!!!"; }
 
 # swap for local - should probably rename, e.g. mysqldatadir_snapshot
-REMOTE_MYSQL_DIR=$(rc "hcp -l" | awk '/Mounted:/ { print $2 }') || { die "ERROR: Failed to locate snapshot mount point!"; }
-echo "INFO: Remote snapshot volume: $REMOTE_MYSQL_DIR"
+SNAPSHOT_MYSQL_DIR=$(hcp -l | awk '/Mounted:/ { print $2 }') || { die "ERROR: Failed to locate snapshot mount point!"; }
+echo "INFO: Snapshot volume: $SNAPSHOT_MYSQL_DIR"
 
 # Generate Clean list of files to sync # swaparound
 echo "Generating clean list and db file counter...."
-cleanList=$(rsync -rtlIP --inplace -n --exclude-from="${EXCLUDE_FILE}" "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" "${LOCAL_MYSQL_DIR}/" | head -n -3 | sed -n '3,$p') || { die "Failed to generate list of files to rsync from remote server"; }
+cleanList=$(rsync -rtlIP --inplace -n --exclude-from="${EXCLUDE_FILE}" "${SNAPSHOT_MYSQL_DIR}/" "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" | head -n -3 | sed -n '3,$p') || { die "ERROR: Failed to generate list of files to rsync"; }
 
 # Get Total number of files to sync # swaparound
-dbCounter=$(rsync -rtlIP --inplace -n --exclude-from="${EXCLUDE_FILE}" "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" "${LOCAL_MYSQL_DIR}/" | head -n -3 | sed -n '3,$p' | wc -l) || { die "Failed to count number of files to sync"; }
+dbCounter=$(rsync -rtlIP --inplace -n --exclude-from="${EXCLUDE_FILE}" "${SNAPSHOT_MYSQL_DIR}/" "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" | head -n -3 | sed -n '3,$p' | wc -l) || { die "ERROR: Failed to count number of files to sync"; }
 
 # Get list of files / tables removed # swaparound
-droppedTables=$(rsync -rvn --delete "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" "${LOCAL_MYSQL_DIR}/" | awk '/^deleting / { print $2 }')
+droppedTables=$(rsync -rvn --delete "${SNAPSHOT_MYSQL_DIR}/" "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" | awk '/^deleting / { print $2 }')
 
 # Backup QA Tables
 env_tables backup
 
-# Stop mysql locally
-service mysql stop
+# Stop mysql remotely
+rc service mysql stop
 echo "INFO: Ready to rsync..."
 
 
 # Make directories first (parrallel jobs, can't guarantee sequential order)
 for db_file in ${cleanList}; do
   if [[ "${db_file: -1}" == "/" ]]; then
-    if [ ! -d "${LOCAL_MYSQL_DIR}/${db_file}" ]; then
-      echo "MAKING NEW FOLDER: ${LOCAL_MYSQL_DIR}/${db_file}" # change dir to remote mysql dir
-      mkdir "${LOCAL_MYSQL_DIR}/${db_file}" # change dir to remote mysql dir
+    #if [ ! -d "${REMOTE_MYSQL_DIR}/${db_file}" ]; then # change to test
+    if rc test ! -d "${REMOTE_MYSQL_DIR}/${db_file}"; then
+      echo "MAKING NEW FOLDER (remotely): ${REMOTE_MYSQL_DIR}/${db_file}" # change dir to remote mysql dir
+      rc mkdir "${REMOTE_MYSQL_DIR}/${db_file}" # change dir to remote mysql dir
     fi
   fi
 done
+
 
 # Main loop
 for db_file in ${cleanList}; do
@@ -186,7 +194,7 @@ for db_file in ${cleanList}; do
     # SWAP AROUND !!!!!!!!!
     ########################
     (
-    /usr/bin/time -f'%E' rsync -rtlzI --inplace --exclude-from="${EXCLUDE_FILE}" "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/${db_file}" "${LOCAL_MYSQL_DIR}/${db_file}" && echo "${db_file} complete"
+    /usr/bin/time -f'%E' rsync -rtlzI --inplace --exclude-from="${EXCLUDE_FILE}" "${SNAPSHOT_MYSQL_DIR}/${db_file}" "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/${db_file}" && echo "${db_file} complete"
     rm -rf "${db}"
     ) &
     ##########################
@@ -207,23 +215,23 @@ echo "INFO: rsync complete!"
 # Note how big snapshot / COW parition got
 echo "INFO: Snapshot / COW final size..."
 ## SWAP AROUND ##
-rc "hcp -l" | grep "Changed Blocks"
+hcp -l | grep "Changed Blocks"
 
 # Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
-echo "INFO: Removing remote snapshot..."
+echo "INFO: Removing snapshot..."
 ## SWAP AROUND ##
-rc hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
+hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
 # Assuming it's the only snapshot created!, in future amend if using multiple snapshots.
 
 # MAYBE DO ALL OF BELOW IN SEPERATE JOB DIRECTLY ON REMOTE DB SERVER
 
 # Ensure permissions consistent
-chown mysql:mysql /var/lib/mysql/ -R  # do remotely
+rc chown mysql:mysql /var/lib/mysql/ -R  # do remotely
 # chown mysql:mysql -R $REMOTE_MYSQL_DIR/
 
 # Clear qa tables - do remotely
 for TABLE in $EXCLUDE_LIST; do
-  rm -rf "${LOCAL_MYSQL_DIR}/***REMOVED***/${TABLE}.ibd" ## SWAP AROUND ##
+  rc rm -rf "${REMOTE_MYSQL_DIR}/***REMOVED***/${TABLE}.ibd" ## SWAP AROUND ##
 done
 # Will cause startup errors for our excluded tables, restoring backed up env_tables will fix
 
@@ -231,21 +239,21 @@ done
 if [ ! -z "$droppedTables" ]; then
   for i in $droppedTables; do
     echo "INFO: deleting $i"
-    rm -rf "${LOCAL_MYSQL_DIR}/$i" ## DO REMOTELY ##
+    rc rm -rf "${REMOTE_MYSQL_DIR}/$i" ## DO REMOTELY ##
   done
 else
   echo "INFO: no tables to drop!"
 fi
 
 echo "INFO: Starting mysql..." # do remotely, seperate RD job
-service mysql start ## DO REMOTELY ##
+rc service mysql start ## DO REMOTELY ##
 sleep 5 ## DO REMOTELY ##
 
 # Restore our qa tables, if doesn't work will have to go down the discard route
 env_tables restore # do remotely, seperate RD job reference ## DO REMOTELY ##
 
 # Restart again to catch remaining errors
-service mysql restart # do remotely, seperate RD job ## DO REMOTELY ##
+rc service mysql restart # do remotely, seperate RD job ## DO REMOTELY ##
 
 echo "INFO: Cleanup operations..."
 rm -rf "${EXCLUDE_FILE}"
