@@ -59,9 +59,12 @@ rc () {
 # call snippets/database/table backup or restore RD job
 env_tables () {
   for TABLE in $EXCLUDE_LIST; do
-    if [[ "$1" == "backup" && rc test ! -f "$DIR/***REMOVED***.$TABLE" ]]; then
-      echo "Backing up ***REMOVED***.$TABLE...$(date)"
-      rc mysqldump -B ***REMOVED*** --tables "$TABLE" --create-option > "$DIR/***REMOVED***.$TABLE.sql"  || die "ERROR: backup of env tables failed"
+    if [ "$1" == "backup" ]; then
+      # see if file exists first
+      if rc test ! -f "$DIR/***REMOVED***.$TABLE"
+        echo "Backing up ***REMOVED***.$TABLE...$(date)"
+        rc mysqldump -B ***REMOVED*** --tables "$TABLE" --create-option > "$DIR/***REMOVED***.$TABLE.sql"  || die "ERROR: backup of env tables failed"
+      fi
     elif [ "$1" == "restore" ]; then
       echo "Restoring ***REMOVED***.$TABLE...$(date)"
       rc mysql -B ***REMOVED*** < "$DIR/***REMOVED***.$TABLE.sql" || die "ERROR: restore of env tables failed"
