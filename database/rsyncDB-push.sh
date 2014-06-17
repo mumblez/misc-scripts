@@ -51,17 +51,17 @@ env_tables () {
   for TABLE in $EXCLUDE_LIST; do
     if [ "$1" == "backup" ]; then
       # see if file exists first
-      if rc test -f "$DIR/***REMOVED***.$TABLE.sql"; then
+      if rcc test -f "$DIR/***REMOVED***.$TABLE.sql"; then
         echo "INFO: $TABLE backup already exists, skipping..."
       else
         echo "INFO: Backing up ***REMOVED***.$TABLE...$(date)"
-        rc "mysqldump -B ***REMOVED*** --tables "$TABLE" --create-option > "$DIR/***REMOVED***.$TABLE.sql""  || die "ERROR: backup of env tables failed"
+        rcc "mysqldump -B ***REMOVED*** --tables "$TABLE" --create-option > "$DIR/***REMOVED***.$TABLE.sql""  || die "ERROR: backup of env tables failed"
       fi
     elif [ "$1" == "restore" ]; then
       echo "INFO: Restoring ***REMOVED***.$TABLE...$(date)"
-      rc "mysql -B ***REMOVED*** < "$DIR/***REMOVED***.$TABLE.sql"" || die "ERROR: restore of env tables failed"
+      rcc "mysql -B ***REMOVED*** < "$DIR/***REMOVED***.$TABLE.sql"" || die "ERROR: restore of env tables failed"
       # cleanup / delete sql file after successful restore
-      rc "rm -f $DIR/***REMOVED***.$TABLE.sql"
+      rcc "rm -f $DIR/***REMOVED***.$TABLE.sql"
     fi
   done
 }
@@ -69,12 +69,12 @@ env_tables () {
 # VALIDATION and more settings
 
 # Check we can ssh onto remote mysql server
-rc "echo hello"
+rc "echo INFO: remote connection successful" || die "ERROR: remote connection failed"
 
 # Check my.cnf location remotely
-if rc test -f /etc/mysql/my.cnf; then
+if rcc test -f /etc/mysql/my.cnf; then
     REMOTE_MYCNF="/etc/mysql/my.cnf"
-elif rc test -f /etc/my.cnf; then
+elif rcc test -f /etc/my.cnf; then
     REMOTE_MYCNF="/etc/my.cnf"
 else
     die "ERROR: remote my.cnf could not be found!"
