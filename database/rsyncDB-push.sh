@@ -1,4 +1,5 @@
 #!/bin/bash
+#set -x
 # Rsync the database files from a db backup server (live-slave) to a destination server (env-db)
 # This version of the job pushes from the source (instead of pulling from destination)
 # Job average time is ~50 minutes on a 65GB DB, will be shorter once file repo is removed (-20GB~)
@@ -6,43 +7,27 @@
 # so if there are more users and more write operations, keep an eye on snapshot capacity, 1GB is all thats needed atm but 5GB set
 # as a precautionary number, job could possibly be run during office hours where there could be much more write operations.
 
-# ideas
-# ssh key copy
-# ssh agent (hack ssh executor)
-# ssh key gen between nodes
-# forego timers (use rundeck views)
-# add rundeck user to mysql group?
-# keep single script but just switch remote and local calls
-
-# 1- backup tables - EXCLUDE_LIST="services service_configuration scheduled_task"
-# on destination - seperate RD job?
-
-# 2- my.cnf and datadir check will be difficult to pass results to other steps, build into
-#  rsync job
-# 3- use cascading options for lvm settings?
-# 4- can really only breakout the exlude tables backup and restore, and mysql service stop and start
-# 5- 
-# 6-
-# 7-
-# 8-
-
 
 # SETTINGS #
-#DIR=$(cd "$(dirname "$0")" && pwd)
-DIR="/tmp"
-#REMOTE_DB_SERVER="@option.remote_db_server@" # in future generalise in rundeck
-REMOTE_DB_SERVER="***REMOVED***.22"
-#SSH_USER="@option.ssh_user@" # try different strategies to avoid creating keys
-SSH_USER="***REMOVED***"
+# RUNDECK #
+DIR=$(cd "$(dirname "$0")" && pwd)
+REMOTE_DB_SERVER="@option.remote_db_server@" # in future generalise in rundeck
+SSH_USER="@option.ssh_user@" # try different strategies to avoid creating keys
 EXCLUDE_FILE="$DIR/excludeFiles.txt"
 JOB_COUNT_DIR="$DIR/counter"
-#SNAPSHOT_FREESPACE="@option.snapshot_freespace@" # at least 1-2GB to be safe
-SNAPSHOT_FREESPACE="5000"
-#MAX_RSYNC_THREADS="@option.rsync_threads@" # stay below 9
-MAX_RSYNC_THREADS="8"
-EXCLUDE_LIST="services service_configuration scheduled_task" # turn into RD multi-valued list from high 
-                                                      # level job and pass into table backup job as argument
-#START_TIME=$(date)
+SNAPSHOT_FREESPACE="@option.snapshot_freespace@" # at least 1-2GB to be safe
+MAX_RSYNC_THREADS="@option.rsync_threads@" # stay below 9
+EXCLUDE_LIST="services service_configuration scheduled_task" # turn into RD multi-valued list from high
+
+# DEBUG #
+#DIR="/tmp"
+#REMOTE_DB_SERVER="***REMOVED***.22"
+#SSH_USER="***REMOVED***"
+#EXCLUDE_FILE="$DIR/excludeFiles.txt"
+#JOB_COUNT_DIR="$DIR/counter"
+#SNAPSHOT_FREESPACE="5000"
+#MAX_RSYNC_THREADS="8"
+#EXCLUDE_LIST="services service_configuration scheduled_task"
 
 # Check job isn't already running
 [ -e "$EXCLUDE_FILE" ] && { die "Job is already running, quitting..."; }
@@ -55,21 +40,28 @@ rc () {
   ssh ${SSH_USER}@${REMOTE_DB_SERVER} $@ || { die "ERROR: Failed executing - $@ - on ${REMOTE_DB_SERVER}"; }
 }
 
+# rc without dying
+rcc () {
+  ssh ${SSH_USER}@${REMOTE_DB_SERVER} $@
+}
+
 # Backup or Restore qa / test specific tables - do as seperate RD job reference
 # call snippets/database/table backup or restore RD job
 env_tables () {
   for TABLE in $EXCLUDE_LIST; do
     if [ "$1" == "backup" ]; then
       # see if file exists first
-      if rc test ! -f "$DIR/***REMOVED***.$TABLE"
-        echo "Backing up ***REMOVED***.$TABLE...$(date)"
-        rc mysqldump -B ***REMOVED*** --tables "$TABLE" --create-option > "$DIR/***REMOVED***.$TABLE.sql"  || die "ERROR: backup of env tables failed"
+      if rc test -f "$DIR/***REMOVED***.$TABLE.sql"; then
+        echo "INFO: $TABLE backup already exists, skipping..."
+      else
+        echo "INFO: Backing up ***REMOVED***.$TABLE...$(date)"
+        rc "mysqldump -B ***REMOVED*** --tables "$TABLE" --create-option > "$DIR/***REMOVED***.$TABLE.sql""  || die "ERROR: backup of env tables failed"
       fi
     elif [ "$1" == "restore" ]; then
-      echo "Restoring ***REMOVED***.$TABLE...$(date)"
-      rc mysql -B ***REMOVED*** < "$DIR/***REMOVED***.$TABLE.sql" || die "ERROR: restore of env tables failed"
+      echo "INFO: Restoring ***REMOVED***.$TABLE...$(date)"
+      rc "mysql -B ***REMOVED*** < "$DIR/***REMOVED***.$TABLE.sql"" || die "ERROR: restore of env tables failed"
       # cleanup / delete sql file after successful restore
-      rc rm -f "$DIR/***REMOVED***.$TABLE"
+      rc "rm -f $DIR/***REMOVED***.$TABLE.sql"
     fi
   done
 }
@@ -77,7 +69,7 @@ env_tables () {
 # VALIDATION and more settings
 
 # Check we can ssh onto remote mysql server
-rc "hcp -v"
+rc "echo hello"
 
 # Check my.cnf location remotely
 if rc test -f /etc/mysql/my.cnf; then
@@ -109,7 +101,7 @@ LVM_MYSQL=$(df -P | awk '$0~v { print $1 }' v=$REAL_MYSQL_DIR); [ -z $LVM_MYSQL 
 
 # find srv partition and make sure at least ~5GB free space available # swap for local
 LVM_SNAPSHOT=$(df -P | awk '/\/srv|lv_snapshots/ { print $1 }'); [ -z $LVM_SNAPSHOT ] && die "ERROR: /srv or ..lv_snapshots lvm partition could not be located"
-if [[ $(df -Pm | awk '/\/srv/ { print $4 }') -lt $SNAPSHOT_FREESPACE ]]; then # swap for local
+if [[ $(df -Pm | awk '/\/srv|lv_snapshots/ { print $4 }') -lt $SNAPSHOT_FREESPACE ]]; then # swap for local
   die "ERROR: Not enough free space for snapshot copy on write operations"
 fi
 
@@ -136,7 +128,7 @@ echo "INFO: Connecting to source database..."
 mysql << EOF
 STOP SLAVE;
 FLUSH TABLES WITH READ LOCK;
-SYSTEM "hcp -o $LVM_MYSQL -c $LVM_SNAPSHOT" 2>&1 > /dev/null
+SYSTEM hcp -o $LVM_MYSQL -c $LVM_SNAPSHOT 2>&1 > /dev/null
 UNLOCK TABLES;
 START SLAVE;
 quit
@@ -160,6 +152,7 @@ droppedTables=$(rsync -rvn --delete "${SNAPSHOT_MYSQL_DIR}/" "${SSH_USER}"@"${RE
 
 # Backup QA Tables
 env_tables backup
+sleep 5
 
 # Stop mysql remotely
 rc service mysql stop
@@ -261,10 +254,3 @@ rc service mysql restart # do remotely, seperate RD job ## DO REMOTELY ##
 echo "INFO: Cleanup operations..."
 rm -rf "${EXCLUDE_FILE}"
 rm -rf "${JOB_COUNT_DIR}"
-
-# Cleanup # UNNECESSARY WHEN RUN FROM RUNDECK
-
-echo "==========================="
-echo "INFO: Start time: $START_TIME"
-echo "INFO: End time: $(date)"
-echo "======= COMPLETE =========="
