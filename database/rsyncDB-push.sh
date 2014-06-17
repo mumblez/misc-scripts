@@ -163,9 +163,9 @@ echo "INFO: Ready to rsync..."
 for db_file in ${cleanList}; do
   if [[ "${db_file: -1}" == "/" ]]; then
     #if [ ! -d "${REMOTE_MYSQL_DIR}/${db_file}" ]; then # change to test
-    if rc test ! -d "${REMOTE_MYSQL_DIR}/${db_file}"; then
+    if rcc test ! -d "${REMOTE_MYSQL_DIR}/${db_file}"; then
       echo "MAKING NEW FOLDER (remotely): ${REMOTE_MYSQL_DIR}/${db_file}" # change dir to remote mysql dir
-      rc mkdir "${REMOTE_MYSQL_DIR}/${db_file}" # change dir to remote mysql dir
+      rcc mkdir "${REMOTE_MYSQL_DIR}/${db_file}" # change dir to remote mysql dir
     fi
   fi
 done
