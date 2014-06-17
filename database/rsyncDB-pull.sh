@@ -29,7 +29,7 @@ rc () {
 # Backup or Restore qa / test specific tables
 env_tables () {
   for TABLE in $EXCLUDE_LIST; do
-    if [[ "$1" == "backup" && ! -f "$DIR/***REMOVED***.$TABLE" ]]; then
+    if [[ "$1" == "backup" && ! -f "$DIR/***REMOVED***.$TABLE.sql" ]]; then
       echo "Backing up ***REMOVED***.$TABLE...$(date)"
       mysqldump -B ***REMOVED*** --tables "$TABLE" --create-option > "$DIR/***REMOVED***.$TABLE.sql"
     elif [ "$1" == "restore" ]; then
