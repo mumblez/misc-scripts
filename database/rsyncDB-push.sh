@@ -91,7 +91,7 @@ fi
 
 # Check data directory location (locally, remote will actually be the snapshot location)
 # SWAP - local = snapshot, remote is real
-REMOTE_MYSQL_DIR=$(rc awk "'/^datadir /{ print \$3 }' "$REMOTE_MYCNF""); [ -z $REMOTE_MYSQL_DIR ] && die "ERROR: remote mysql datadir could not be located"
+REMOTE_MYSQL_DIR=$(rc awk "'/^datadir/{ print \$3 }' "$REMOTE_MYCNF""); [ -z $REMOTE_MYSQL_DIR ] && die "ERROR: remote mysql datadir could not be located"
 echo "INFO: remote mysql datadir: $REMOTE_MYSQL_DIR"
 REAL_MYSQL_DIR=$(awk '/^datadir/{ print $3 }' "$LOCAL_MYCNF"); [ -z $REAL_MYSQL_DIR ] && die "ERROR: local mysql datadir could not be located"
 echo "INFO: local mysql datadir: $REAL_MYSQL_DIR"
@@ -148,7 +148,7 @@ cleanList=$(rsync -rtlIP --inplace -n --exclude-from="${EXCLUDE_FILE}" "${SNAPSH
 dbCounter=$(rsync -rtlIP --inplace -n --exclude-from="${EXCLUDE_FILE}" "${SNAPSHOT_MYSQL_DIR}/" "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" | head -n -3 | sed -n '3,$p' | wc -l) || { die "ERROR: Failed to count number of files to sync"; }
 
 # Get list of files / tables removed # swaparound
-droppedTables=$(rsync -rvn --delete "${SNAPSHOT_MYSQL_DIR}/" "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" | awk '/^deleting / { print $2 }')
+droppedTables=$(rsync -rvn --delete "${SNAPSHOT_MYSQL_DIR}/" "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" | awk '/^deleting/ { print $2 }')
 
 # Backup QA Tables
 env_tables backup
