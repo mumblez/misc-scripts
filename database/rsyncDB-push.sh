@@ -69,7 +69,7 @@ env_tables () {
 # VALIDATION and more settings
 
 # Check we can ssh onto remote mysql server
-rc "echo INFO: remote connection successful" || die "ERROR: remote connection failed"
+rc "echo INFO: remote connection successful"
 
 # Check my.cnf location remotely
 if rcc test -f /etc/mysql/my.cnf; then
