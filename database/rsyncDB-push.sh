@@ -71,6 +71,9 @@ env_tables () {
 # Check we can ssh onto remote mysql server
 rc "echo INFO: remote connection successful"
 
+# clear bad connection attempts
+rc mysqladmin flush-hosts
+
 # Check my.cnf location remotely
 if rcc test -f /etc/mysql/my.cnf; then
     REMOTE_MYCNF="/etc/mysql/my.cnf"
