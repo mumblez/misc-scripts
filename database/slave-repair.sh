@@ -228,6 +228,7 @@ quit
 EOF
 echo "============================================="
 
+# Add ***REMOVED***-backup account so can do zrm backups
 
 # Cleanup
 echo "INFO: Cleanup operations..."
