@@ -215,6 +215,10 @@ sleep 5
 # Restart again to catch remaining errors
 #service mysql restart
 
+# clear old mysqld-relay* files so can update master info
+rc rm -f "$REAL_REMOTE_MYSQL_DIR/mysqld-relay*"
+
+
 # Setup slave information
 
 echo "INFO: Inputting slave information and starting....."
@@ -228,7 +232,6 @@ quit
 EOF
 echo "============================================="
 
-# Add ***REMOVED***-backup account so can do zrm backups
 
 # Cleanup
 echo "INFO: Cleanup operations..."
