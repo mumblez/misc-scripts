@@ -216,7 +216,7 @@ sleep 5
 #service mysql restart
 
 # clear old mysqld-relay* files so can update master info
-rc rm -f "$REAL_REMOTE_MYSQL_DIR/mysqld-relay*"
+rm -f "${LOCAL_MYSQL_DIR}/mysqld-relay*"
 
 
 # Setup slave information
