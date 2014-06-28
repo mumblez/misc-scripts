@@ -202,6 +202,9 @@ else
   echo "INFO: no tables to drop!"
 fi
 
+# clear old mysqld-relay* files so can update master info
+rm -f "${LOCAL_MYSQL_DIR}/mysqld-relay*"
+
 echo "INFO: Starting mysql..."
 service mysql start
 sleep 5
@@ -212,8 +215,6 @@ sleep 5
 # Restart again to catch remaining errors
 #service mysql restart
 
-# clear old mysqld-relay* files so can update master info
-rm -f "${LOCAL_MYSQL_DIR}/mysqld-relay*"
 
 
 # Setup slave information
