@@ -7,7 +7,7 @@
 
 PATH=/bin:/usr/bin
 THEDIR=/srv/apache-watchdog
-EMAILS="it-monitoring@***REMOVED***.com it-team@***REMOVED***.com"
+EMAILS="it-monitoring@***REMOVED***.com it-team@***REMOVED***.com ***REMOVED***"
 #EMAILS="***REMOVED***@***REMOVED***.com"
 #URLFILE="https://intranet.***REMOVED***.com/VERSION"
 #use a php file instead as sometimes apache doesn't quite crash but hangs, still serves txt files but not php
