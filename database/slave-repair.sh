@@ -88,9 +88,6 @@ fi
 
 # What to exclude from rsync operation
 cat > ${EXCLUDE_FILE} <<EOF
-- /***REMOVED***/scheduled_task*
-- /***REMOVED***/service_configuration*
-- /***REMOVED***/services*
 - /mysqld-relay*
 - /relay-log.info 
 - /mysql-bin.*
