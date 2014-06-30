@@ -230,6 +230,8 @@ quit
 EOF
 echo "============================================="
 
+# Add ***REMOVED***backup account so can run backups
+mysql -e "grant select, insert, update, create, drop, reload, shutdown, alter, super, lock tables, replication client on *.* to '***REMOVED***-backup'@'localhost' identified by '***REMOVED***backup123.'"
 
 # Cleanup
 echo "INFO: Cleanup operations..."
