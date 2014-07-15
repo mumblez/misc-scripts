@@ -6,6 +6,7 @@ die() { echo $* 1>&2 ; exit 1 ; }
 ### Settings ###
 TIMESTAMP=$(date +%Y-%m-%d-%H%M)
 PHP="/usr/local/php55/bin/php"
+# in future add a check to see if systemd init
 PHP_FPM="/etc/init.d/php5-fpm"
 SITE_USER="www-data"
 SITE_GROUP="www-data"
@@ -13,17 +14,17 @@ DEPLOY_KEY="/***REMOVED***/keys/cl_deploy"
 GIT_REPO="@option.repository_url@"
 GIT_OPTIONS="--recursive" #(optional, if using submodules)
 GIT_BRANCH="@option.branch@"
-GIT_TAG="option.tag"
+GIT_TAG="@option.tag@"
 REAL_DIR="/***REMOVED***/lib/php5/symfony2"
 SYMFONY_ROOT="/srv/symfony"
 DEPLOY_ROOT="${SYMFONY_ROOT}/releases"
 SHARED_ROOT="${DEPLOY_ROOT}/shared"
 DEPLOY_DIR="${DEPLOY_ROOT}/${TIMESTAMP}"
 WEBROOT="/***REMOVED***/www/symfony2"
+APP_ENV="@option.environment@"
 COMPOSER="${SYMFONY_ROOT}/binaries/composer.phar"
 COMPOSER_OPTIONS="--no-interaction --working-dir=$DEPLOY_DIR"
 CONSOLE="$DEPLOY_DIR/app/console"
-APP_ENV="@option.environment@"
 CONSOLE_OPTIONS="--env=$APP_ENV"
 SYMFONY_PARAMS_FILE="$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml"
 
@@ -74,6 +75,7 @@ fi
 
 
 ### PULL PROD / TEST SETTINGS FROM CONFIG MGT ###
+# or symlink outside releases dir for now
 
 # symlink parameters = change in future to setup via salt / config mgt
 [ -e "$SYMFONY_PARAMS_FILE" ] || die "ERROR: $SYMFONY_PARAMS_FILE does not exist"
