@@ -12,7 +12,8 @@ SITE_GROUP="www-data"
 DEPLOY_KEY="/***REMOVED***/keys/cl_deploy"
 GIT_REPO="@option.Git_Repository@"
 GIT_OPTIONS="--recursive" #(optional, if using submodules)
-GIT_TAG_BR="@option.branch@"
+GIT_BRANCH="@option.branch@"
+GIT_TAG="option.tag"
 REAL_DIR="/***REMOVED***/lib/php5/symfony2"
 SYMFONY_ROOT="/srv/symfony"
 DEPLOY_ROOT="${SYMFONY_ROOT}/releases"
@@ -65,7 +66,11 @@ ssh-agent bash -c "ssh-add $DEPLOY_KEY >/dev/null 2>&1 && git clone $GIT_REPO $D
 
 
 cd $DEPLOY_DIR
-git checkout "$GIT_TAG_BR" # (just leave on master?)
+if [[ "$APP_ENV" == "prod" ]]; then
+	git checkout "$GIT_TAG"
+else
+	git checkout "$GIT_BRANCH" # (just leave on master?)
+fi
 
 
 ### PULL PROD / TEST SETTINGS FROM CONFIG MGT ###
