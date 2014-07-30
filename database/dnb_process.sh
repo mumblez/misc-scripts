@@ -130,14 +130,17 @@ db_loadup () {
   for dnb_file in $(ls); do
     ### code to import csv / txt files into existing dbs or drop and recreate, confirm with Gyula ###
     case "$dnb_file" in
-      "*${COMPANY_FILE}*")
+      *${COMPANY_FILE}*)
+        # add logic to rename file name
+        mv *${COMPANY_FILE}* ${COMPANY_FILE}
         table_shuffle "${COMPANY_TABLE}" create
         echo "Loading in 'company' table...."
         # Ignore header / 1st line of csv
         mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${COMPANY_FILE}' INTO TABLE ${COMPANY_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${COMPANY_TABLE_COLUMNS};" || die "ERROR: Failed to load data into database - ${COMPANY_TABLE}"
         table_shuffle "${COMPANY_TABLE}" shuffle
         ;;
-      "$URL_FILE")
+      *{$URL_FILE}*)
+        mv *{$URL_FILE}* {$URL_FILE}
         table_shuffle "${URL_TABLE}" create
         echo "Loading in 'url' table..."
         mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${URL_FILE}' INTO TABLE ${URL_TABLE}_temp FIELDS TERMINATED BY '' LINES TERMINATED BY '\\r\\n';" || die "ERROR: Failed to load data into database - ${URL_TABLE}"
@@ -147,7 +150,8 @@ db_loadup () {
         done
         table_shuffle "${URL_TABLE}" shuffle
         ;;
-      "$TICKER_FILE")
+      *${TICKER_FILE}*)
+        mv *${TICKER_FILE}* ${TICKER_FILE}
         table_shuffle "${TICKER_TABLE}" create
         echo "Loading in 'ticker' table..."
         mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${TICKER_FILE}' INTO TABLE ${TICKER_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${TICKER_TABLE_COLUMNS};" || die "ERROR: Failed to load data into database - ${URL_TABLE}"
@@ -177,7 +181,7 @@ find /srv/ssd/sphinx_index -type f -exec chmod 664 {} \;
 
 # Create new indexes
 #su sphinxsearch -c "/usr/bin/indexer --config /***REMOVED***/var/sphinx.conf --all" || die "ERROR: Sphinx search re-index failed."
-sudo -u sphinx /usr/bin/indexer --config /etc/sphinx/sphinx.conf --all --rotate || die "ERROR: Sphinx search re-index failed."
+sudo -u sphinx /usr/bin/indexer --config /etc/sphinx/sphinx.conf --rotate --all || die "ERROR: Sphinx search re-index failed."
 #sudo -u sphinxsearch /usr/bin/searchd --config /***REMOVED***/var/sphinx.conf || die "ERROR: Sphinx searchd daemon failed to start."
 
 }
