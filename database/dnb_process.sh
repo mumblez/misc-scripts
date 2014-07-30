@@ -130,7 +130,7 @@ db_loadup () {
   for dnb_file in $(ls); do
     ### code to import csv / txt files into existing dbs or drop and recreate, confirm with Gyula ###
     case "$dnb_file" in
-      "$COMPANY_FILE")
+      "*${COMPANY_FILE}*")
         table_shuffle "${COMPANY_TABLE}" create
         echo "Loading in 'company' table...."
         # Ignore header / 1st line of csv
