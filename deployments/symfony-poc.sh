@@ -119,21 +119,20 @@ chmod 777 "$DEPLOY_DIR/app/cache" -R
 cd "$DEPLOY_DIR"
 sudo -u "$SITE_USER" "$PHP" "$COMPOSER" self-update && echo "INFO: Composer - self updated" || die "ERROR: Composer: self update failed"
 #sudo -u "$SITE_USER" "$PHP" "$COMPOSER" $COMPOSER_OPTIONS install && echo "INFO: Composer - updated" || die "ERROR: Composer: update failed"
-
-
 #sudo -u "$SITE_USER" "$PHP" "$COMPOSER" $COMPOSER_OPTIONS update && echo "INFO: Composer - updated" || die "ERROR: Composer: update failed"
 
+# We create the script so we can run a few actions in one step as the sudo'ed user
+# primarily to setup ssh-agent, add the deployment key and then run our composer install step,
+# this is so we can pull from our private repo's using composer.
 cat > ${TMP_SCRIPT} <<EOF
 #!/bin/bash
 eval \$(ssh-agent -s)
 ssh-add $DEPLOY_KEY
 "$PHP" "$COMPOSER" $COMPOSER_OPTIONS install
 kill \$SSH_AGENT_PID
-exit 0
 EOF
 
 sudo -u "$SITE_USER" /bin/bash ${TMP_SCRIPT} || die "ERROR: Composer: update failed"
-
 sudo -u "$SITE_USER" "$PHP" "$CONSOLE" cache:clear $CONSOLE_OPTIONS && echo "INFO: Console - cache cleared" || die "ERROR: Console: cache clear failed"
 sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assetic:dump $CONSOLE_OPTIONS && echo "INFO: Console - dump assets" || die "ERROR: Console: dumping assets failed"
 sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assets:install $CONSOLE_OPTIONS && echo "INFO: Console - install assets" || die "ERROR: Console: installing assets failed"
