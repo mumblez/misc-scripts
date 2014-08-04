@@ -46,7 +46,8 @@ grep "$SITE_GROUP" /etc/group && echo "INFO: Site group - $SITE_GROUP found" || 
 [ -e "$DEPLOY_KEY" ] && echo "INFO: Deployment key found - $DEPLOY_KEY"  || die "ERROR: Deployment key - $DEPLOY_KEY - does not exist"
 [ -e "$PHP_FPM" ] || die "ERROR: $PHP_FPM does not exist"
 [ -e "$PHP" ] || die "ERROR: $PHP does not exist"
-which curl 2>&1 >/dev/null || die "ERROR: curl is not installed"
+which curl >/dev/null 2>&1 || die "ERROR: curl is not installed"
+which git >/dev/null 2>&1 || die "ERROR: git is not installed"
 
 
 # Download latest composer.phar #
