@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# for code freeze:
+# for code freeze (RH):
 # ================
 #  
 # 1/ git pull origin/master into origin/release
@@ -14,23 +14,7 @@
 #  
 # need 1 parameter of the new tag name
 #  
-# -----------------
-#  
-# 4/ check master out
-# 5/ run composer update to generate new lock file
-# 6/ commit new lock file
-# 7/ push the lock file back to master
 
-#git clone project
-#git checkout master
-#composer update
-#git commit (only new) composer.lock
-#git push master
-#git checkout release
-#git fetch origin (and merge latest changes from master)
-#git merge master
-#git tag (v.x.x?.?x)
-#git push tag
 #
 #pre-requisites
 #===============
@@ -39,10 +23,9 @@
 #
 #-user / key to do the above actions with!!! - codefreeze
 #-server to perform action on - 
-#--setup ***REMOVED*** so that git commits are done as a specific user (codefreeze)
-#-working directory to use /srv/codefreeze-<random chars>
-#-composer installed
-# php
+#-codefreeze ssh key
+#-working directory to use /tmp/codefreeze-<random chars>
+
 
 
 
@@ -53,6 +36,8 @@ die() { echo $* 1>&2 ; exit 1 ; }
 ### Settings ###
 CODE_FREEZE_KEY="/***REMOVED***/keys/codefreezegitlab"
 GIT_REPO="@option.repository_url@"
+GIT_TAG="@option.tag@"
+TAG_LATEST="@option.tag_latest@"
 WORKING_DIR=$(mktemp -d /tmp/codefreeze-XXX)
 GITCONFIGEXISTS="no"
 
@@ -65,8 +50,8 @@ which git 2>&1 >/dev/null || die "ERROR: curl is not installed"
 ### Main ###
 
 # Setup ssh agent and key
-eval $(ssh-agent -s) 2>&1 >/dev/null
-ssh-add $CODE_FREEZE_KEY 2>&1 >/dev/null
+eval $(ssh-agent -s) >/dev/null 2>&1
+ssh-add $CODE_FREEZE_KEY >/dev/null 2>&1
 
 # Set gitlab user details
 if [ -e ~/.gitconfig ]; then
@@ -76,13 +61,13 @@ fi
 git config --global user.name "codefreeze"
 git config --global user.email "it-admin@***REMOVED***.com"
 
-cat ~/.gitconfig
 
 # Pull repository down
 git clone "$GIT_REPO" "$WORKING_DIR"
 cd "$WORKING_DIR"
-
-
+git checkout release || die "ERROR: Failed to checkout release branch"
+git tag -f -a "$GIT_TAG" -m "Code freeze on `date`" || die "ERROR: Failed to create new tag: $GIT_TAG"
+git push -f --tags || die "ERROR: Failed to push tag to repository"
 
 
 ### Cleanup ###
@@ -97,3 +82,4 @@ cd /tmp
 kill $SSH_AGENT_PID
 rm -rf "$WORKING_DIR"
 
+exit 0
