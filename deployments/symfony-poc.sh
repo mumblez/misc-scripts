@@ -52,7 +52,7 @@ which git >/dev/null 2>&1 || die "ERROR: git is not installed"
 
 # Download latest composer.phar #
 cd "$SYMFONY_ROOT/binaries"
-curl -sS https://getcomposer.org/installer | $PHP 2>&1 >/dev/null && [ -e "$COMPOSER" ] || die "ERROR: Could not download and setup composer.phar"
+curl -sS https://getcomposer.org/installer | $PHP >/dev/null 2>&1 && [ -e "$COMPOSER" ] || die "ERROR: Could not download and setup composer.phar"
 chown "$SITE_USER":"$SITE_GROUP" "$COMPOSER"
 
 
