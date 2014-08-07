@@ -66,8 +66,14 @@ git config --global user.email "it-admin@***REMOVED***.com"
 git clone "$GIT_REPO" "$WORKING_DIR"
 cd "$WORKING_DIR"
 git checkout release || die "ERROR: Failed to checkout release branch"
-git tag -f -a "$GIT_TAG" -m "Code freeze on `date`" || die "ERROR: Failed to create new tag: $GIT_TAG"
+###
+# PULL CHANGES IN FROM MASTER
+git merge master --no-ff || die "ERROR: Failed to merge changes from master"
+git push -u origin release || die "ERROR: Failed to release branch to repository"
+### ADD TAG
+git tag -f -a "$GIT_TAG" -m "Code freeze" || die "ERROR: Failed to create new tag: $GIT_TAG"
 git push -f --tags || die "ERROR: Failed to push tag to repository"
+
 
 
 ### Cleanup ###
