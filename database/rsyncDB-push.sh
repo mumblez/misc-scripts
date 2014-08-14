@@ -254,6 +254,10 @@ env_tables restore # do remotely, seperate RD job reference ## DO REMOTELY ##
 # Restart again to catch remaining errors
 rc service mysql restart # do remotely, seperate RD job ## DO REMOTELY ##
 
+# clear slave info - need to confirm it works
+rcc "mysql -e 'stop slave; reset slave all;'"
+
+
 echo "INFO: Cleanup operations..."
 rm -rf "${EXCLUDE_FILE}"
 rm -rf "${JOB_COUNT_DIR}"
