@@ -29,11 +29,11 @@ EXCLUDE_LIST="services service_configuration scheduled_task" # turn into RD mult
 #MAX_RSYNC_THREADS="8"
 #EXCLUDE_LIST="services service_configuration scheduled_task"
 
+die() { echo $* 1>&2 ; exit 1 ; }
 # Check job isn't already running
-[ -e "$EXCLUDE_FILE" ] && { die "Job is already running, quitting..."; }
+[ -e "$EXCLUDE_FILE" ] &&  die "Job is already running, quitting...";
 
 # FUNTIONS
-die() { echo $* 1>&2 ; exit 1 ; }
 
 # Prepare our remote commands function
 rc () {
