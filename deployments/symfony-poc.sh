@@ -5,7 +5,7 @@
 die() { echo $* 1>&2 ; exit 1 ; }
 ### Settings ###
 TIMESTAMP=$(date +%Y-%m-%d-%H%M)
-PHP="/usr/local/php55/bin/php"
+PHP="/usr/bin/php"
 # in future add a check to see if systemd init
 PHP_FPM="/etc/init.d/php5-fpm"
 SITE_USER="www-data"
@@ -106,16 +106,23 @@ if [ ! -d "${SHARED_ROOT}/vendor" ]; then
 fi
 
 # replace and symlink vendors directory
-ln -snf "${SHARED_ROOT}/vendor" "$DEPLOY_DIR/vendor"
+
+if [ -e "$DEPLOY_DIR/vendor" ]; then
+  rm -rf "$DEPLOY_DIR/vendor" && echo "INFO: ${DEPLOY_DIR}/vendor deleted"
+fi
+
+# replace and symlink vendors directory
+ln -snf "${SHARED_ROOT}/vendor" "${DEPLOY_DIR}/"
 chmod 775 "${SHARED_ROOT}/vendor" -R
-chown -h "$SITE_USER":"$SITE_GROUP" "$DEPLOY_DIR/vendor"
+chown -h "$SITE_USER":"$SITE_GROUP" "${DEPLOY_DIR}/vendor"
 
 # Set permissions
 chown "$SITE_USER:$SITE_GROUP" "$DEPLOY_DIR" -R
 
-# make cache and log dir writeable
-chmod 777 "$DEPLOY_DIR/app/logs" -R
-chmod 777 "$DEPLOY_DIR/app/cache" -R
+# fix doctrine bugs
+rm -f "${DEPLOY_DIR}/bin/doctrine"
+rm -f "${DEPLOY_DIR}/bin/doctrine.php"
+
 
 cd "$DEPLOY_DIR"
 sudo -u "$SITE_USER" "$PHP" "$COMPOSER" self-update && echo "INFO: Composer - self updated" || die "ERROR: Composer: self update failed"
@@ -139,8 +146,8 @@ sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assetic:dump $CONSOLE_OPTIONS && echo "IN
 sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assets:install $CONSOLE_OPTIONS && echo "INFO: Console - install assets" || die "ERROR: Console: installing assets failed"
 
 # make cache and log dir writeable
-chmod 775 "$DEPLOY_DIR/app/logs" -R
-chmod 775 "$DEPLOY_DIR/app/cache" -R
+#chmod 775 "$DEPLOY_DIR/app/logs" -R
+#chmod 775 "$DEPLOY_DIR/app/cache" -R
 
 #symlink deploy_dir to real_dir
 ln -snf "$DEPLOY_DIR" "$REAL_DIR" && echo "INFO: Symlinked deployment release directory - $DEPLOY_DIR to $REAL_DIR" || die "ERROR: Symlinking deployment release directory - $DEPLOY_DIR to $REAL_DIR failed"
@@ -171,7 +178,7 @@ echo "INFO: Deployment suceeded!"
 echo "INFO: Cleaning up..."
 # Clearing old releases
 CURRENT_RELEASE=$(basename $(readlink $REAL_DIR))
-RECENT_RELEASES=$(ls -tr1 /srv/symfony/releases | grep -vE "shared|$CURRENT_RELEASE" | tail -n4)
+RECENT_RELEASES=$(ls -tr1 "$DEPLOY_ROOT" | grep -vE "shared|$CURRENT_RELEASE" | tail -n4)
 for OLD_RELEASE in $(ls -tr1 "$DEPLOY_ROOT" | grep -vE "shared|$CURRENT_RELEASE"); do
 	if ! echo "$OLD_RELEASE" | grep -q "$RECENT_RELEASES"; then
 		echo "INFO: Deleted old release - $OLD_RELEASE"
