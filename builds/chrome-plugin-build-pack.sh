@@ -77,9 +77,6 @@ if [[ ! -f "$key" ]]; then
 fi
 
 
-
-
-
 # chrome package process - create crx
 
 cd "${BUILD_ROOT}"
@@ -115,7 +112,8 @@ mv "${PLUGIN}.crx" "$WEB_ROOT" || die "ERROR: Failed to transfer crx to webserve
 # cleanup
 rm -rf "${BUILD_ROOT}/${PLUGIN}"
 
-echo "URL to install from:"
-echo "================================================="
-echo "${WEB_HOST_URL}/${PLUGIN}/${BRANCH}/${PLUGIN}.crx"
-echo "================================================="
+echo "INFO: URL to install from:"
+echo "=================================================================================================="
+echo "${WEB_HOST_URL}/${PLUGIN}/${BRANCH}"
+echo "INFO: Browse there and click ${PLUGIN}.crx to install!"
+echo "=================================================================================================="
