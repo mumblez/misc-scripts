@@ -16,6 +16,7 @@ TEST_KEYS_ROOT="/srv/chrome-plugin-build/test-keys"
 KEY_NAME="test.pem"
 WEB_ROOT="/srv/chrome-plugins/${PLUGIN}/${BRANCH}"
 WEB_HOST_URL="http://***REMOVED***.***REMOVED***.com"
+REG="/srv/chrome-plugins/windows-whitelist.reg"
 
 ### chrome packing settings
 dir="${BUILD_ROOT}/${PLUGIN}/${PLUGIN}"
@@ -109,6 +110,26 @@ echo "Wrote $crx"
 # Move crx to new location (nfs share )
 mv "${PLUGIN}.crx" "$WEB_ROOT" || die "ERROR: Failed to transfer crx to webserver"
 
+# Generate windows whitelist file (registry)
+
+
+
+cat > "${REG}" <<'EOF'
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\Policies\Google\Chrome\ExtensionInstallSources]
+"1"="http://***REMOVED***.***REMOVED***.com/*"
+
+[HKEY_CURRENT_USER\Software\Policies\Google\Chrome\ExtensionInstallWhitelist]
+EOF
+
+counter=0
+for i in `find /srv/chrome-plugin-build/test-keys/ -name test.pem`; do
+  id=$(cat $i | openssl rsa -pubout -outform DER 2>/dev/null | openssl dgst -sha256  | cut -c 1-32 | tr '0-9a-f' 'a-     p');
+  let counter++
+  echo "\"$counter\"=\"$id\"" >> "${REG}"
+done
+
 # cleanup
 rm -rf "${BUILD_ROOT}/${PLUGIN}"
 
@@ -116,4 +137,6 @@ echo "INFO: URL to install from:"
 echo "=================================================================================================="
 echo "${WEB_HOST_URL}/${PLUGIN}/${BRANCH}"
 echo "INFO: Browse there and click ${PLUGIN}.crx to install!"
+echo "INFO: download windows-whitelist.reg file at ***REMOVED*** of the site"
+echo "INFO: ${WEB_HOST_URL}"
 echo "=================================================================================================="
