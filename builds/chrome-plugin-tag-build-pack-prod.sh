@@ -7,7 +7,7 @@ die() { echo $* 1>&2 ; exit 1 ; }
 ### Settings ###
 #PLUGIN=""   # provide via rundeck
 PLUGIN="capture-specialist"   # git repo / project
-BRANCH="***REMOVED***"
+TAG="***REMOVED***"
 REPO_URL="git@***REMOVED***.***REMOVED***.com:chrome-plugins/${PLUGIN}.git"
 #REPO_KEY="/***REMOVED***/keys/cl_deploy" # for rundeck
 BUILD_ROOT="/srv/chrome-plugin-build"
