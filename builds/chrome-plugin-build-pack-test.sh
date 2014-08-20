@@ -125,7 +125,7 @@ EOF
 
 counter=0
 for i in `find /srv/chrome-plugin-build/test-keys/ -name test.pem`; do
-  id=$(cat $i | openssl rsa -pubout -outform DER 2>/dev/null | openssl dgst -sha256  | cut -c 1-32 | tr '0-9a-f' 'a-     p');
+  id=$(cat $i | openssl rsa -pubout -outform DER 2>/dev/null | openssl dgst -sha256  | cut -c 1-32 | tr '0-9a-f' 'a-p');
   let counter++
   echo "\"$counter\"=\"$id\"" >> "${REG}"
 done
