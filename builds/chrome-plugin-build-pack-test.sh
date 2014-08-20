@@ -29,7 +29,7 @@ zip="$name.zip"
 
 trap 'rm -f "$pub" "$sig" "$zip" "${BUILD_ROOT}/${PLUGIN}"' EXIT
 
-TOOLS="zip openssl printf awk git xxd ssh-agent ssh-add ssh-keygen"
+TOOLS="zip openssl printf awk git xxd ssh-agent ssh-add ssh-keygen iconv"
 
 ### Validation ####
 # check all tools exist
@@ -129,6 +129,9 @@ for i in `find /srv/chrome-plugin-build/test-keys/ -name test.pem`; do
   let counter++
   echo "\"$counter\"=\"$id\"" >> "${REG}"
 done
+
+# convert line endings to windows format
+unix2dos "${REG}" | iconv -f utf-8 -t utf-16le
 
 # cleanup
 rm -rf "${BUILD_ROOT}/${PLUGIN}"
