@@ -1,4 +1,4 @@
-#!/bin/bash -exu
+#!/bin/bash -e
 #
 # Purpose: Pack a Chromium extension directory into crx format
 # Will do so per branch
