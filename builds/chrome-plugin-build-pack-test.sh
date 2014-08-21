@@ -29,7 +29,8 @@ zip="$name.zip"
 
 trap 'rm -rf "$pub" "$sig" "$zip" "${BUILD_ROOT}/${PLUGIN}"' EXIT
 
-TOOLS="zip openssl printf awk git xxd ssh-agent ssh-add ssh-keygen unix2dos sha256sum"
+TOOLS="zip openssl printf awk git xxd ssh-agent ssh-add ssh-keygen iconv unix2dos sha256sum"
+
 
 ### Validation ####
 # check all tools exist
