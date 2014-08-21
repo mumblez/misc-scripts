@@ -1,0 +1,6 @@
+production google plugin ids
+
+***REMOVED***;http://plugins.***REMOVED***.com/capture-prospects/capture-prospects.xml
+***REMOVED***;http://plugins.***REMOVED***.com/capture-specialist/capture-specialist.xml
+***REMOVED***;http://plugins.***REMOVED***.com/gmail-intranet-link/gmail-intranet-link.xml
+***REMOVED***;http://plugins.***REMOVED***.com/gmail-new-project-request/gmail-new-project-request.xml
