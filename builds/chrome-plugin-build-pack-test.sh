@@ -27,9 +27,9 @@ pub="$name.pub"
 sig="$name.sig"
 zip="$name.zip"
 
-trap 'rm -f "$pub" "$sig" "$zip" "${BUILD_ROOT}/${PLUGIN}"' EXIT
+trap 'rm -rf "$pub" "$sig" "$zip" "${BUILD_ROOT}/${PLUGIN}"' EXIT
 
-TOOLS="zip openssl printf awk git xxd ssh-agent ssh-add ssh-keygen"
+TOOLS="zip openssl printf awk git xxd ssh-agent ssh-add ssh-keygen unix2dos sha256sum"
 
 ### Validation ####
 # check all tools exist
@@ -123,15 +123,19 @@ Windows Registry Editor Version 5.00
 [HKEY_CURRENT_USER\Software\Policies\Google\Chrome\ExtensionInstallWhitelist]
 EOF
 
-counter=0
+COUNTER=0
 for i in `find /srv/chrome-plugin-build/test-keys/ -name test.pem`; do
-  id=$(cat $i | openssl rsa -pubout -outform DER 2>/dev/null | openssl dgst -sha256  | cut -c 1-32 | tr '0-9a-f' 'a-     p');
-  let counter++
-  echo "\"$counter\"=\"$id\"" >> "${REG}"
+  id=$(cat $i | openssl rsa -pubout -outform DER 2>/dev/null | sha256sum | cut -c 1-32 | tr '0-9a-f' 'a-p')
+  COUNTER=$(($COUNTER+1))
+  echo "\"$COUNTER\"=\"$id\"" >> "${REG}"
 done
 
+# convert line endings to windows format
+unix2dos "${REG}" | iconv -f utf-8 -t utf-16le
+
 # cleanup
-rm -rf "${BUILD_ROOT}/${PLUGIN}"
+#cd "${BUILD_ROOT}"
+#rm -rf "${BUILD_ROOT}/${PLUGIN}"
 
 echo "INFO: URL to install from:"
 echo "=================================================================================================="
