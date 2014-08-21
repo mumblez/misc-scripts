@@ -1,34 +1,40 @@
-#!/bin/bash -e
+#!/bin/bash -exu
 #
 # Purpose: Pack a Chromium extension directory into crx format
 # Will do so per branch
 
 die() { echo $* 1>&2 ; exit 1 ; }
+
+### Prerequisites ###
+# mkdir /srv/chrome-plugin-build
+# mkdir /srv/chrome-plugin
+
 ### Settings ###
+TIMESTAMP=$(date +%Y-%m-%d-%H%M)
 #PLUGIN=""   # provide via rundeck
 PLUGIN="capture-specialist"   # git repo / project
-TAG="***REMOVED***"
-REPO_URL="git@***REMOVED***.***REMOVED***.com:chrome-plugins/${PLUGIN}.git"
+TAG="v1.12.10"
+REPO_URL="git@***REMOVED***.***REMOVED***.com:chrome-plugins/chrome-plugin-live-process-test.git"
 #REPO_KEY="/***REMOVED***/keys/cl_deploy" # for rundeck
 BUILD_ROOT="/srv/chrome-plugin-build"
-REPO_KEY="${BUILD_ROOT}/cl_deploy" # for debug
-TEST_KEYS_ROOT="/srv/chrome-plugin-build/test-keys"
-KEY_NAME="test.pem"
-WEB_ROOT="/srv/chrome-plugins/${PLUGIN}/${BRANCH}"
-WEB_HOST_URL="http://***REMOVED***.***REMOVED***.com"
+REPO_KEY="/***REMOVED***/keys/cl_deploy" # for debug
+KEY_NAME="${PLUGIN}.pem"
+WEB_ROOT="/srv/chrome-plugin/${PLUGIN}/release/${TIMESTAMP}"
+WEB_HOST_URL="http://plugins.***REMOVED***.com"
+mkdir -p "${WEB_ROOT}"
 
 ### chrome packing settings
 dir="${BUILD_ROOT}/${PLUGIN}/${PLUGIN}"
-key="${TEST_KEYS_ROOT}/${PLUGIN}/${BRANCH}/${KEY_NAME}"
+key="${BUILD_ROOT}/${PLUGIN}/${KEY_NAME}"
 name="$PLUGIN"
 crx="$name.crx"
 pub="$name.pub"
 sig="$name.sig"
 zip="$name.zip"
 
-trap 'rm -f "$pub" "$sig" "$zip" "${BUILD_ROOT}/${PLUGIN}"' EXIT
+trap 'rm -rf "$pub" "$sig" "$zip" "${BUILD_ROOT}/${PLUGIN}"' EXIT
 
-TOOLS="zip openssl printf awk git xxd ssh-agent ssh-add ssh-keygen"
+TOOLS="zip openssl printf awk git xxd ssh-agent ssh-add sha256sum"
 
 ### Validation ####
 # check all tools exist
@@ -37,7 +43,7 @@ for TOOL in $TOOLS; do
 done
 
 # check files / directories exist
-for FILE in $REPO_KEY $BUILD_ROOT $TEST_KEYS_ROOT; do
+for FILE in $REPO_KEY $BUILD_ROOT; do
 	[ -e $FILE ] || die "ERROR: file or directory $FILE does not exist"
 done
 
@@ -50,36 +56,15 @@ ssh-agent bash -c "ssh-add $REPO_KEY &>/dev/null && git clone $REPO_URL ${BUILD_
 # assumes if repo branch folder doesn't exist it's branch in web***REMOVED*** also doesn't exist
 [ ! -e "$WEB_ROOT" ] && mkdir -p "$WEB_ROOT"
 
+
+
 cd "${BUILD_ROOT}/${PLUGIN}"
-git checkout "$BRANCH" || die "ERROR: Failed to checkout $BRANCH"
-
-# edit manifest.json
-## name with branch appended
-sed -i "s/\"name\"[ \t]*:[ \t]*\"\(.*\)\"/\"name\": \"\1-BR: $BRANCH\"/" "${BUILD_ROOT}/${PLUGIN}/${PLUGIN}/manifest.json"
-## increment version if autoupdates enables
-
-
-# edit xml # only needed if want automatic updates, leave off until version increment logic surfaces
-## generate app/ext id
-
-## update updatecheck codebase with URL
-
-
-## increment version - not sure how this will work as would have to increment minor version which would make it out of sync with prod
-
-# check to see if branch directory and key exists and generate folder and key if not exists
-
-[[ ! -d "${TEST_KEYS_ROOT}/${PLUGIN}/${BRANCH}" ]] && mkdir -p "${TEST_KEYS_ROOT}/${PLUGIN}/${BRANCH}" && echo "INFO: $BRANCH folder created"
-if [[ ! -f "$key" ]]; then
-	cd "${TEST_KEYS_ROOT}/${PLUGIN}/${BRANCH}"
-	ssh-keygen -t rsa -b 1024 -f "${KEY_NAME%%.*}" -N ""
-	mv "${KEY_NAME%%.*}" "$KEY_NAME"
-fi
+git checkout "$TAG" &>/dev/null || die "ERROR: Failed to checkout $TAG"
 
 
 # chrome package process - create crx
 
-cd "${BUILD_ROOT}"
+cd "${BUILD_ROOT}/${PLUGIN}"
 
 # zip up the crx dir
 cwd=$(pwd -P)
@@ -104,16 +89,32 @@ sig_len_hex=$(byte_swap $(printf '%08x\n' $(ls -l "$sig" | awk '{print $5}')))
   echo "$crmagic_hex $version_hex $pub_len_hex $sig_len_hex" | xxd -r -p
   cat "$pub" "$sig" "$zip"
 ) > "$crx"
-echo "Wrote $crx"
 
 # Move crx to new location (nfs share )
 mv "${PLUGIN}.crx" "$WEB_ROOT" || die "ERROR: Failed to transfer crx to webserver"
+mv "${PLUGIN}.xml" "$WEB_ROOT" || die "ERROR: Failed to transfer xml to webserver"
 
-# cleanup
-rm -rf "${BUILD_ROOT}/${PLUGIN}"
+# Symlink both files to web***REMOVED***
+ln -snf "${WEB_ROOT}/${PLUGIN}.crx" "${WEB_ROOT}/../../"
+ln -snf "${WEB_ROOT}/${PLUGIN}.xml" "${WEB_ROOT}/../../"
 
-echo "INFO: URL to install from:"
+chown www-data:www-data /srv/chrome-plugin -R
+EID=$(cat $key | openssl rsa -pubout -outform DER 2>/dev/null | sha256sum | cut -c 1-32 | tr '0-9a-f' 'a-p')
+
+echo "INFO: plugin built and deployed."
 echo "=================================================================================================="
-echo "${WEB_HOST_URL}/${PLUGIN}/${BRANCH}"
-echo "INFO: Browse there and click ${PLUGIN}.crx to install!"
+echo "${WEB_HOST_URL}/${PLUGIN}"
+echo "Extension ID: $EID"
 echo "=================================================================================================="
+
+# CLEANUP 
+echo "INFO: Cleaning up..."
+# Clearing old releases
+CURRENT_RELEASE=$(basename $(readlink "/srv/chrome-plugin/${PLUGIN}/${PLUGIN}.crx"))
+RECENT_RELEASES=$(ls -tr1 "/srv/chrome-plugin/${PLUGIN}/release" | grep -v "$CURRENT_RELEASE" | tail -n4)
+for OLD_RELEASE in $(ls -tr1 "/srv/chrome-plugin/${PLUGIN}/release" | grep -v "$CURRENT_RELEASE"); do
+	if ! echo "$OLD_RELEASE" | grep -q "$RECENT_RELEASES"; then
+		echo "INFO: Deleted old release - $OLD_RELEASE"
+		rm -rf "/srv/chrome-plugin/${PLUGIN}/release/${OLD_RELEASE}"
+	fi
+done
