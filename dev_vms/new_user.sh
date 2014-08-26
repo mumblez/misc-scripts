@@ -36,15 +36,21 @@ echo "$USER:$PASSWORD" | chpasswd
 # new directories
 cat > "${NEW_DIRS}" <<EOF
 /***REMOVED***/lib/shared
-/***REMOVED***/lib/php5/dwoo/compiled
 /***REMOVED***/lib/php5/offspring
 /***REMOVED***/config/common
+/***REMOVED***/config/website
+/***REMOVED***/config/intranet
 /***REMOVED***/secure/website
-/***REMOVED***/var/web/data/files.{registration,hrcv,production,attachment}
+/***REMOVED***/var/web/data/files.registration
+/***REMOVED***/var/web/data/files.hrcv
+/***REMOVED***/var/web/data/files.production
+/***REMOVED***/var/web/data/files.attachment
 /***REMOVED***/var/cache/dwoo/offspring
 /***REMOVED***/lib/php5/offspring
-/***REMOVED***/lib/{js,templates}
-/***REMOVED***/log/{intranet,website}
+/***REMOVED***/lib/js
+/***REMOVED***/lib/templates
+/***REMOVED***/log/intranet
+/***REMOVED***/log/website
 EOF
 
 while read line; do
@@ -53,10 +59,11 @@ done < "${NEW_DIRS}"
 
 
 # svn pull - account needs to exist on svn to pull automatically
-sudo -u "$USER" mkdir -p ~/dev/{infrastructure,projects}
-sudo -u "$USER" svn checkout --depth empty "${SVN_URL}/projects" ~/dev/projects --username "$USER" --password "$PASSWORD"
-sudo -u "$USER" svn checkout "${SVN_URL}/infrastructure" ~/dev/infrastructure
-cd /home/"$USER"/dev/infrastructure
+sudo -u "$USER" mkdir -p $DEV_BASE/dev/infrastructure
+sudo -u "$USER" mkdir -p $DEV_BASE/dev/projects
+sudo -u "$USER" svn checkout --depth empty "${SVN_URL}/projects" $DEV_BASE/projects --username "$USER" --password "$PASSWORD"
+sudo -u "$USER" svn checkout "${SVN_URL}/infrastructure" $DEV_BASE/infrastructure
+cd /home/"$USER"/dev/projects
 sudo -u "$USER" svn up intranet website common
 
 
@@ -96,7 +103,8 @@ $PROJECTS_BASE/intranet/src/phplib/ /***REMOVED***/lib/php5/***REMOVED***/projec
 $PROJECTS_BASE/website/src/phplib/ /***REMOVED***/lib/php5/***REMOVED***/projects/website
 $PROJECTS_BASE/intranet/src/phplib/ /***REMOVED***/lib/php5/***REMOVED***/projects/intranet
 $PROJECTS_BASE/website/src/phplib/ /***REMOVED***/lib/php5/***REMOVED***/projects/website
-$PROJECTS_BASE/intranet/lib/pear/{OLE,PHPUnit} /***REMOVED***/lib/php5/
+$PROJECTS_BASE/intranet/lib/pear/OLE /***REMOVED***/lib/php5/
+$PROJECTS_BASE/intranet/lib/pear/PHPUnit /***REMOVED***/lib/php5/
 $PROJECTS_BASE/website/src/htmltemplates/ /***REMOVED***/lib/templates/website
 $PROJECTS_BASE/website/resources/flash/ /***REMOVED***/www/website/
 $PROJECTS_BASE/website/lib/ /***REMOVED***/lib/php5/projects/website
@@ -119,6 +127,9 @@ $INFRASTRUCTURE_BASE/php5.2/config/dev/* /***REMOVED***/config/
 $PROJECTS_BASE/intranet/config/dev/apache/intranet /etc/apache2/sites-available/
 $PROJECTS_BASE/intranet/config/dev/apache/sms /etc/apache2/sites-available/
 $PROJECTS_BASE/intranet/config/dev/apache/umg /etc/apache2/sites-available/
+$PROJECTS_BASE/intranet/config/dev/apache/website /etc/apache2/sites-available/
+$PROJECTS_BASE/intranet/config/dev/apache/***REMOVED*** /etc/apache2/sites-available/
+$PROJECTS_BASE/intranet/config/dev/apache/zaibatsu /etc/apache2/sites-available/
 $PROJECTS_BASE/intranet/cron/dev/cron /etc/cron.d/intranet
 $PROJECTS_BASE/website/config/dev/apache/apache_passwords /***REMOVED***/secure/website/
 $PROJECTS_BASE/website/cron/errorcheck /etc/cron.d/website
@@ -127,6 +138,8 @@ EOF
 while read line; do
 	ln -sf $line
 done < "${SYMLINKS_FILE}"
+
+mkdir -p /***REMOVED***/lib/php5/dwoo/compiled
 
 # permissions
 chown $USER:dev -R "$DEV_BASE"
@@ -139,16 +152,55 @@ chmod 777 -R /***REMOVED***/log/
 # dev-<initial><surname>
 # /etc/hostname and hostname <hostname>
 
-# apache
-# taken care off by symlinks
+# backup /etc/php52/php.ini before symlinking dev one
+cd /etc/php52
+if [ -e php.ini ]; then
+	cp php.ini php.ini.bak
+fi
+
+# symlink dev php.ini (php52)
+ln -snf "${INFRASTRUCTURE_BASE}/php5.2/config/dev/php.ini" php.ini
+# add new version or a v2 version to svn and symlink to that, add extensions to end of new file
+
+# copy clone and samba conf edit smb.conf
+cd /etc/samba
+cp smb.conf smb.conf.bak
+sed -n "s/\(hosts allow =\)/\1 $OWNIP/p" smb.conf.clone
+sed -n "s/\(guest account =\)/\1 $USER/p" smb.conf.clone
+sed -n "s/^\(path=\)/\1\/home\/$USER/p" smb.conf.clone
 
 # samba
 # edit "hosts allow = <IP>" line or just set to ***REMOVED***.0/24
 # edit "guest account = $USER"
 # edit "path=/home/$USER"
 
+
+# backup interfaces file before overwriting
+cp /etc/network/{interfaces,interfaces.bak} || die "ERROR: Failed to backup the network interfaces file"
 # set IP
-# /etc/network/interfaces
+# /etc/network/interfaces, use below as a template and replace fields
+
+cat > /etc/network/interfaces <<'EOF'
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+auto eth0
+iface eth0 inet static
+        address $OWNIP
+        gateway ***REMOVED***.1
+        netmask 255.255.252.0
+        post-up /sbin/ip route add default dev eth0
+        # dns-* options are implemented by the resolvconf package, if installed
+        dns-nameservers ***REMOVED***.11
+        dns-search dev.***REMOVED***.com corp.***REMOVED***.com
+EOF
+
+#service networking restart # will complain file exists, maybe best to reboot right at the end
 
 # nic
 
@@ -174,3 +226,7 @@ a2ensite {intranet,sms,umg,website}
 
 # cleanup
 rm -rf "$WORKING_DIR"
+
+# reboot box
+reboot
+exit 0
