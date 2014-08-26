@@ -180,7 +180,7 @@ cp /etc/network/{interfaces,interfaces.bak} || die "ERROR: Failed to backup the 
 # set IP
 # /etc/network/interfaces, use below as a template and replace fields
 
-cat > /etc/network/interfaces <<'EOF'
+cat > /etc/network/interfaces <<EOF
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
 
