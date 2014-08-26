@@ -165,7 +165,7 @@ ln -snf "${INFRASTRUCTURE_BASE}/php5.2/config/dev/php.ini" php.ini
 # copy clone and samba conf edit smb.conf
 cd /etc/samba
 cp smb.conf smb.conf.bak
-sed -n "s/\(hosts allow =\)/\1 $OWNIP/p" smb.conf.clone
+sed -n "s/\(hosts allow =\)/\1 $WORKSTATION_IP/p" smb.conf.clone
 sed -n "s/\(guest account =\)/\1 $USER/p" smb.conf.clone
 sed -n "s/^\(path=\)/\1\/home\/$USER/p" smb.conf.clone
 
