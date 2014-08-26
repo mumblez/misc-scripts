@@ -30,7 +30,7 @@ done
 
 
 # create new user and set password
-adduser --ingroup dev --force-badname --disable-passwords $USER
+adduser --ingroup dev --force-badname --disabled-password $USER
 echo "$USER:$PASSWORD" | chpasswd
 
 # new directories
