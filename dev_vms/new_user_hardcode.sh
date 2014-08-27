@@ -6,7 +6,7 @@
 die() { echo $* 1>&2 ; exit 1 ; }
 
 # settings
-USER="robin.hood"		# passed from rundeck - create rd.json to use this value to work out other values and to
+USERNAME="robin.hood"		# passed from rundeck - create rd.json to use this value to work out other values and to
 # check it also doesn't exist (and maybe setup SVN)
 PASSWORD="***REMOVED***"   # passed from rundeck
 OWNIP="***REMOVED***.229"	    # run ip_search_add.py and use SUCCESSFUL output - rundeck options file (relying on value or user name)
