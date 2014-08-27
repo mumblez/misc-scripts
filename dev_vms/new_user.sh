@@ -25,7 +25,7 @@ INFRASTRUCTURE_BASE="$DEV_BASE/infrastructure"
 # validation
 
 for TOOL in $TOOLS; do
-	which chpasswd >/dev/null 2>&1 || die "ERROR: $TOOL is not installed"
+        which chpasswd >/dev/null 2>&1 || die "ERROR: $TOOL is not installed"
 done
 
 
@@ -140,6 +140,7 @@ while read line; do
 	ln -sf $line
 done < "${SYMLINKS_FILE}"
 
+# directories to make after symlinking
 mkdir -p /***REMOVED***/lib/php5/dwoo/compiled
 
 # permissions
