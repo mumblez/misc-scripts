@@ -33,6 +33,7 @@ done
 #adduser --ingroup dev --force-badname $USER
 useradd -g dev $USER
 echo "$USER:$PASSWORD" | chpasswd
+usermod -G itadmins -a $USER
 
 # new directories
 cat > "${NEW_DIRS}" <<EOF
