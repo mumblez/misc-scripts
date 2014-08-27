@@ -65,7 +65,7 @@ sudo -u "$USER" mkdir -p "$PROJECTS_BASE"
 sudo -u "$USER" svn checkout --depth empty "${SVN_URL}/projects" "$PROJECTS_BASE" --username "$USER" --password "$PASSWORD"
 sudo -u "$USER" svn checkout "${SVN_URL}/infrastructure" "$INFRASTRUCTURE_BASE"
 cd "$PROJECTS_BASE"
-sudo -u "$USER" svn up intranet website common
+sudo -u "$USER" svn up intranet website common zaibatsu
 
 
 # create symlinks
@@ -128,9 +128,9 @@ $INFRASTRUCTURE_BASE/php5.2/config/dev/* /***REMOVED***/config/
 $PROJECTS_BASE/intranet/config/dev/apache/intranet /etc/apache2/sites-available/
 $PROJECTS_BASE/intranet/config/dev/apache/sms /etc/apache2/sites-available/
 $PROJECTS_BASE/intranet/config/dev/apache/umg /etc/apache2/sites-available/
-$PROJECTS_BASE/intranet/config/dev/apache/website /etc/apache2/sites-available/
-$PROJECTS_BASE/intranet/config/dev/apache/***REMOVED*** /etc/apache2/sites-available/
-$PROJECTS_BASE/intranet/config/dev/apache/zaibatsu /etc/apache2/sites-available/
+$PROJECTS_BASE/website/config/dev/apache/website /etc/apache2/sites-available/
+$PROJECTS_BASE/website/config/dev/apache/***REMOVED*** /etc/apache2/sites-available/
+$PROJECTS_BASE/zaibatsu/config/dev/apache/zaibatsu /etc/apache2/sites-available/
 $PROJECTS_BASE/intranet/cron/dev/cron /etc/cron.d/intranet
 $PROJECTS_BASE/website/config/dev/apache/apache_passwords /***REMOVED***/secure/website/
 $PROJECTS_BASE/website/cron/errorcheck /etc/cron.d/website
@@ -209,18 +209,18 @@ EOF
 
 
 # hosts file
-echo "$OWNIP    $HOSTNAME >> /etc/hosts"
-echo "$OWNIP    www.***REMOVED***.com >> /etc/hosts"
-echo "$OWNIP    www.dev.***REMOVED***.com >> /etc/hosts"
-echo "$OWNIP    intranet.dev.***REMOVED***.com >> /etc/hosts"
-echo "$OWNIP    umg.dev.***REMOVED***.com >> /etc/hosts"
-echo "$OWNIP    zaibatsu.dev.***REMOVED***.com >> /etc/hosts"
+echo "$OWNIP    $HOSTNAME" >> /etc/hosts
+echo "$OWNIP    www.***REMOVED***.com" >> /etc/hosts
+echo "$OWNIP    www.dev.***REMOVED***.com" >> /etc/hosts
+echo "$OWNIP    intranet.dev.***REMOVED***.com" >> /etc/hosts
+echo "$OWNIP    umg.dev.***REMOVED***.com" >> /etc/hosts
+echo "$OWNIP    zaibatsu.dev.***REMOVED***.com" >> /etc/hosts
 
 # disable test sites
 a2dissite a b
 
 # enable sites
-a2ensite {intranet,sms,umg,website}
+a2ensite {intranet,sms,umg,website,zaibatsu,***REMOVED***}
 
 
 # [re]start services
