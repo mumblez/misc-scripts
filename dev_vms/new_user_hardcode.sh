@@ -63,9 +63,11 @@ done < "${NEW_DIRS}"
 sudo -u "$USER" mkdir -p "$INFRASTRUCTURE_BASE"
 sudo -u "$USER" mkdir -p "$PROJECTS_BASE"
 sudo -u "$USER" svn checkout --depth empty "${SVN_URL}/projects" "$PROJECTS_BASE" --username "$USER" --password "$PASSWORD"
-sudo -u "$USER" svn checkout "${SVN_URL}/infrastructure" "$INFRASTRUCTURE_BASE"
+sudo -u "$USER" svn checkout --depth empty "${SVN_URL}/infrastructure" "$INFRASTRUCTURE_BASE"
 cd "$PROJECTS_BASE"
 sudo -u "$USER" svn up intranet website common zaibatsu
+cd "$INFRASTRUCTURE_BASE"
+sudo -u "$USER" svn up php5.2 offspring chrome-plugins base sphinx
 
 
 # create symlinks
@@ -142,6 +144,7 @@ done < "${SYMLINKS_FILE}"
 
 # directories to make after symlinking
 mkdir -p /***REMOVED***/lib/php5/dwoo/compiled
+mkdir -p /***REMOVED***/log/zaibatsu
 
 # permissions
 chown $USER:dev -R "$DEV_BASE"
@@ -161,7 +164,7 @@ if [ -e php.ini ]; then
 fi
 
 # symlink dev php.ini (php52)
-ln -snf "${INFRASTRUCTURE_BASE}/php5.2/config/dev/php.ini" php.ini
+ln -snf "${INFRASTRUCTURE_BASE}/php5.2/config/dev/php-v2.ini" php.ini
 # add new version or a v2 version to svn and symlink to that, add extensions to end of new file
 
 # copy clone and samba conf edit smb.conf
