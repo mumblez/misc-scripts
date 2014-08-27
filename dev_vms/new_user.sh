@@ -31,9 +31,8 @@ done
 
 # create new user and set password
 #adduser --ingroup dev --force-badname $USER
-useradd -g dev -m $USER
+useradd -g dev -G itadmins $USER -m
 echo "$USER:$PASSWORD" | chpasswd
-usermod -G itadmins -a $USER
 
 # new directories
 cat > "${NEW_DIRS}" <<EOF
@@ -61,11 +60,11 @@ done < "${NEW_DIRS}"
 
 
 # svn pull - account needs to exist on svn to pull automatically
-sudo -u "$USER" mkdir -p $DEV_BASE/dev/infrastructure
-sudo -u "$USER" mkdir -p $DEV_BASE/dev/projects
-sudo -u "$USER" svn checkout --depth empty "${SVN_URL}/projects" $DEV_BASE/projects --username "$USER" --password "$PASSWORD"
-sudo -u "$USER" svn checkout "${SVN_URL}/infrastructure" $DEV_BASE/infrastructure
-cd /home/"$USER"/dev/projects
+sudo -u "$USER" mkdir -p "$INFRASTRUCTURE_BASE"
+sudo -u "$USER" mkdir -p "$PROJECTS_BASE"
+sudo -u "$USER" svn checkout --depth empty "${SVN_URL}/projects" "$PROJECTS_BASE" --username "$USER" --password "$PASSWORD"
+sudo -u "$USER" svn checkout "${SVN_URL}/infrastructure" "$INFRASTRUCTURE_BASE"
+cd "$PROJECTS_BASE"
 sudo -u "$USER" svn up intranet website common
 
 
