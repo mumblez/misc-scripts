@@ -219,9 +219,6 @@ echo "$OWNIP    intranet.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    umg.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    zaibatsu.dev.***REMOVED***.com" >> /etc/hosts
 
-# disable test sites
-a2dissite a b
-
 # enable sites
 a2ensite {intranet,sms,umg,website,zaibatsu,***REMOVED***}
 
