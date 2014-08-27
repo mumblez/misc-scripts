@@ -30,8 +30,10 @@ done
 
 
 # create new user and set password
-adduser --ingroup dev --force-badname --disabled-password $USER
+#adduser --ingroup dev --force-badname --disabled-password $USER
+useradd -g dev $USER
 echo "$USER:$PASSWORD" | chpasswd
+usermod -G itadmins -a $USER
 
 # new directories
 cat > "${NEW_DIRS}" <<EOF
@@ -139,6 +141,7 @@ while read line; do
 	ln -sf $line
 done < "${SYMLINKS_FILE}"
 
+# directories to make after symlinking
 mkdir -p /***REMOVED***/lib/php5/dwoo/compiled
 
 # permissions
