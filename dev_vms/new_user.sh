@@ -31,7 +31,7 @@ done
 
 # create new user and set password
 #adduser --ingroup dev --force-badname $USER
-useradd -g dev $USER
+useradd -g dev -m $USER
 echo "$USER:$PASSWORD" | chpasswd
 usermod -G itadmins -a $USER
 
