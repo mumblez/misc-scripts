@@ -127,10 +127,10 @@ $INFRASTRUCTURE_BASE/offspring/src/phplib/offspring-core.php /***REMOVED***/lib/
 $INFRASTRUCTURE_BASE/offspring/src/phplib/packages /***REMOVED***/lib/php5/offspring/
 $INFRASTRUCTURE_BASE/offspring/config/dev/offspring-rules.xml /***REMOVED***/config/offspring/
 $INFRASTRUCTURE_BASE/php5.2/config/dev/* /***REMOVED***/config/
-$PROJECTS_BASE/intranet/config/dev/apache/intranet /etc/apache2/sites-available/
+$PROJECTS_BASE/intranet/config/dev/apache/intranet-v2 /etc/apache2/sites-available/intranet
 $PROJECTS_BASE/intranet/config/dev/apache/sms /etc/apache2/sites-available/
 $PROJECTS_BASE/intranet/config/dev/apache/umg /etc/apache2/sites-available/
-$PROJECTS_BASE/website/config/dev/apache/website /etc/apache2/sites-available/
+$PROJECTS_BASE/website/config/dev/apache/website-v2 /etc/apache2/sites-available/website
 $PROJECTS_BASE/website/config/dev/apache/***REMOVED*** /etc/apache2/sites-available/
 $PROJECTS_BASE/zaibatsu/config/dev/apache/zaibatsu /etc/apache2/sites-available/
 $PROJECTS_BASE/intranet/cron/dev/cron /etc/cron.d/intranet
@@ -220,7 +220,7 @@ echo "$OWNIP    umg.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    zaibatsu.dev.***REMOVED***.com" >> /etc/hosts
 
 # enable sites
-a2ensite {intranet,sms,umg,website,zaibatsu,***REMOVED***}
+a2ensite {intranet,sms,umg,website,zaibatsu,***REMOVED***,symfony-example}
 
 
 # [re]start services
