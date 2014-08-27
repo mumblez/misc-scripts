@@ -167,9 +167,10 @@ ln -snf "${INFRASTRUCTURE_BASE}/php5.2/config/dev/php.ini" php.ini
 # copy clone and samba conf edit smb.conf
 cd /etc/samba
 cp smb.conf smb.conf.bak
-sed -n "s/\(hosts allow =\)/\1 $WORKSTATION_IP/p" smb.conf.clone
-sed -n "s/\(guest account =\)/\1 $USER/p" smb.conf.clone
-sed -n "s/^\(path=\)/\1\/home\/$USER/p" smb.conf.clone
+sed "s/\(hosts allow =\)/\1 $WORKSTATION_IP/" -i smb.conf.clone
+sed "s/\(guest account =\)/\1 $USER/" -i smb.conf.clone
+sed "s/^\(path=\)/\1\/home\/$USER/" -i smb.conf.clone
+cp smb.conf.clone smb.conf
 
 # samba
 # edit "hosts allow = <IP>" line or just set to ***REMOVED***.0/24
@@ -215,6 +216,8 @@ echo "$OWNIP    intranet.dev.***REMOVED***.com >> /etc/hosts"
 echo "$OWNIP    umg.dev.***REMOVED***.com >> /etc/hosts"
 echo "$OWNIP    zaibatsu.dev.***REMOVED***.com >> /etc/hosts"
 
+# disable test sites
+a2dissite a b
 
 # enable sites
 a2ensite {intranet,sms,umg,website}
