@@ -17,7 +17,7 @@ WORKING_DIR=$(mktemp -d /tmp/new_user_setup_XXX)
 NEW_DIRS=$(mktemp $WORKING_DIR/new_dirs_XXX.txt)
 SYMLINKS_FILE=$(mktemp $WORKING_DIR/symlinks_file_XXX.txt)
 SVN_URL="https://***REMOVED***.***REMOVED***.com/svn/trunk"
-DEV_BASE="/home/$USER/dev"
+DEV_BASE="/home/$USERNAME/dev"
 PROJECTS_BASE="$DEV_BASE/projects"
 INFRASTRUCTURE_BASE="$DEV_BASE/infrastructure"
 
@@ -30,9 +30,12 @@ done
 
 
 # create new user and set password
-#adduser --ingroup dev --force-badname --disabled-password $USER
-useradd -g dev -G itadmins $USER -m
-echo "$USER:$PASSWORD" | chpasswd
+#adduser --ingroup dev --force-badname --disabled-password $USERNAME
+useradd -g dev -G itadmins $USERNAME -m
+echo "$USERNAME:$PASSWORD" | chpasswd
+
+# add easy shortcut to nfs dev_share
+ln -snf /misc/dev_share "/home/$USERNAME/dev_share"
 
 # new directories
 cat > "${NEW_DIRS}" <<EOF
@@ -60,15 +63,19 @@ while read line; do
 done < "${NEW_DIRS}"
 
 
+# create standard git directory for future repository store
+sudo -u "$USERNAME" "${DEV_BASE}/git_repos"
+sudo -u "$USERNAME" echo "Clone your repositories here!" > "${DEV_BASE}/git_repos/README.txt"
+
 # svn pull - account needs to exist on svn to pull automatically
-sudo -u "$USER" mkdir -p "$INFRASTRUCTURE_BASE"
-sudo -u "$USER" mkdir -p "$PROJECTS_BASE"
-sudo -u "$USER" svn checkout --depth empty "${SVN_URL}/projects" "$PROJECTS_BASE" --username "$USER" --password "$PASSWORD"
-sudo -u "$USER" svn checkout --depth empty "${SVN_URL}/infrastructure" "$INFRASTRUCTURE_BASE"
+sudo -u "$USERNAME" mkdir -p "$INFRASTRUCTURE_BASE"
+sudo -u "$USERNAME" mkdir -p "$PROJECTS_BASE"
+sudo -u "$USERNAME" svn checkout --depth empty "${SVN_URL}/projects" "$PROJECTS_BASE" --username "$USERNAME" --password "$PASSWORD"
+sudo -u "$USERNAME" svn checkout --depth empty "${SVN_URL}/infrastructure" "$INFRASTRUCTURE_BASE"
 cd "$PROJECTS_BASE"
-sudo -u "$USER" svn up intranet website common zaibatsu
+sudo -u "$USERNAME" svn up intranet website common zaibatsu
 cd "$INFRASTRUCTURE_BASE"
-sudo -u "$USER" svn up php5.2 offspring chrome-plugins base sphinx
+sudo -u "$USERNAME" svn up php5.2 offspring chrome-plugins base sphinx
 
 
 # create symlinks
@@ -148,7 +155,7 @@ mkdir -p /***REMOVED***/lib/php5/dwoo/compiled
 mkdir -p /***REMOVED***/log/zaibatsu
 
 # permissions
-chown $USER:dev -R "$DEV_BASE"
+chown $USERNAME:dev -R "$DEV_BASE"
 chmod 777 /***REMOVED***/lib/php5/dwoo/compiled
 chmod 777 -R /***REMOVED***/var/compiled/
 chmod 777 -R /***REMOVED***/var/cache/
@@ -172,14 +179,14 @@ ln -snf "${INFRASTRUCTURE_BASE}/php5.2/config/dev/php-v2.ini" php.ini
 cd /etc/samba
 cp smb.conf smb.conf.bak
 sed "s/\(hosts allow =\)/\1 $WORKSTATION_IP/" -i smb.conf.clone
-sed "s/\(guest account =\)/\1 $USER/" -i smb.conf.clone
-sed "s/^\(path=\)/\1\/home\/$USER/" -i smb.conf.clone
+sed "s/\(guest account =\)/\1 $USERNAME/" -i smb.conf.clone
+sed "s/^\(path=\)/\1\/home\/$USERNAME/" -i smb.conf.clone
 cp smb.conf.clone smb.conf
 
 # samba
 # edit "hosts allow = <IP>" line or just set to ***REMOVED***.0/24
-# edit "guest account = $USER"
-# edit "path=/home/$USER"
+# edit "guest account = $USERNAME"
+# edit "path=/home/$USERNAME"
 
 
 # backup interfaces file before overwriting

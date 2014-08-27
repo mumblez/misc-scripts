@@ -20,6 +20,10 @@ SVN_URL="https://***REMOVED***.***REMOVED***.com/svn/trunk"
 DEV_BASE="/home/$USERNAME/dev"
 PROJECTS_BASE="$DEV_BASE/projects"
 INFRASTRUCTURE_BASE="$DEV_BASE/infrastructure"
+# RD_JOB_EXECID
+# etcd URL
+# etcd add / read execid, IP, hostname / username
+# delete job / execid folder after setting up the machine
 
 
 # validation
@@ -33,6 +37,10 @@ done
 #adduser --ingroup dev --force-badname $USERNAME
 useradd -g dev -G itadmins $USERNAME -m
 echo "$USERNAME:$PASSWORD" | chpasswd
+
+# add easy shortcut to nfs dev_share
+ln -snf /misc/dev_share "/home/$USERNAME/dev_share"
+
 
 # new directories
 cat > "${NEW_DIRS}" <<EOF
