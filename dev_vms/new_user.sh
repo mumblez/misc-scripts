@@ -220,7 +220,7 @@ echo "$OWNIP    umg.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    zaibatsu.dev.***REMOVED***.com" >> /etc/hosts
 
 # enable sites
-a2ensite {intranet,sms,umg,website,zaibatsu,***REMOVED***}
+a2ensite {intranet,sms,umg,website,zaibatsu,***REMOVED***,symfony-example}
 
 
 # [re]start services
