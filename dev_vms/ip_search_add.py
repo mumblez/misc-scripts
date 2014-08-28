@@ -1,7 +1,14 @@
 #!/usr/bin/python
 
+# call script passing in firstname lastname rundeck_execID
+
 import gspread, sys
-host_name = "dev-blablabla" # change to argument later on
+import requests
+
+firstname = "@option.first_name@"
+lastname = "@option.last_name@"
+rundeck_execid = "@job.execid@"
+host_name = "dev-" + firstname[0:1] + lastname # change to argument later on
 spread_sheet_key = "***REMOVED***"
 worksheet = "Dev VLAN"
 gc = gspread.login('admin@***REMOVED***.com', '***REMOVED***')
@@ -24,10 +31,18 @@ try:
   sys.exit(1)
 except gspread.exceptions.CellNotFound:
   wks.update_cell(free_row,col_hostnames, host_name)
-  print "***REMOVED***." + wks.cell(free_row, col_ip).value
+  new_ip = "***REMOVED***." + wks.cell(free_row, col_ip).value
+  url = "http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/" + rundeck_execid + "/ip"
+  param = {'value':new_ip}
+  requests.put(url, params=param)
   sys.exit(0)
 
-# check IP number and assign or output
+# add IP to etcd (use execid) with low TTL
+#http://stackoverflow.com/questions/4476373/simple-url-get-post-function-in-python
+#import requests
+#url = "http://127.0.0.1:4001/v2/keys/bbb"
+#param = {'value':'bye george'}
+#r = requests.put(url, params=param)
 
 
 # set hostname and save
