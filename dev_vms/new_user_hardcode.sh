@@ -44,6 +44,7 @@ cat > "${NEW_DIRS}" <<EOF
 /***REMOVED***/config/common
 /***REMOVED***/config/website
 /***REMOVED***/config/intranet
+/***REMOVED***/config/offspring
 /***REMOVED***/secure/website
 /***REMOVED***/var/web/data/files.registration
 /***REMOVED***/var/web/data/files.hrcv
@@ -165,6 +166,9 @@ chmod 777 -R /***REMOVED***/log/
 # dev-<initial><surname>
 # /etc/hostname and hostname <hostname>
 
+echo "$HOSTNAME" > /etc/hostname
+hostname "$HOSTNAME"
+
 # backup /etc/php52/php.ini before symlinking dev one
 cd /etc/php52
 if [ -e php.ini ]; then
@@ -240,6 +244,6 @@ a2ensite {intranet,sms,umg,website,zaibatsu,symfony-example}
 # cleanup
 rm -rf "$WORKING_DIR"
 
-# reboot box
+# reboot box - mainly so networking / static IP takes effect
 reboot
 exit 0
