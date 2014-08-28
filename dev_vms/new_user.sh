@@ -6,12 +6,14 @@
 die() { echo $* 1>&2 ; exit 1 ; }
 
 # settings
-USERNAME=		# passed from rundeck - create rd.json to use this value to work out other values and to
+FIRSTNAME=$(echo @option.first_name@ | tr '[:upper:]' '[:lower:]')
+LASTNAME=$(echo @option.last_name@ | tr '[:upper:]' '[:lower:]')
+USERNAME="${FIRSTNAME}.${LASTNAME}"
+HOSTNAME="dev-${FIRSTNAME:0:1}${LASTNAME}"
 # check it also doesn't exist (and maybe setup SVN)
-PASSWORD=   # passed from rundeck
-OWNIP=	    # run ip_search_add.py and use SUCCESSFUL output - rundeck options file (relying on value or user name)
-HOSTNAME=   # passed from rundeck
-WORKSTATION_IP=		# to put into samba hosts allow list
+PASSWORD="@option.password@"   # passed from rundeck
+OWNIP=$(curl -s -L http://127.0.0.1:4001/v2/keys/rundeck/jobqueue/@job.execid@/ip | jq -r '.node.value')
+WORKSTATION_IP="@option.workstation_ip"	# pass in via RD - too much hassle to pull automatically
 TOOLS="chpasswd svn git adduser"
 WORKING_DIR=$(mktemp -d /tmp/new_user_setup_XXX)
 NEW_DIRS=$(mktemp $WORKING_DIR/new_dirs_XXX.txt)
@@ -143,12 +145,12 @@ $INFRASTRUCTURE_BASE/offspring/src/phplib/offspring-core.php /***REMOVED***/lib/
 $INFRASTRUCTURE_BASE/offspring/src/phplib/packages /***REMOVED***/lib/php5/offspring/
 $INFRASTRUCTURE_BASE/offspring/config/dev/offspring-rules.xml /***REMOVED***/config/offspring/
 $INFRASTRUCTURE_BASE/php5.2/config/dev/* /***REMOVED***/config/
-$PROJECTS_BASE/intranet/config/dev/apache/intranet-v2 /etc/apache2/sites-available/intranet
-$PROJECTS_BASE/intranet/config/dev/apache/sms /etc/apache2/sites-available/
-$PROJECTS_BASE/intranet/config/dev/apache/umg /etc/apache2/sites-available/
-$PROJECTS_BASE/website/config/dev/apache/website-v2 /etc/apache2/sites-available/website
-$PROJECTS_BASE/website/config/dev/apache/***REMOVED*** /etc/apache2/sites-available/
-$PROJECTS_BASE/zaibatsu/config/dev/apache/zaibatsu /etc/apache2/sites-available/
+$PROJECTS_BASE/intranet/config/dev/apache/intranet-v2 /etc/apache2/sites-available/intranet-v2
+$PROJECTS_BASE/intranet/config/dev/apache/sms /etc/apache2/sites-available/sms-v2
+$PROJECTS_BASE/intranet/config/dev/apache/umg /etc/apache2/sites-available/umg-v2
+$PROJECTS_BASE/website/config/dev/apache/website-v2 /etc/apache2/sites-available/website-v2
+$PROJECTS_BASE/website/config/dev/apache/***REMOVED*** /etc/apache2/sites-available/***REMOVED***-v2
+$PROJECTS_BASE/zaibatsu/config/dev/apache/zaibatsu /etc/apache2/sites-available/zaibatsu-v2
 $PROJECTS_BASE/intranet/cron/dev/cron /etc/cron.d/intranet
 $PROJECTS_BASE/website/config/dev/apache/apache_passwords /***REMOVED***/secure/website/
 $PROJECTS_BASE/website/cron/errorcheck /etc/cron.d/website
