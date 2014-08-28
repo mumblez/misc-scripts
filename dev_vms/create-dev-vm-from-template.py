@@ -5,11 +5,16 @@ from pysphere import VIServer, VIProperty, VITask
 from pysphere.vi_mor import VIMor, MORTypes
 from time import sleep
 import re, sys
+import requests
 
 
 # Settings
 vm_template_name = 'dev-wheezy-template'
-vm_clone_name = 'dev-hmmmm' # pass in later (sys.argv[1])
+firstname = "@option.first_name@"
+lastname = "@option.last_name@"
+rundeck_execid = "@job.execid@"
+vm_clone_name = "dev-" + firstname[0:1] + lastname
+#vm_clone_name = 'dev-hmmmm' # pass in later (sys.argv[1])
 vcenter_server = '***REMOVED***.12'
 vcenter_username = '***REMOVED***'
 vcenter_password = '***REMOVED***'
@@ -92,6 +97,11 @@ print "Clone complete, IP: " + vm_clone_ip
 
 # destroy / delete
 #vm_clone.destroy()
+
+# ADD VM CLONE IP TO etcd
+url = "http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/" + rundeck_execid + "/old_ip"
+param = {'value':vm_clone_ip}
+requests.put(url, params=param)
 
 # Disconnect from vcenter / hypervisor session
 server.disconnect()
