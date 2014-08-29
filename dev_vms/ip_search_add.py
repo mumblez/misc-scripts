@@ -27,7 +27,7 @@ for cell in dev_hostnames:
 # search if host name taken in range, catch exception when isn't found and update cell with host name
 try:
   wks.find(host_name)
-  print "host name already exists"
+  print "ERROR: host name already exists"
   sys.exit(1)
 except gspread.exceptions.CellNotFound:
   wks.update_cell(free_row,col_hostnames, host_name)
@@ -35,6 +35,7 @@ except gspread.exceptions.CellNotFound:
   url = "http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/" + rundeck_execid + "/ip"
   param = {'value':new_ip}
   requests.put(url, params=param)
+  print "INFO: successfully added new IP to etcd"
   sys.exit(0)
 
 # add IP to etcd (use execid) with low TTL
