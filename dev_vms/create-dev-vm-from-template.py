@@ -84,12 +84,13 @@ rp_mor = getResourcePoolByProperty(server,"parent", parent)
 ds_mor = getDatastoreByName(server, host_datastore)
 
 # Create our clone
+print "INFO: Cloning dev template..."
 vm_clone = vm_template.clone(name=vm_clone_name, sync_run=True, resourcepool=rp_mor, folder='Dev VMs', host=host_mor, datastore=ds_mor)
 
 # Get the IP address of our new clone (up to maxwait time)
 vm_clone_ip = find_ip(vm_clone)
 
-print "Clone complete, IP: " + vm_clone_ip
+print "INFO: Clone complete, IP: " + vm_clone_ip
 
 # Misc vm actions
 # shut down
@@ -99,6 +100,7 @@ print "Clone complete, IP: " + vm_clone_ip
 #vm_clone.destroy()
 
 # ADD VM CLONE IP TO etcd
+print "INFO: add old IP to etcd..."
 url = "http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/" + rundeck_execid + "/old_ip"
 param = {'value':vm_clone_ip}
 requests.put(url, params=param)
