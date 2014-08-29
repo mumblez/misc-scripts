@@ -27,8 +27,6 @@ INFRASTRUCTURE_BASE="$DEV_BASE/infrastructure"
 # etcd add / read execid, IP, hostname / username
 # delete job / execid folder after setting up the machine
 
-echo $OWNIP
-
 # validation
 
 for TOOL in $TOOLS; do
@@ -42,7 +40,7 @@ useradd -g dev -G itadmins $USERNAME -m
 echo "$USERNAME:$PASSWORD" | chpasswd
 
 # add easy shortcut to nfs dev_share
-ln -snf /misc/dev_share "/home/$USERNAME/dev_share"
+#ln -snf /misc/dev_share "/home/$USERNAME/dev_share"
 
 
 # new directories
