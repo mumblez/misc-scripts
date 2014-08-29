@@ -12,8 +12,8 @@ USERNAME="${FIRSTNAME}.${LASTNAME}"
 HOSTNAME="dev-${FIRSTNAME:0:1}${LASTNAME}"
 # check it also doesn't exist (and maybe setup SVN)
 PASSWORD="@option.password@"   # passed from rundeck
-OWNIP=$(curl -s -L http://127.0.0.1:4001/v2/keys/rundeck/jobqueue/@job.execid@/ip | jq -r '.node.value')
-WORKSTATION_IP="@option.workstation_ip"	# pass in via RD - too much hassle to pull automatically
+OWNIP=$(curl -s -L http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/@job.execid@/ip | jq -r '.node.value')
+WORKSTATION_IP="@option.workstation_ip@"	# pass in via RD - too much hassle to pull automatically
 TOOLS="chpasswd svn git adduser"
 WORKING_DIR=$(mktemp -d /tmp/new_user_setup_XXX)
 NEW_DIRS=$(mktemp $WORKING_DIR/new_dirs_XXX.txt)
@@ -27,6 +27,7 @@ INFRASTRUCTURE_BASE="$DEV_BASE/infrastructure"
 # etcd add / read execid, IP, hostname / username
 # delete job / execid folder after setting up the machine
 
+echo $OWNIP
 
 # validation
 
@@ -72,7 +73,7 @@ done < "${NEW_DIRS}"
 
 
 # create standard git directory for future repository store
-sudo -u "$USERNAME" "${DEV_BASE}/git_repos"
+sudo -u "$USERNAME" mkdir -p "${DEV_BASE}/git_repos"
 sudo -u "$USERNAME" echo "Clone your repositories here!" > "${DEV_BASE}/git_repos/README.txt"
 
 # svn pull - account needs to exist on svn to pull automatically
@@ -145,12 +146,12 @@ $INFRASTRUCTURE_BASE/offspring/src/phplib/offspring-core.php /***REMOVED***/lib/
 $INFRASTRUCTURE_BASE/offspring/src/phplib/packages /***REMOVED***/lib/php5/offspring/
 $INFRASTRUCTURE_BASE/offspring/config/dev/offspring-rules.xml /***REMOVED***/config/offspring/
 $INFRASTRUCTURE_BASE/php5.2/config/dev/* /***REMOVED***/config/
-$PROJECTS_BASE/intranet/config/dev/apache/intranet-v2 /etc/apache2/sites-available/intranet-v2
-$PROJECTS_BASE/intranet/config/dev/apache/sms /etc/apache2/sites-available/sms-v2
-$PROJECTS_BASE/intranet/config/dev/apache/umg /etc/apache2/sites-available/umg-v2
-$PROJECTS_BASE/website/config/dev/apache/website-v2 /etc/apache2/sites-available/website-v2
-$PROJECTS_BASE/website/config/dev/apache/***REMOVED*** /etc/apache2/sites-available/***REMOVED***-v2
-$PROJECTS_BASE/zaibatsu/config/dev/apache/zaibatsu /etc/apache2/sites-available/zaibatsu-v2
+$PROJECTS_BASE/intranet/config/dev/apache/intranet-v2 /etc/apache2/sites-available/intranet
+$PROJECTS_BASE/intranet/config/dev/apache/sms-v2 /etc/apache2/sites-available/sms
+$PROJECTS_BASE/intranet/config/dev/apache/umg-v2 /etc/apache2/sites-available/umg
+$PROJECTS_BASE/website/config/dev/apache/website-v2 /etc/apache2/sites-available/website
+$PROJECTS_BASE/website/config/dev/apache/***REMOVED***-v2 /etc/apache2/sites-available/***REMOVED***
+$PROJECTS_BASE/zaibatsu/config/dev/apache/zaibatsu-v2 /etc/apache2/sites-available/zaibatsu
 $PROJECTS_BASE/intranet/cron/dev/cron /etc/cron.d/intranet
 $PROJECTS_BASE/website/config/dev/apache/apache_passwords /***REMOVED***/secure/website/
 $PROJECTS_BASE/website/cron/errorcheck /etc/cron.d/website
@@ -230,8 +231,8 @@ EOF
 
 #service networking restart # will complain file exists, maybe best to reboot right at the end
 
-# nic
-
+# remove apache warning
+echo "ServerName $HOSTNAME" >> /etc/apache2/apache2.conf
 
 # hosts file
 echo "$OWNIP    $HOSTNAME" >> /etc/hosts
@@ -255,5 +256,10 @@ a2ensite {intranet,sms,umg,website,zaibatsu,symfony-example}
 rm -rf "$WORKING_DIR"
 
 # reboot box - mainly so networking / static IP takes effect
-reboot
+echo
+echo "================================================================================"
+echo "INFO: Rebooting, wait a couple minutes before connecting to ${USERNAME}@${OWNIP}"
+echo "================================================================================"
+echo
+( reboot )
 exit 0
