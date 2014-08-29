@@ -31,7 +31,7 @@ INFRASTRUCTURE_BASE="$DEV_BASE/infrastructure"
 # validation
 
 for TOOL in $TOOLS; do
-        which chpasswd >/dev/null 2>&1 || die "ERROR: $TOOL is not installed"
+        which $TOOL >/dev/null 2>&1 || die "ERROR: $TOOL is not installed"
 done
 
 
