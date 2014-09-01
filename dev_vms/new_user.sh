@@ -7,7 +7,9 @@ die() { echo $* 1>&2 ; exit 1 ; }
 
 # settings
 FIRSTNAME=$(echo @option.first_name@ | tr '[:upper:]' '[:lower:]')
+PRETTY_FNAME="$(tr '[:lower:]' '[:upper:]' <<< ${FIRSTNAME:0:1})${FIRSTNAME:1}"
 LASTNAME=$(echo @option.last_name@ | tr '[:upper:]' '[:lower:]')
+PRETTY_LNAME="$(tr '[:lower:]' '[:upper:]' <<< ${LASTNAME:0:1})${LASTNAME:1}"
 USERNAME="${FIRSTNAME}.${LASTNAME}"
 HOSTNAME="dev-${FIRSTNAME:0:1}${LASTNAME}"
 # check it also doesn't exist (and maybe setup SVN)
@@ -22,6 +24,7 @@ SVN_URL="https://***REMOVED***.***REMOVED***.com/svn/trunk"
 DEV_BASE="/home/$USERNAME/dev"
 PROJECTS_BASE="$DEV_BASE/projects"
 INFRASTRUCTURE_BASE="$DEV_BASE/infrastructure"
+GIT_CONFIG="/home/$USERNAME/.gitconfig"
 # RD_JOB_EXECID
 # etcd URL
 # etcd add / read execid, IP, hostname / username
@@ -177,6 +180,16 @@ chmod 777 -R /***REMOVED***/log/
 echo "$HOSTNAME" > /etc/hostname
 hostname "$HOSTNAME"
 
+# setup default gitconfig
+cat > ${GIT_CONFIG} <<EOF
+[user]
+        name = $PRETTY_FNAME $PRETTY_LNAME
+        email = ${FIRSTNAME}.${LASTNAME}@***REMOVED***.com
+[push]
+        default = matching
+EOF
+
+chown ${USERNAME}:${USERNAME} ${GIT_CONFIG}
 
 # backup /etc/php52/php.ini before symlinking dev one
 cd /etc/php52
