@@ -189,7 +189,7 @@ cat > ${GIT_CONFIG} <<EOF
         email = ${FIRSTNAME}.${LASTNAME}@***REMOVED***.com
 EOF
 
-chown ${USERNAME}:${USERNAME} ${GIT_CONFIG}
+chown ${USERNAME} ${GIT_CONFIG}
 
 # backup /etc/php52/php.ini before symlinking dev one
 cd /etc/php52
