@@ -129,6 +129,7 @@ $PROJECTS_BASE/website/src/phplib/ /***REMOVED***/lib/php5/***REMOVED***/project
 $PROJECTS_BASE/intranet/lib/pear/OLE /***REMOVED***/lib/php5/
 $PROJECTS_BASE/intranet/lib/pear/PHPUnit /***REMOVED***/lib/php5/
 $PROJECTS_BASE/website/src/htmltemplates/ /***REMOVED***/lib/templates/website
+$PROJECTS_BASE/intranet/src/htmltemplates/ /***REMOVED***/lib/templates/intranet
 $PROJECTS_BASE/website/resources/flash/ /***REMOVED***/www/website/
 $PROJECTS_BASE/website/lib/ /***REMOVED***/lib/php5/projects/website
 $PROJECTS_BASE/website/src/library/dist/scripts /***REMOVED***/www/website/js/v2
