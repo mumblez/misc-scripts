@@ -185,8 +185,6 @@ cat > ${GIT_CONFIG} <<EOF
 [user]
         name = $PRETTY_FNAME $PRETTY_LNAME
         email = ${FIRSTNAME}.${LASTNAME}@***REMOVED***.com
-[push]
-        default = matching
 EOF
 
 chown ${USERNAME}:${USERNAME} ${GIT_CONFIG}
