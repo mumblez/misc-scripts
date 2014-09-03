@@ -10,8 +10,8 @@ import requests
 
 # Settings
 vm_template_name = 'dev-wheezy-template'
-firstname = "@option.first_name@"
-lastname = "@option.last_name@"
+firstname = "@option.first_name@".lower()
+lastname = "@option.last_name@".lower()
 rundeck_execid = "@job.execid@"
 vm_clone_name = "dev-" + firstname[0:1] + lastname
 #vm_clone_name = 'dev-hmmmm' # pass in later (sys.argv[1])

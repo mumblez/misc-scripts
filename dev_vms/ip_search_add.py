@@ -5,8 +5,8 @@
 import gspread, sys
 import requests
 
-firstname = "@option.first_name@"
-lastname = "@option.last_name@"
+firstname = "@option.first_name@".lower()
+lastname = "@option.last_name@".lower()
 rundeck_execid = "@job.execid@"
 host_name = "dev-" + firstname[0:1] + lastname # change to argument later on
 spread_sheet_key = "***REMOVED***"
