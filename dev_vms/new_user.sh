@@ -212,10 +212,10 @@ sed "s/\(guest account =\)/\1 $USERNAME/" -i smb.conf.clone
 sed "s/^\(path=\)/\1\/home\/$USERNAME/" -i smb.conf.clone
 cp smb.conf.clone smb.conf
 
-# samba
-# edit "hosts allow = <IP>" line or just set to ***REMOVED***.0/24
-# edit "guest account = $USERNAME"
-# edit "path=/home/$USERNAME"
+# Setup specialist-extranet - in future, when common repo's moved into its own namespace, loop this routine for all repo's in ***REMOVED***_web_v2 namespace
+cd /etc/php5/fpm/pool.d
+## Setup user as owner, so cache and log access isn't a problem (user pulls files down as themselves)
+sed "s/^user =.*/user = $USERNAME/" -i specialist-extranet.conf
 
 
 # backup interfaces file before overwriting
@@ -257,7 +257,7 @@ echo "$OWNIP    umg.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    zaibatsu.dev.***REMOVED***.com" >> /etc/hosts
 
 # enable sites
-a2ensite {intranet,sms,umg,website,zaibatsu,symfony-example}
+a2ensite {intranet,sms,umg,website,zaibatsu,specialist-extranet}
 
 
 # [re]start services
@@ -272,7 +272,7 @@ rm -rf "$WORKING_DIR"
 # reboot box - mainly so networking / static IP takes effect
 echo
 echo "=========================================================================================="
-echo "INFO: Rebooting, wait a couple minutes before connecting to ${USERNAME}@${OWNIP}"
+echo "INFO: Rebooting, wait a couple of minutes before connecting to ${USERNAME}@${OWNIP}"
 echo "=========================================================================================="
 echo
 ( reboot )
