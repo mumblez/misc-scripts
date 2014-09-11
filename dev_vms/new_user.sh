@@ -25,6 +25,7 @@ DEV_BASE="/home/$USERNAME/dev"
 PROJECTS_BASE="$DEV_BASE/projects"
 INFRASTRUCTURE_BASE="$DEV_BASE/infrastructure"
 GIT_CONFIG="/home/$USERNAME/.gitconfig"
+GIT_DEPLOY_KEY="/***REMOVED***/keys/cl_deploy"
 # RD_JOB_EXECID
 # etcd URL
 # etcd add / read execid, IP, hostname / username
@@ -193,6 +194,11 @@ cat > ${GIT_CONFIG} <<EOF
 EOF
 
 chown ${USERNAME} ${GIT_CONFIG}
+
+
+# Pull down git repos
+echo "INFO: pulling git repositories down"
+# use key, pull repo, install composer and run composer install, set permissions, set symlinks
 
 # backup /etc/php52/php.ini before symlinking dev one
 cd /etc/php52
