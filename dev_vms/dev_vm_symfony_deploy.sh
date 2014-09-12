@@ -206,11 +206,14 @@ a2ensite specialist-extranet
 ### no more steps
 echo "INFO: Deployment suceeded!"
 
+
+IP=$(curl -s -L http://127.0.0.1:4001/v2/keys/rundeck/jobqueue/@option.parent_exec_id@/ip | jq -r '.node.value')
+
 # reboot box - mainly so networking / static IP takes effect
 echo
 echo "==============================================================================================="
-echo "INFO: You can now ssh to your new box: ${USERNAME}@${OWNIP}"
-echo "INFO: Remember to add your public ssh key to your $HOME/.ssh/authorized_keys"
+echo "INFO: You can now ssh to your new box: ${USERNAME}@${IP}"
+echo "INFO: Remember to add your public ssh key to your /home/${SITE_USER}/.ssh/authorized_keys"
 echo "INFO: And setup your putty connection to use agent forwarding with pagent enabled (call Yusuf)"
 echo "INFO: And setup new dns entries in your workstation hosts file"
 echo "==============================================================================================="
