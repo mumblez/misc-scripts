@@ -9,8 +9,8 @@ PHP="/usr/bin/php"
 # in future add a check to see if systemd init
 PHP_FPM="/etc/init.d/php5-fpm"
 SITE_USER="@node.CL_USER@"
-SITE_GROUP="www-data"
-DEPLOY_KEY="/***REMOVED***/web/cl_deploy"
+SITE_GROUP="dev"
+DEPLOY_KEY="/***REMOVED***/keys/cl_deploy"
 GIT_REPO="@option.repository_url@"
 GIT_OPTIONS="--recursive" #(optional, if using submodules)
 GIT_BRANCH="@option.branch@"
@@ -51,8 +51,18 @@ which curl >/dev/null 2>&1 || die "ERROR: curl is not installed"
 which git >/dev/null 2>&1 || die "ERROR: git is not installed"
 
 
+mkdir -p "$SYMFONY_ROOT"
+mkdir -p "$SYMFONY_BINARIES_ROOT"
+mkdir -p "$DEPLOY_ROOT"
+
+# cp deploy key
+cp $DEPLOY_KEY /home/$SITE_USER
+DEPLOY_KEY="/home/$SITE_USER/cl_deploy"
+chown $SITE_USER:***REMOVED*** $DEPLOY_KEY
+chmod 600 $DEPLOY_KEY
+
 # Download latest composer.phar #
-cd "$SYMFONY_BINARIES_ROOT/binaries"
+cd "$SYMFONY_BINARIES_ROOT"
 curl -sS https://getcomposer.org/installer | $PHP >/dev/null 2>&1 && [ -e "$COMPOSER" ] || die "ERROR: Could not download and setup composer.phar"
 chown "$SITE_USER":"$SITE_GROUP" "$COMPOSER"
 
@@ -68,17 +78,16 @@ sed "s/^user =.*/user = $SITE_USER/" -i specialist-extranet.conf
 #[ ! -d "$REAL_DIR" ] && mkdir "$REAL_DIR"
 #[ ! -d "$SHARED_ROOT" ] && mkdir "$SHARED_ROOT"
 
-mkdir -p "$SYMFONY_ROOT"
-mkdir -p "$SYMFONY_BINARIES_ROOT"
-mkdir -p "$DEPLOY_ROOT"
-mkdir -p "$REAL_DIR"
+
 
 ## Cleanup previous releases ###
 #find "$DEPLOY_ROOT" -type d -mtime +4 -exec rm -rf {} \;
 
 # Create new deployment directory
-mkdir "$DEPLOY_ROOT" || die "ERROR: Failed to create deployment directory - $DEPLOY_DIR"
+#mkdir "$DEPLOY_ROOT" || die "ERROR: Failed to create deployment directory - $DEPLOY_ROOT"
 
+# add gitlab server as known ssh host
+ssh-keyscan -H ***REMOVED***.***REMOVED***.com >> /home/$SITE_USER/.ssh/known_hosts || die "ERROR: failed to find gitlab server and it's public key"
 
 #Pull latest code
 ssh-agent bash -c "ssh-add $DEPLOY_KEY >/dev/null 2>&1 && git clone $GIT_REPO $DEPLOY_ROOT $GIT_OPTIONS" || die "ERROR: Git clone from $GIT_REPO failed"
@@ -89,6 +98,8 @@ ssh-agent bash -c "ssh-add $DEPLOY_KEY >/dev/null 2>&1 && git clone $GIT_REPO $D
 cd $DEPLOY_ROOT
 git checkout "$GIT_BRANCH" # (just leave on master?)
 
+#symlink parameters
+ln -snf "$DEPLOY_ROOT/app/config/parameters.$APP_ENV.yml" "$DEPLOY_ROOT/app/config/parameters.yml"
 
 ### PULL PROD / TEST SETTINGS FROM CONFIG MGT ###
 # or symlink outside releases dir for now
@@ -96,7 +107,7 @@ git checkout "$GIT_BRANCH" # (just leave on master?)
 # symlink parameters = change in future to setup via salt / config mgt
 #[ -e "$SYMFONY_PARAMS_FILE" ] || die "ERROR: $SYMFONY_PARAMS_FILE does not exist"
 #[ -e "$SYMFONY_PARAMS_FILE" ] || echo "WARNING: $SYMFONY_PARAMS_FILE does not exist"
-ln -snf "$DEPLOY_ROOT/app/config/parameters.$APP_ENV.yml" "$DEPLOY_ROOT/app/config/parameters.yml"
+
 
 
 ### REPLACE apache settings from config mgt ###
@@ -162,9 +173,10 @@ chmod 777 "$DEPLOY_ROOT/app/cache" -R
 # document
 #ln -snf "$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml" "$DEPLOY_DIR/app/config/parameters.yml"
 
-
+echo "Deploy ***REMOVED***: $DEPLOY_ROOT"
+echo "Real Dir: $REAL_DIR"
 #symlink deploy_dir to real_dir
-ln -snf "$DEPLOY_DIR" "$REAL_DIR" && echo "INFO: Symlinked deployment release directory - $DEPLOY_DIR to $REAL_DIR" || die "ERROR: Symlinking deployment release directory - $DEPLOY_DIR to $REAL_DIR failed"
+ln -snf "$DEPLOY_ROOT" "$REAL_DIR" && echo "INFO: Symlinked deployment release directory - $DEPLOY_ROOT to $REAL_DIR" || die "ERROR: Symlinking deployment release directory - $DEPLOY_DIR to $REAL_DIR failed"
 
 # Set permission to symlink (incase apache only follows symlinks with same owner)
 chown -h "$SITE_USER":"$SITE_GROUP" "$REAL_DIR" -R
@@ -189,7 +201,7 @@ chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
 echo "INFO: Deployment suceeded!"
 
 # CLEANUP 
-echo "INFO: Cleaning up..."
+#echo "INFO: Cleaning up..."
 # Clearing old releases
 #CURRENT_RELEASE=$(basename $(readlink $REAL_DIR))
 #RECENT_RELEASES=$(ls -tr1 "$DEPLOY_ROOT" | grep -vE "shared|$CURRENT_RELEASE" | tail -n4)
