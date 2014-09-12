@@ -197,7 +197,7 @@ chown ${USERNAME} ${GIT_CONFIG}
 
 
 # Pull down git repos
-echo "INFO: pulling git repositories down"
+#echo "INFO: pulling git repositories down"
 # use key, pull repo, install composer and run composer install, set permissions, set symlinks
 
 # backup /etc/php52/php.ini before symlinking dev one
@@ -219,9 +219,9 @@ sed "s/^\(path=\)/\1\/home\/$USERNAME/" -i smb.conf.clone
 cp smb.conf.clone smb.conf
 
 # Setup specialist-extranet - in future, when common repo's moved into its own namespace, loop this routine for all repo's in ***REMOVED***_web_v2 namespace
-cd /etc/php5/fpm/pool.d
+#cd /etc/php5/fpm/pool.d
 ## Setup user as owner, so cache and log access isn't a problem (user pulls files down as themselves)
-sed "s/^user =.*/user = $USERNAME/" -i specialist-extranet.conf
+#sed "s/^user =.*/user = $USERNAME/" -i specialist-extranet.conf
 
 
 # backup interfaces file before overwriting
@@ -263,14 +263,14 @@ echo "$OWNIP    umg.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    zaibatsu.dev.***REMOVED***.com" >> /etc/hosts
 
 # enable sites
-a2ensite {intranet,sms,umg,website,zaibatsu,specialist-extranet}
+a2ensite {intranet,sms,umg,website,zaibatsu}
 
 
 # [re]start services
 /etc/init.d/samba restart
 /etc/init.d/apache2 restart
 /etc/init.d/php52-fpm restart
-/etc/init.d/php55-fpm restart
+#/etc/init.d/php55-fpm restart
 
 # cleanup
 rm -rf "$WORKING_DIR"
