@@ -182,10 +182,16 @@ ln -snf "$DEPLOY_ROOT" "$REAL_DIR" && echo "INFO: Symlinked deployment release d
 chown -h "$SITE_USER":"$SITE_GROUP" "$REAL_DIR" -R
 
 #symlink web***REMOVED***
-ln -snf "$REAL_DIR/web" "$WEBROOT" && echo "INFO: Symlinked deployment release web ***REMOVED*** - $REAL_DIR to $WEBROOT" || die "ERROR: Symlinking deployment release web***REMOVED*** - $REAL_DIR to $WEBROOT failed"
+ln -snf "${REAL_DIR}/web" "$WEBROOT" && echo "INFO: Symlinked deployment release web ***REMOVED*** - $REAL_DIR to $WEBROOT" || die "ERROR: Symlinking deployment release web***REMOVED*** - $REAL_DIR to $WEBROOT failed"
 
 # Set permission to web***REMOVED*** (incase apache only follows symlinks with same owner)
 chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
+
+# create log dir
+mkdir /***REMOVED***/log/specialist-extranet
+
+# enable site
+a2ensite specialist-extranet
 
 # Restart php-fpm as it keeps handles open from previous files!
 "$PHP_FPM" restart || die "ERROR: Failed to restart $PHP_FPM service"
@@ -199,6 +205,16 @@ chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
 
 ### no more steps
 echo "INFO: Deployment suceeded!"
+
+# reboot box - mainly so networking / static IP takes effect
+echo
+echo "==============================================================================================="
+echo "INFO: You can now ssh to your new box: ${USERNAME}@${OWNIP}"
+echo "INFO: Remember to add your public ssh key to your $HOME/.ssh/authorized_keys"
+echo "INFO: And setup your putty connection to use agent forwarding with pagent enabled (call Yusuf)"
+echo "INFO: And setup new dns entries in your workstation hosts file"
+echo "==============================================================================================="
+echo
 
 # CLEANUP 
 #echo "INFO: Cleaning up..."
