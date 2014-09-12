@@ -14,7 +14,7 @@ USERNAME="${FIRSTNAME}.${LASTNAME}"
 HOSTNAME="dev-${FIRSTNAME:0:1}${LASTNAME}"
 # check it also doesn't exist (and maybe setup SVN)
 PASSWORD="@option.password@"   # passed from rundeck
-OWNIP=$(curl -s -L http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/@job.execid@/ip | jq -r '.node.value')
+OWNIP=$(curl -s -L http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/@option.parent_exec_id@/ip | jq -r '.node.value')
 WORKSTATION_IP="@option.workstation_ip@"	# pass in via RD - too much hassle to pull automatically
 TOOLS="chpasswd svn git adduser"
 WORKING_DIR=$(mktemp -d /tmp/new_user_setup_XXX)
