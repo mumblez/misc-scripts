@@ -179,13 +179,14 @@ echo "Real Dir: $REAL_DIR"
 ln -snf "$DEPLOY_ROOT" "$REAL_DIR" && echo "INFO: Symlinked deployment release directory - $DEPLOY_ROOT to $REAL_DIR" || die "ERROR: Symlinking deployment release directory - $DEPLOY_DIR to $REAL_DIR failed"
 
 # Set permission to symlink (incase apache only follows symlinks with same owner)
-chown -h "$SITE_USER":"$SITE_GROUP" "$REAL_DIR" -R
+#chown -h "$SITE_USER":"$SITE_GROUP" "$REAL_DIR" -R
 
 #symlink web***REMOVED***
 ln -snf "${REAL_DIR}/web" "$WEBROOT" && echo "INFO: Symlinked deployment release web ***REMOVED*** - $REAL_DIR/web to $WEBROOT" || die "ERROR: Symlinking deployment release web***REMOVED*** - $REAL_DIR to $WEBROOT failed"
 
 # Set permission to web***REMOVED*** (incase apache only follows symlinks with same owner)
-chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
+#chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
+chown -h "$SITE_USER":"$SITE_GROUP" "$SYMFONY_ROOT"
 
 # create log dir
 mkdir /***REMOVED***/log/specialist-extranet
