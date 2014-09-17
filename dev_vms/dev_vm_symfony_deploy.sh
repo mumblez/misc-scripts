@@ -207,7 +207,7 @@ a2ensite specialist-extranet
 echo "INFO: Deployment suceeded!"
 
 
-IP=$(curl -s -L http://127.0.0.1:4001/v2/keys/rundeck/jobqueue/@option.parent_exec_id@/ip | jq -r '.node.value')
+IP=$(curl -s -L http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/@option.parent_exec_id@/ip | jq -r '.node.value')
 
 # reboot box - mainly so networking / static IP takes effect
 echo
