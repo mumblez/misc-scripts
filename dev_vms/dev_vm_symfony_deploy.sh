@@ -223,6 +223,8 @@ echo "==========================================================================
 echo
 
 # CLEANUP 
+rm -f "$DEPLOY_KEY"
+
 #echo "INFO: Cleaning up..."
 # Clearing old releases
 #CURRENT_RELEASE=$(basename $(readlink $REAL_DIR))
