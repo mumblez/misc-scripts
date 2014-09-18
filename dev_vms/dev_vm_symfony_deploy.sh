@@ -215,8 +215,10 @@ echo
 echo "==============================================================================================="
 echo "INFO: You can now ssh to your new box: ${USERNAME}@${IP}"
 echo "INFO: Remember to add your public ssh key to your /home/${SITE_USER}/.ssh/authorized_keys"
+echo "INFO: (check under c:\users\@node.CL_USER@\.ssh\ for your private key to add to pagent shortcut!"
 echo "INFO: And setup your putty connection to use agent forwarding with pagent enabled (call Yusuf)"
 echo "INFO: And setup new dns entries in your workstation hosts file"
+echo "INFO: And setup your share from your workstation - \\\\${IP}\dev"
 echo "==============================================================================================="
 echo
 
