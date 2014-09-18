@@ -20,7 +20,8 @@ vcenter_username = '***REMOVED***'
 vcenter_password = '***REMOVED***'
 vcenter_folder = 'Dev VMs'
 dev_hypervisor = 'vmware-hyp-1.dev.***REMOVED***.com'
-host_datastore = 'SSD-2-1-160'
+#host_datastore = 'SSD-2-1-160'
+host_datastore = "@option.datastore@"
 verbose = False
 maxwait = 120 # How long to keep trying to get clone vm IP address
 
