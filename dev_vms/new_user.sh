@@ -125,8 +125,6 @@ $PROJECTS_BASE/website/resources/img /***REMOVED***/www/website/
 $PROJECTS_BASE/website/resources/fonts /***REMOVED***/www/website/
 $PROJECTS_BASE/intranet/src/phplib/ /***REMOVED***/lib/php5/***REMOVED***/projects/intranet
 $PROJECTS_BASE/website/src/phplib/ /***REMOVED***/lib/php5/***REMOVED***/projects/website
-$PROJECTS_BASE/intranet/src/phplib/ /***REMOVED***/lib/php5/***REMOVED***/projects/intranet
-$PROJECTS_BASE/website/src/phplib/ /***REMOVED***/lib/php5/***REMOVED***/projects/website
 $PROJECTS_BASE/intranet/lib/pear/OLE /***REMOVED***/lib/php5/
 $PROJECTS_BASE/intranet/lib/pear/PHPUnit /***REMOVED***/lib/php5/
 $PROJECTS_BASE/website/src/htmltemplates/ /***REMOVED***/lib/templates/website
@@ -261,6 +259,7 @@ echo "$OWNIP    www.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    intranet.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    umg.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    zaibatsu.dev.***REMOVED***.com" >> /etc/hosts
+echo "$OWNIP    specialist.dev.***REMOVED***.com" >> /etc/hosts
 
 # enable sites
 a2ensite {intranet,sms,umg,website,zaibatsu}
