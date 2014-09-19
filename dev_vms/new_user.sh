@@ -85,10 +85,10 @@ sudo -u "$USERNAME" svn checkout --depth empty "${SVN_URL}/projects" "$PROJECTS_
 sudo -u "$USERNAME" svn checkout --depth empty "${SVN_URL}/infrastructure" "$INFRASTRUCTURE_BASE"
 cd "$PROJECTS_BASE"
 echo "INFO: Pulling projects down....."
-sudo -u "$USERNAME" svn up intranet website common zaibatsu &>/dev/null
+sudo -u "$USERNAME" svn up intranet website common zaibatsu restserver &>/dev/null
 cd "$INFRASTRUCTURE_BASE"
 echo "INFO: Pulling infrastructure parts down....."
-sudo -u "$USERNAME" svn up php5.2 offspring chrome-plugins base sphinx &>/dev/null
+sudo -u "$USERNAME" svn up php5.2 offspring chrome-plugins base sphinx yii &>/dev/null
 
 
 # create symlinks
@@ -115,6 +115,7 @@ $PROJECTS_BASE/website/config/dev/offspring /***REMOVED***/config/website/
 $PROJECTS_BASE/intranet/src/html/ /***REMOVED***/www/intranet
 $PROJECTS_BASE/website/src/html/ /***REMOVED***/www/website
 $PROJECTS_BASE/zaibatsu/src/html/ /***REMOVED***/www/zaibatsu
+$PROJECTS_BASE/restserver/src /***REMOVED***/www/restserver
 $PROJECTS_BASE/intranet/src/js /***REMOVED***/www/intranet/
 $PROJECTS_BASE/intranet/src/css /***REMOVED***/www/intranet/
 $PROJECTS_BASE/website/src/js /***REMOVED***/www/website/
@@ -150,12 +151,14 @@ $INFRASTRUCTURE_BASE/offspring/config/dev/offspring-rules.xml /***REMOVED***/con
 $INFRASTRUCTURE_BASE/php5.2/config/dev/* /***REMOVED***/config/
 $INFRASTRUCTURE_BASE/base/config/dev/comm.yml /***REMOVED***/config/
 $INFRASTRUCTURE_BASE/base/lib/perl/comm.pm /***REMOVED***/lib/perl/
+$INFRASTRUCTURE_BASE/yii/lib/yii /***REMOVED***/lib/php5/
 $PROJECTS_BASE/intranet/config/dev/apache/intranet-v2 /etc/apache2/sites-available/intranet
 $PROJECTS_BASE/intranet/config/dev/apache/sms-v2 /etc/apache2/sites-available/sms
 $PROJECTS_BASE/intranet/config/dev/apache/umg-v2 /etc/apache2/sites-available/umg
 $PROJECTS_BASE/website/config/dev/apache/website-v2 /etc/apache2/sites-available/website
 $PROJECTS_BASE/website/config/dev/apache/***REMOVED***-v2 /etc/apache2/sites-available/***REMOVED***
 $PROJECTS_BASE/zaibatsu/config/dev/apache/zaibatsu-v2 /etc/apache2/sites-available/zaibatsu
+$PROJECTS_BASE/restserver/config/dev/restserver /etc/apache2/sites-available/restserver
 $PROJECTS_BASE/intranet/cron/dev/cron /etc/cron.d/intranet
 $PROJECTS_BASE/website/config/dev/apache/apache_passwords /***REMOVED***/secure/website/
 $PROJECTS_BASE/website/cron/errorcheck /etc/cron.d/website
