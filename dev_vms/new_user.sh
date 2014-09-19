@@ -273,6 +273,8 @@ echo "$OWNIP    intranet.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    umg.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    zaibatsu.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    specialist.dev.***REMOVED***.com" >> /etc/hosts
+echo "$OWNIP    restserver.dev.***REMOVED***.com" >> /etc/hosts
+echo "$OWNIP    auth.dev.***REMOVED***.com" >> /etc/hosts
 
 # enable sites
 echo "INFO: Enabling apache vhosts..."
