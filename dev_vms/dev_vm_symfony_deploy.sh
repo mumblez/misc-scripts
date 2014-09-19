@@ -7,6 +7,7 @@ die() { echo $* 1>&2 ; exit 1 ; }
 #TIMESTAMP=$(date +%Y-%m-%d-%H%M)
 PHP="/usr/bin/php"
 # in future add a check to see if systemd init
+PROJECT="specialist-extranet"
 PHP_FPM="/etc/init.d/php5-fpm"
 SITE_USER="@node.CL_USER@"
 SITE_GROUP="dev"
@@ -15,13 +16,13 @@ GIT_REPO="@option.repository_url@"
 GIT_OPTIONS="--recursive" #(optional, if using submodules)
 GIT_BRANCH="@option.branch@"
 GIT_TAG="@option.tag@"
-REAL_DIR="/***REMOVED***/lib/php5/symfony2"
+REAL_DIR="/***REMOVED***/lib/php5/$PROJECT"
 SYMFONY_ROOT="/home/@node.CL_USER@/dev/git_repos/symfony_repos"
 SYMFONY_BINARIES_ROOT="/home/@node.CL_USER@/dev/git_repos/binaries"
 DEPLOY_ROOT="${SYMFONY_ROOT}/@option.repository@"
 #SHARED_ROOT="${DEPLOY_ROOT}/shared"
 #DEPLOY_DIR="${DEPLOY_ROOT}/${TIMESTAMP}"
-WEBROOT="/***REMOVED***/www/specialist-extranet"
+WEBROOT="/***REMOVED***/www/$PROJECT"
 APP_ENV="@option.environment@"
 COMPOSER="${SYMFONY_BINARIES_ROOT}/composer.phar"
 #COMPOSER_OPTIONS="--no-interaction --working-dir=$DEPLOY_DIR"
@@ -71,7 +72,7 @@ chown "$SITE_USER":"$SITE_GROUP" "$COMPOSER"
 # Setup specialist-extranet - in future, when common repo's moved into its own namespace, loop this routine for all repo's in ***REMOVED***_web_v2 namespace
 cd /etc/php5/fpm/pool.d
 ## Setup user as owner, so cache and log access isn't a problem (user pulls files down as themselves)
-sed "s/^user =.*/user = $SITE_USER/" -i specialist-extranet.conf
+sed "s/^user =.*/user = $SITE_USER/" -i ${PROJECT}.conf
 
 
 # Setup symfony dir incase overwritten / removed from old deploys
@@ -189,10 +190,10 @@ ln -snf "${REAL_DIR}/web" "$WEBROOT" && echo "INFO: Symlinked deployment release
 chown -h "$SITE_USER":"$SITE_GROUP" "$SYMFONY_ROOT"
 
 # create log dir
-mkdir /***REMOVED***/log/specialist-extranet
+mkdir /***REMOVED***/log/${PROJECT}
 
 # enable site
-a2ensite specialist-extranet
+a2ensite ${PROJECT}
 
 # Restart php-fpm as it keeps handles open from previous files!
 "$PHP_FPM" restart || die "ERROR: Failed to restart $PHP_FPM service"
