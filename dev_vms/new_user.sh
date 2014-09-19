@@ -112,6 +112,8 @@ $PROJECTS_BASE/website/config/dev/config.xml /***REMOVED***/config/website/
 $PROJECTS_BASE/website/config/dev/config.inc.php /***REMOVED***/config/website/
 $PROJECTS_BASE/website/config/dev/forms /***REMOVED***/config/website/
 $PROJECTS_BASE/website/config/dev/offspring /***REMOVED***/config/website/
+$PROJECTS_BASE/zaibatsu/config/dev /***REMOVED***/config/zaibatsu
+$PROJECTS_BASE/zaibatsu/src/protected /***REMOVED***/lib/php5/projects/zaibatsu
 $PROJECTS_BASE/intranet/src/html/ /***REMOVED***/www/intranet
 $PROJECTS_BASE/website/src/html/ /***REMOVED***/www/website
 $PROJECTS_BASE/zaibatsu/src/html/ /***REMOVED***/www/zaibatsu
@@ -183,6 +185,7 @@ chmod 777 /***REMOVED***/lib/php5/dwoo/compiled
 chmod 777 -R /***REMOVED***/var/compiled/
 chmod 777 -R /***REMOVED***/var/cache/
 chmod 777 -R /***REMOVED***/log/
+chmod 777 -R /***REMOVED***/lib/php5/projects/zaibatsu/runtime
 
 # set hostname
 # dev-<initial><surname>
