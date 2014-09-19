@@ -276,7 +276,7 @@ echo "$OWNIP    specialist.dev.***REMOVED***.com" >> /etc/hosts
 
 # enable sites
 echo "INFO: Enabling apache vhosts..."
-a2ensite {intranet,sms,umg,website,zaibatsu}
+a2ensite {intranet,sms,umg,website,zaibatsu,restserver}
 
 echo "INFO: Restarting samba and php-fpm"
 # [re]start services
