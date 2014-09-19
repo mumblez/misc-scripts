@@ -148,6 +148,8 @@ $INFRASTRUCTURE_BASE/offspring/src/phplib/offspring-core.php /***REMOVED***/lib/
 $INFRASTRUCTURE_BASE/offspring/src/phplib/packages /***REMOVED***/lib/php5/offspring/
 $INFRASTRUCTURE_BASE/offspring/config/dev/offspring-rules.xml /***REMOVED***/config/offspring/
 $INFRASTRUCTURE_BASE/php5.2/config/dev/* /***REMOVED***/config/
+$INFRASTRUCTURE_BASE/base/config/dev/comm.yml /***REMOVED***/config/
+$INFRASTRUCTURE_BASE/base/lib/perl/comm.pm /***REMOVED***/lib/perl/
 $PROJECTS_BASE/intranet/config/dev/apache/intranet-v2 /etc/apache2/sites-available/intranet
 $PROJECTS_BASE/intranet/config/dev/apache/sms-v2 /etc/apache2/sites-available/sms
 $PROJECTS_BASE/intranet/config/dev/apache/umg-v2 /etc/apache2/sites-available/umg
@@ -159,8 +161,13 @@ $PROJECTS_BASE/website/config/dev/apache/apache_passwords /***REMOVED***/secure/
 $PROJECTS_BASE/website/cron/errorcheck /etc/cron.d/website
 EOF
 
+[ -h /***REMOVED***/lib/php5/***REMOVED***/projects/intranet/phplib ] && echo "WARNING: Found dodgy link" 
+
 while read line; do
-	ln -sf $line
+        #echo "INFO: Creating symlinks...."
+        #echo "INFO: Creating symlink for $line"
+	ln -snf $line
+        #[ -h /***REMOVED***/lib/php5/***REMOVED***/projects/intranet/phplib ] && echo "WARNING: Found dodgy link" 
 done < "${SYMLINKS_FILE}"
 
 # directories to make after symlinking
@@ -209,6 +216,7 @@ ln -snf "${INFRASTRUCTURE_BASE}/php5.2/config/dev/php-v2.ini" php.ini
 # add new version or a v2 version to svn and symlink to that, add extensions to end of new file
 
 # copy clone and samba conf edit smb.conf
+echo "INFO: Updating samba configuration..."
 cd /etc/samba
 cp smb.conf smb.conf.bak
 sed "s/\(hosts allow =\)/\1 $WORKSTATION_IP/" -i smb.conf.clone
@@ -223,6 +231,7 @@ cp smb.conf.clone smb.conf
 
 
 # backup interfaces file before overwriting
+echo "INFO: Setting static IP address..."
 cp /etc/network/{interfaces,interfaces.bak} || die "ERROR: Failed to backup the network interfaces file"
 # set IP
 # /etc/network/interfaces, use below as a template and replace fields
@@ -250,6 +259,7 @@ EOF
 #service networking restart # will complain file exists, maybe best to reboot right at the end
 
 # remove apache warning
+echo "INFO: Updating vm hosts file"
 echo "ServerName $HOSTNAME" >> /etc/apache2/apache2.conf
 
 # hosts file
@@ -262,9 +272,10 @@ echo "$OWNIP    zaibatsu.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    specialist.dev.***REMOVED***.com" >> /etc/hosts
 
 # enable sites
+echo "INFO: Enabling apache vhosts..."
 a2ensite {intranet,sms,umg,website,zaibatsu}
 
-
+echo "INFO: Restarting samba and php-fpm"
 # [re]start services
 /etc/init.d/samba restart
 /etc/init.d/apache2 restart
@@ -272,6 +283,7 @@ a2ensite {intranet,sms,umg,website,zaibatsu}
 #/etc/init.d/php55-fpm restart
 
 # cleanup
+echo "INFO: Cleaning up..."
 rm -rf "$WORKING_DIR"
 
 # reboot box - mainly so networking / static IP takes effect
