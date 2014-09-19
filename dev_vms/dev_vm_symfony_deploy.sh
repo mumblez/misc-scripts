@@ -214,7 +214,7 @@ IP=$(curl -s -L http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/@option.pa
 # reboot box - mainly so networking / static IP takes effect
 echo
 echo "==============================================================================================="
-echo "INFO: You can now ssh to your new box: ${USERNAME}@${IP}"
+echo "INFO: You can now ssh to your new box: ${SITE_USER}@${IP}"
 echo "INFO: Remember to add your public ssh key to your /home/${SITE_USER}/.ssh/authorized_keys"
 echo "INFO: (check under c:\users\@node.CL_USER@\.ssh\ for your private key to add to pagent shortcut!"
 echo "INFO: And setup your putty connection to use agent forwarding with pagent enabled (call Yusuf)"
