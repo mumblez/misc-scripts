@@ -112,10 +112,12 @@ fi
 [ -d "${JOB_COUNT_DIR}" ] || mkdir "${JOB_COUNT_DIR}"
 
 # What to exclude from rsync operation
+#- /***REMOVED***/scheduled_task*
+#- /***REMOVED***/service_configuration*
+#- /***REMOVED***/services*
+# removed above 3 from exclude list as causes major issues with it crashes and very difficult to recover,
+# safer to sync everything then rely on the restore scripts to drop the table and re-create!!!
 cat > ${EXCLUDE_FILE} <<EOF
-- /***REMOVED***/scheduled_task*
-- /***REMOVED***/service_configuration*
-- /***REMOVED***/services*
 - /mysqld-relay*
 - /relay-log.info 
 - /mysql-bin.*
