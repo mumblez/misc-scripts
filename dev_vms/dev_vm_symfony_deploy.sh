@@ -88,7 +88,7 @@ sed "s/^user =.*/user = $SITE_USER/" -i ${PROJECT}.conf
 #mkdir "$DEPLOY_ROOT" || die "ERROR: Failed to create deployment directory - $DEPLOY_ROOT"
 
 # add gitlab server as known ssh host
-#ssh-keyscan -H ***REMOVED***.***REMOVED***.com >> /home/$SITE_USER/.ssh/known_hosts || die "ERROR: failed to find gitlab server and it's public key"
+ssh-keyscan -H ***REMOVED***.***REMOVED***.com >> /home/$SITE_USER/.ssh/known_hosts || die "ERROR: failed to find gitlab server and it's public key"
 #doesn't work, user has to do themselves
 
 #Pull latest code
@@ -206,6 +206,10 @@ a2ensite ${PROJECT}
 # Restart apache
 /etc/init.d/apache2 restart
 
+# cleanup ssh known hosts
+> /home/$SITE_USER/.ssh/known_hosts
+sudo -u @node.CL_USER@ ssh-keyscan -H ***REMOVED***.***REMOVED***.com >> /home/$SITE_USER/.ssh/known_hosts
+
 ### no more steps
 echo "INFO: Deployment suceeded!"
 
@@ -215,10 +219,11 @@ IP=$(curl -s -L http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/@option.pa
 # reboot box - mainly so networking / static IP takes effect
 echo
 echo "==============================================================================================="
-echo "INFO: You can now ssh to your new box: ${SITE_USER}@${IP}"
+echo "INFO: You can now ssh to your new box: @node.CL_USER@@${IP}"
 echo "INFO: Remember to add your public ssh key to your /home/${SITE_USER}/.ssh/authorized_keys"
 echo "INFO: (check under c:\users\@node.CL_USER@\.ssh\ for your private key to add to pagent shortcut!"
-echo "INFO: And setup your putty connection to use agent forwarding with pagent enabled (call Yusuf)"
+echo "INFO: And setup your putty connection to use agent forwarding with pagent enabled:"
+echo "INFO: https://sites.google.com/a/***REMOVED***.com/development/home/quick-start/ssh-key-generation"
 echo "INFO: And setup new dns entries in your workstation hosts file"
 echo "INFO: And setup your share from your workstation - \\\\${IP}\dev"
 echo "==============================================================================================="
