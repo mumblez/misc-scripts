@@ -209,6 +209,7 @@ a2ensite ${PROJECT}
 # cleanup ssh known hosts
 > /home/$SITE_USER/.ssh/known_hosts
 sudo -u @node.CL_USER@ ssh-keyscan -H ***REMOVED***.***REMOVED***.com >> /home/$SITE_USER/.ssh/known_hosts
+chown @node.CL_USER@ /home/@node.CL_USER@/.ssh/known_hosts
 
 ### no more steps
 echo "INFO: Deployment suceeded!"
