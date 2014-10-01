@@ -88,7 +88,8 @@ sed "s/^user =.*/user = $SITE_USER/" -i ${PROJECT}.conf
 #mkdir "$DEPLOY_ROOT" || die "ERROR: Failed to create deployment directory - $DEPLOY_ROOT"
 
 # add gitlab server as known ssh host
-ssh-keyscan -H ***REMOVED***.***REMOVED***.com >> /home/$SITE_USER/.ssh/known_hosts || die "ERROR: failed to find gitlab server and it's public key"
+#ssh-keyscan -H ***REMOVED***.***REMOVED***.com >> /home/$SITE_USER/.ssh/known_hosts || die "ERROR: failed to find gitlab server and it's public key"
+#doesn't work, user has to do themselves
 
 #Pull latest code
 ssh-agent bash -c "ssh-add $DEPLOY_KEY >/dev/null 2>&1 && git clone $GIT_REPO $DEPLOY_ROOT $GIT_OPTIONS" || die "ERROR: Git clone from $GIT_REPO failed"
