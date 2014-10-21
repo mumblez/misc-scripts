@@ -26,6 +26,8 @@ PROJECTS_BASE="$DEV_BASE/projects"
 INFRASTRUCTURE_BASE="$DEV_BASE/infrastructure"
 GIT_CONFIG="/home/$USERNAME/.gitconfig"
 GIT_DEPLOY_KEY="/***REMOVED***/keys/cl_deploy"
+GITLAB_API="***REMOVED***"
+GITLAB_URL="https://***REMOVED***.***REMOVED***.com"
 # RD_JOB_EXECID
 # etcd URL
 # etcd add / read execid, IP, hostname / username
@@ -110,7 +112,7 @@ $PROJECTS_BASE/intranet/config/dev/db.properties /***REMOVED***/config/intranet/
 $PROJECTS_BASE/intranet/config/dev/offspring /***REMOVED***/config/intranet/
 $PROJECTS_BASE/website/config/dev/config.xml /***REMOVED***/config/website/
 $PROJECTS_BASE/website/config/dev/config.inc.php /***REMOVED***/config/website/
-$PROJECTS_BASE/website/config/dev/forms /***REMOVED***/config/website/
+$PROJECTS_BASE/website/src/forms /***REMOVED***/config/website/
 $PROJECTS_BASE/website/config/dev/offspring /***REMOVED***/config/website/
 $PROJECTS_BASE/zaibatsu/config/dev /***REMOVED***/config/zaibatsu
 $PROJECTS_BASE/zaibatsu/src/protected /***REMOVED***/lib/php5/projects/zaibatsu
@@ -289,6 +291,11 @@ echo "INFO: Restarting samba and php-fpm"
 /etc/init.d/apache2 restart
 /etc/init.d/php52-fpm restart
 #/etc/init.d/php55-fpm restart
+
+
+# Adding ssh public key(s)
+DEV_ID=$(curl --header "PRIVATE-TOKEN: $GITLAB_API" -k -s "$GITLAB_URL/api/v3/users" | jq --arg dev_user "***REMOVED***" '.[] | select(.username == $dev_user) | .id')
+curl --header "PRIVATE-TOKEN: $GITLAB_API" -k -s "$GITLAB_URLapi/v3/users/$DEV_ID/keys" | jq -r '.[].key' >> "/home/$USERNAME/.ssh/authorized_keys"
 
 # cleanup
 echo "INFO: Cleaning up..."
