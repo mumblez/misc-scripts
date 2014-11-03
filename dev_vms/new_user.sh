@@ -229,6 +229,7 @@ cd /etc/samba
 cp smb.conf smb.conf.bak
 sed "s/\(hosts allow =\)/\1 $WORKSTATION_IP/" -i smb.conf.clone
 sed "s/\(guest account =\)/\1 $USERNAME/" -i smb.conf.clone
+sed "s/\(force user =\)/\1 $USERNAME/" -i smb.conf.clone
 sed "s/^\(path=\)/\1\/home\/$USERNAME/" -i smb.conf.clone
 cp smb.conf.clone smb.conf
 
