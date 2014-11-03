@@ -6,7 +6,9 @@ import gspread, sys
 import requests
 
 firstname = "@option.first_name@".lower()
+#firstname = "klaus"
 lastname = "@option.last_name@".lower()
+#lastname = "wong"
 rundeck_execid = "@job.execid@"
 host_name = "dev-" + firstname[0:1] + lastname # change to argument later on
 spread_sheet_key = "***REMOVED***"
@@ -27,24 +29,15 @@ for cell in dev_hostnames:
 # search if host name taken in range, catch exception when isn't found and update cell with host name
 try:
   wks.find(host_name)
-  print "ERROR: host name already exists"
-  sys.exit(1)
+  print "WARNING: host name already exists, re-using IP"
+  new_ip = "***REMOVED***." + wks.cell(wks.find(host_name).row, col_ip).value
 except gspread.exceptions.CellNotFound:
   wks.update_cell(free_row,col_hostnames, host_name)
   new_ip = "***REMOVED***." + wks.cell(free_row, col_ip).value
-  url = "http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/" + rundeck_execid + "/ip"
-  param = {'value':new_ip}
-  requests.put(url, params=param)
-  print "INFO: successfully added new IP to etcd"
-  sys.exit(0)
 
-# add IP to etcd (use execid) with low TTL
-#http://stackoverflow.com/questions/4476373/simple-url-get-post-function-in-python
-#import requests
-#url = "http://127.0.0.1:4001/v2/keys/bbb"
-#param = {'value':'bye george'}
-#r = requests.put(url, params=param)
-
-
-# set hostname and save
-
+url = "http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/" + rundeck_execid + "/ip"
+param = {'value':new_ip}
+requests.put(url, params=param)
+#print new_ip
+print "INFO: successfully added IP to etcd"
+sys.exit(0)
