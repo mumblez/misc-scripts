@@ -12,8 +12,8 @@ import requests
 vm_template_name = 'dev-wheezy-template'
 firstname = "@option.first_name@".lower()
 lastname = "@option.last_name@".lower()
-#firstname = "klaus"
-#lastname = "wong"
+#firstname = "robin"
+#lastname = "hood"
 rundeck_execid = "@job.execid@"
 vm_clone_name = "dev-" + firstname[0:1] + lastname
 #vm_clone_name = 'dev-kwong' # pass in later (sys.argv[1])
@@ -42,10 +42,14 @@ try:
 except VIException:
     old_machine = False
 
-sys.exit(0)
+#sys.exit(0)
 
 # Delete old machine if found and exists
 if old_machine:
+    # save datastore info
+    old_datastore = vm_dev.get_property(name="path")
+    # overwrite and reuse datastore
+    host_datastore = old_datastore[1:old_datastore.index(']')]
     print "INFO: old machine found...."
     print "INFO: Shutting down...."
     vm_dev.power_off()
