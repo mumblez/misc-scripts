@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # requires pysphere library to interact with vmware api
-from pysphere import VIServer, VIProperty, VITask
+from pysphere import VIServer, VIProperty, VITask, VIException, FaultTypes
 from pysphere.vi_mor import VIMor, MORTypes
 from time import sleep
 import re, sys
@@ -12,9 +12,11 @@ import requests
 vm_template_name = 'dev-wheezy-template'
 firstname = "@option.first_name@".lower()
 lastname = "@option.last_name@".lower()
+#firstname = "klaus"
+#lastname = "wong"
 rundeck_execid = "@job.execid@"
 vm_clone_name = "dev-" + firstname[0:1] + lastname
-#vm_clone_name = 'dev-hmmmm' # pass in later (sys.argv[1])
+#vm_clone_name = 'dev-kwong' # pass in later (sys.argv[1])
 vcenter_server = '***REMOVED***.12'
 vcenter_username = '***REMOVED***'
 vcenter_password = '***REMOVED***'
@@ -24,6 +26,7 @@ dev_hypervisor = 'vmware-hyp-1.dev.***REMOVED***.com'
 host_datastore = "@option.datastore@"
 verbose = False
 maxwait = 120 # How long to keep trying to get clone vm IP address
+old_machine = True
 
 # Instantiate server object and connect / create session
 server = VIServer()
@@ -31,6 +34,23 @@ server.connect(vcenter_server, vcenter_username, vcenter_password)
 
 # Get dev vm template instance
 vm_template = server.get_vm_by_name(name=vm_template_name)
+
+# See if dev-vm already exists
+try:
+    vm_dev = server.get_vm_by_name(name=vm_clone_name)
+    old_machine = True
+except VIException:
+    old_machine = False
+
+sys.exit(0)
+
+# Delete old machine if found and exists
+if old_machine:
+    print "INFO: old machine found...."
+    print "INFO: Shutting down...."
+    vm_dev.power_off()
+    print "INFO: Deleting...."
+    vm_dev.destroy()
 
 # Define our functions
 def print_verbose(message):
