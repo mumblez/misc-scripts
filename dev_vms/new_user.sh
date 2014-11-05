@@ -296,7 +296,7 @@ echo "INFO: Restarting samba and php-fpm"
 
 # Adding ssh public key(s)
 DEV_ID=$(curl --header "PRIVATE-TOKEN: $GITLAB_API" -k -s "${GITLAB_URL}/api/v3/users" | jq --arg dev_user "${FIRSTNAME}.${LASTNAME}" '.[] | select(.username == $dev_user) | .id')
-if [ -n $DEV_ID ]; then
+if [ ! -z $DEV_ID ]; then
         curl --header "PRIVATE-TOKEN: $GITLAB_API" -k -s "${GITLAB_URL}/api/v3/users/${DEV_ID}/keys" | jq -r '.[].key' >> "/home/${USERNAME}/.ssh/authorized_keys"
 fi
 
