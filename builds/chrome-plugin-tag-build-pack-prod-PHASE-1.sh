@@ -12,17 +12,17 @@ die() { echo $* 1>&2 ; exit 1 ; }
 ### Settings ###
 TIMESTAMP=$(date +%Y-%m-%d-%H%M)
 #PLUGIN=""   # provide via rundeck
-PLUGIN="capture-specialist"   # git repo / project
-TAG="v1.12.10"
-REPO_URL="git@***REMOVED***.***REMOVED***.com:chrome-plugins/chrome-plugin-live-process-test.git"
+PLUGIN="@option.plugin@"   # git repo / project
+TAG="@option.tag@"
+REPO_URL="@option.repo_url@"
 #REPO_KEY="/***REMOVED***/keys/cl_deploy" # for rundeck
 BUILD_ROOT="/srv/chrome-plugin-build"
 REPO_KEY="/***REMOVED***/keys/cl_deploy" # for debug
 KEY_NAME="${PLUGIN}.pem"
 WEB_ROOT="/srv/chrome-plugin/${PLUGIN}/release/${TIMESTAMP}"
-WEB_HOST_URL="https://intranet.***REMOVED***.com/chrome-plugin"
+WEB_HOST_URL="http://plugins.***REMOVED***.com"
 mkdir -p "${WEB_ROOT}"
-PHASE=1 # we'll keep original urls in manifest and xml and create symlinks
+PHASE="@option.phase@" # we'll keep original urls in manifest and xml and create symlinks
 #PHASE=2 # When Matt / Kris have created sub groups / organisations in google apps console and we can deploy via new url,
 ###   the urls will need to be updated with the new domain (WEB_HOST_URL) before switching to this phase
 
@@ -132,6 +132,10 @@ if [ "$PHASE" = "1" ]; then
 		gmail-new-project-request )
 			ln -snf "${WEB_ROOT}/${PLUGIN}.crx" "$OLD_GMAIL_NEW_PROJECT_REQUEST_CRX"
 			ln -snf "${WEB_ROOT}/${PLUGIN}.xml" "$OLD_GMAIL_NEW_PROJECT_REQUEST_XML"
+			;;
+		* )
+			ln -snf "${WEB_ROOT}/${PLUGIN}.crx" "${OLD_CRX_WEB_ROOT}/"
+			ln -snf "${WEB_ROOT}/${PLUGIN}.xml" "${OLD_CRX_WEB_ROOT}/"
 			;;
 	esac
 	echo "INFO: symlinks to intranet.***REMOVED***.com/chrome-plugin created (PHASE 1)"
