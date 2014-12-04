@@ -62,7 +62,7 @@ for project in $PROJECTS; do
   fi
 done
 
-# Build and publish project to bishop
+# Build and publish project to bishop # change in future to caching repo so builds are faster
 for project in $PROJECTS; do build_and_dist "$project"; done
 
 ### no more steps
