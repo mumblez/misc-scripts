@@ -7,7 +7,7 @@ die() { echo $* 1>&2 ; exit 1 ; }
 #TIMESTAMP=$(date +%Y-%m-%d-%H%M)
 PHP="/usr/bin/php"
 # in future add a check to see if systemd init
-PROJECT="specialist-extranet"
+PROJECT="@option.repository@"
 PHP_FPM="/etc/init.d/php5-fpm"
 SITE_USER="@node.CL_USER@"
 SITE_GROUP="dev"
@@ -16,13 +16,13 @@ GIT_REPO="@option.repository_url@"
 GIT_OPTIONS="--recursive" #(optional, if using submodules)
 GIT_BRANCH="@option.branch@"
 GIT_TAG="@option.tag@"
-REAL_DIR="/***REMOVED***/lib/php5/$PROJECT"
+REAL_DIR="/***REMOVED***/lib/php5/${PROJECT}"
 SYMFONY_ROOT="/home/@node.CL_USER@/dev/git_repos/symfony_repos"
 SYMFONY_BINARIES_ROOT="/home/@node.CL_USER@/dev/git_repos/binaries"
-DEPLOY_ROOT="${SYMFONY_ROOT}/@option.repository@"
+DEPLOY_ROOT="${SYMFONY_ROOT}/${PROJECT}"
 #SHARED_ROOT="${DEPLOY_ROOT}/shared"
 #DEPLOY_DIR="${DEPLOY_ROOT}/${TIMESTAMP}"
-WEBROOT="/***REMOVED***/www/$PROJECT"
+WEBROOT="/***REMOVED***/www/${PROJECT}"
 APP_ENV="@option.environment@"
 COMPOSER="${SYMFONY_BINARIES_ROOT}/composer.phar"
 #COMPOSER_OPTIONS="--no-interaction --working-dir=$DEPLOY_DIR"
@@ -73,6 +73,7 @@ chown "$SITE_USER":"$SITE_GROUP" "$COMPOSER"
 cd /etc/php5/fpm/pool.d
 ## Setup user as owner, so cache and log access isn't a problem (user pulls files down as themselves)
 sed "s/^user =.*/user = $SITE_USER/" -i ${PROJECT}.conf
+sed "s/^listen.owner =.*/listen.owner = $SITE_USER/" -i ${PROJECT}.conf
 
 
 # Setup symfony dir incase overwritten / removed from old deploys
@@ -218,17 +219,18 @@ echo "INFO: Deployment suceeded!"
 IP=$(curl -s -L http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/@option.parent_exec_id@/ip | jq -r '.node.value')
 
 # reboot box - mainly so networking / static IP takes effect
-echo
-echo "==============================================================================================="
-echo "INFO: You can now ssh to your new box: @node.CL_USER@@${IP}"
-echo "INFO: Remember to add your public ssh key to your /home/${SITE_USER}/.ssh/authorized_keys"
-echo "INFO: (check under c:\users\@node.CL_USER@\.ssh\ for your private key to add to pagent shortcut!"
-echo "INFO: And setup your putty connection to use agent forwarding with pagent enabled:"
-echo "INFO: https://sites.google.com/a/***REMOVED***.com/development/home/quick-start/ssh-key-generation"
-echo "INFO: And setup new dns entries in your workstation hosts file"
-echo "INFO: And setup your share from your workstation - \\\\${IP}\dev"
-echo "==============================================================================================="
-echo
+# (MOVE to it's own rundeck step (last) at some point)
+#echo
+#echo "==============================================================================================="
+#echo "INFO: You can now ssh to your new box: @node.CL_USER@@${IP}"
+#echo "INFO: Remember to add your public ssh key to your /home/${SITE_USER}/.ssh/authorized_keys"
+#echo "INFO: (check under c:\users\@node.CL_USER@\.ssh\ for your private key to add to pagent shortcut!"
+#echo "INFO: And setup your putty connection to use agent forwarding with pagent enabled:"
+#echo "INFO: https://sites.google.com/a/***REMOVED***.com/development/home/quick-start/ssh-key-generation"
+#echo "INFO: And setup new dns entries in your workstation hosts file"
+#echo "INFO: And setup your share from your workstation - \\\\${IP}\dev"
+#echo "==============================================================================================="
+#echo
 
 # CLEANUP 
 rm -f "$DEPLOY_KEY"
