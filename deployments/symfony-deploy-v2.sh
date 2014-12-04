@@ -40,6 +40,7 @@ chown $SITE_USER:$SITE_GROUP $TMP_SCRIPT
 
 # add production specific settings
 if [[ "$APP_ENV" == "prod" ]]; then
+    export SYMFONY_ENV=prod
 	COMPOSER_OPTIONS="$COMPOSER_OPTIONS --no-dev --optimize-autoloader"
 	CONSOLE_OPTIONS="--env=prod --no-debug"
 fi
@@ -53,6 +54,8 @@ grep "$SITE_GROUP" /etc/group && echo "INFO: Site group - $SITE_GROUP found" || 
 [ -e "$PHP" ] || die "ERROR: $PHP does not exist"
 which curl >/dev/null 2>&1 || die "ERROR: curl is not installed"
 which git >/dev/null 2>&1 || die "ERROR: git is not installed"
+which phpunit >/dev/null 2>&1 || echo "WARN: phpunit is not installed"
+
 
 
 # Download latest composer.phar #
@@ -94,7 +97,12 @@ fi
 # symlink parameters = change in future to setup via salt / config mgt
 #[ -e "$SYMFONY_PARAMS_FILE" ] || die "ERROR: $SYMFONY_PARAMS_FILE does not exist"
 #[ -e "$SYMFONY_PARAMS_FILE" ] || echo "WARNING: $SYMFONY_PARAMS_FILE does not exist"
-ln -snf "$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml" "$DEPLOY_DIR/app/config/parameters.yml"
+if [[ $(hostname) == "qa-fe" ]]; then
+  echo "INFO: ====== APPLIED QA PARAMETERS CONFIG ======="
+  ln -snf "$DEPLOY_DIR/app/config/parameters.qa.yml" "$DEPLOY_DIR/app/config/parameters.yml"
+else
+  ln -snf "$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml" "$DEPLOY_DIR/app/config/parameters.yml"
+fi
 
 
 ### REPLACE apache settings from config mgt ###
@@ -142,8 +150,17 @@ cd "$DEPLOY_DIR"
 # We create the script so we can run a few actions in one step as the sudo'ed user
 # primarily to setup ssh-agent, add the deployment key and then run our composer install step,
 # this is so we can pull from our private repo's using composer.
+
+echo "INFO: ### BEGIN COMPOSER INSTALL ###"
+echo "INFO: SYMFONY_ENV: $SYMFONY_ENV"
+echo "INFO: COMPOSER_OPTIONS: $COMPOSER_OPTIONS"
+echo "INFO:	CONSOLE_OPTIONS: $CONSOLE_OPTIONS"
+
 cat > ${TMP_SCRIPT} <<EOF
 #!/bin/bash
+if [[ "$APP_ENV" == "prod" ]]; then
+  export SYMFONY_ENV=$APP_ENV
+fi
 eval \$(ssh-agent -s)
 ssh-add $DEPLOY_KEY
 "$PHP" "$COMPOSER" $COMPOSER_OPTIONS install
@@ -151,13 +168,25 @@ kill \$SSH_AGENT_PID
 EOF
 
 sudo -u "$SITE_USER" /bin/bash ${TMP_SCRIPT} || die "ERROR: Composer: update failed"
-sudo -u "$SITE_USER" "$PHP" "$CONSOLE" cache:clear $CONSOLE_OPTIONS && echo "INFO: Console - cache cleared" || die "ERROR: Console: cache clear failed"
-sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assetic:dump $CONSOLE_OPTIONS && echo "INFO: Console - dump assets" || die "ERROR: Console: dumping assets failed"
-sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assets:install $CONSOLE_OPTIONS && echo "INFO: Console - install assets" || die "ERROR: Console: installing assets failed"
+echo "INFO: ### END COMPOSER INSTALL ###"
 
-# make cache and log dir writeable
-chmod 777 "$DEPLOY_DIR/app/logs" -R
-chmod 777 "$DEPLOY_DIR/app/cache" -R
+if [[ "$S_PROJECT" != "pluginapi" ]]; then
+  sudo -u "$SITE_USER" "$PHP" "$CONSOLE" cache:clear $CONSOLE_OPTIONS && echo "INFO: Console - cache cleared" || die "ERROR: Console: cache clear failed"
+  sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assetic:dump $CONSOLE_OPTIONS && echo "INFO: Console - dump assets" || die "ERROR: Console: dumping assets failed"
+  sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assets:install $CONSOLE_OPTIONS && echo "INFO: Console - install assets" || die "ERROR: Console: installing assets failed"
+
+  # make cache and log dir writeable
+  chmod 777 "$DEPLOY_DIR/app/logs" -R
+  chmod 777 "$DEPLOY_DIR/app/cache" -R
+fi
+
+
+## Run unit tests ###
+if [[ "$S_PROJECT" == "pluginapi" ]]; then
+  cd $DEPLOY_ROOT
+  phpunit
+fi
+
 
 # document
 #ln -snf "$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml" "$DEPLOY_DIR/app/config/parameters.yml"
@@ -182,8 +211,8 @@ chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
 
 # Clear APC / zendopcode cache?
 
-# Restart apache
-$APACHE_SERVICE restart || die "ERROR: Failed to restart apache service"
+# Reload apache
+$APACHE_SERVICE reload || die "ERROR: Failed to reload apache service"
 
 ### no more steps
 echo "INFO: Deployment suceeded!"
