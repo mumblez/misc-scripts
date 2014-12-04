@@ -233,6 +233,21 @@ sed "s/\(force user =\)/\1 $USERNAME/" -i smb.conf.clone
 sed "s/^\(path=\)/\1\/home\/$USERNAME/" -i smb.conf.clone
 cp smb.conf.clone smb.conf
 
+# edit php and apache configs
+service apache2 stop
+service php52-fpm stop
+CONFIGS_TO_EDIT="/etc/apache2/envars \
+/usr/local/php52/etc/php-fpm.conf"
+for AP_CONFIG in $CONFIGS_TO_EDIT; do
+        sed "s/www-data/$USERNAME/" -i "$AP_CONFIG"
+done
+
+chown ${USERNAME}:dev /var/lock/apache2/ -R
+chown ${USERNAME}:dev /var/www/fast***REMOVED***i/ -R
+chown ${USERNAME}:dev /var/run/apache2/* -R
+
+
+
 # Setup specialist-extranet - in future, when common repo's moved into its own namespace, loop this routine for all repo's in ***REMOVED***_web_v2 namespace
 #cd /etc/php5/fpm/pool.d
 ## Setup user as owner, so cache and log access isn't a problem (user pulls files down as themselves)
