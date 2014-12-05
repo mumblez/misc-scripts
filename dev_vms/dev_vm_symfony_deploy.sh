@@ -82,6 +82,7 @@ sed "s/^listen.owner =.*/listen.owner = $SITE_USER/" -i ${PROJECT}.conf
 
 
 
+
 ## Cleanup previous releases ###
 #find "$DEPLOY_ROOT" -type d -mtime +4 -exec rm -rf {} \;
 
@@ -91,6 +92,11 @@ sed "s/^listen.owner =.*/listen.owner = $SITE_USER/" -i ${PROJECT}.conf
 # add gitlab server as known ssh host
 ssh-keyscan -H ***REMOVED***.***REMOVED***.com >> /home/$SITE_USER/.ssh/known_hosts || die "ERROR: failed to find gitlab server and it's public key"
 #doesn't work, user has to do themselves
+
+# Copy github oauth key
+mkdir /home/${SITE_USER}/.composer
+cp /***REMOVED***/.composer/config.json /home/${SITE_USER}/.composer/
+chown ${SITE_USER} /home/${SITE_USER}/.composer -R
 
 #Pull latest code
 ssh-agent bash -c "ssh-add $DEPLOY_KEY >/dev/null 2>&1 && git clone $GIT_REPO $DEPLOY_ROOT $GIT_OPTIONS" || die "ERROR: Git clone from $GIT_REPO failed"
@@ -165,13 +171,17 @@ kill \$SSH_AGENT_PID
 EOF
 
 sudo -u "$SITE_USER" /bin/bash ${TMP_SCRIPT} || die "ERROR: Composer: update failed"
-sudo -u "$SITE_USER" "$PHP" "$CONSOLE" cache:clear $CONSOLE_OPTIONS && echo "INFO: Console - cache cleared" || die "ERROR: Console: cache clear failed"
-sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assetic:dump $CONSOLE_OPTIONS && echo "INFO: Console - dump assets" || die "ERROR: Console: dumping assets failed"
-sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assets:install $CONSOLE_OPTIONS && echo "INFO: Console - install assets" || die "ERROR: Console: installing assets failed"
 
-# make cache and log dir writeable
-chmod 777 "$DEPLOY_ROOT/app/logs" -R
-chmod 777 "$DEPLOY_ROOT/app/cache" -R
+if [[ "$PROJECT" != "pluginapi" ]]; then
+  sudo -u "$SITE_USER" "$PHP" "$CONSOLE" cache:clear $CONSOLE_OPTIONS && echo "INFO: Console - cache cleared" || die "ERROR: Console: cache clear failed"
+  sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assetic:dump $CONSOLE_OPTIONS && echo "INFO: Console - dump assets" || die "ERROR: Console: dumping assets failed"
+  sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assets:install $CONSOLE_OPTIONS && echo "INFO: Console - install assets" || die "ERROR: Console: installing assets failed"
+
+  # make cache and log dir writeable
+  chmod 777 "${DEPLOY_DIR}/app/logs" -R
+  chmod 777 "${DEPLOY_DIR}/app/cache" -R
+fi
+
 
 # document
 #ln -snf "$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml" "$DEPLOY_DIR/app/config/parameters.yml"
@@ -192,7 +202,7 @@ ln -snf "${REAL_DIR}/web" "$WEBROOT" && echo "INFO: Symlinked deployment release
 chown -h "$SITE_USER":"$SITE_GROUP" "$SYMFONY_ROOT"
 
 # create log dir
-mkdir /***REMOVED***/log/${PROJECT}
+mkdir -p /***REMOVED***/log/${PROJECT}
 
 # enable site
 a2ensite ${PROJECT}
