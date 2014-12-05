@@ -41,8 +41,8 @@ chown $SITE_USER:$SITE_GROUP $TMP_SCRIPT
 # add production specific settings
 if [[ "$APP_ENV" == "prod" ]]; then
     export SYMFONY_ENV=prod
-	COMPOSER_OPTIONS="$COMPOSER_OPTIONS --no-dev --optimize-autoloader"
-	CONSOLE_OPTIONS="--env=prod --no-debug"
+  COMPOSER_OPTIONS="$COMPOSER_OPTIONS --no-dev --optimize-autoloader"
+  CONSOLE_OPTIONS="--env=prod --no-debug"
 fi
 
 ### Validation ###
@@ -85,9 +85,9 @@ ssh-agent bash -c "ssh-add $DEPLOY_KEY >/dev/null 2>&1 && git clone $GIT_REPO $D
 
 cd $DEPLOY_DIR
 if [[ "$APP_ENV" == "prod" ]]; then
-	git checkout "$GIT_TAG"
+  git checkout "$GIT_TAG"
 else
-	git checkout "$GIT_BRANCH" # (just leave on master?)
+  git checkout "$GIT_BRANCH" # (just leave on master?)
 fi
 
 
@@ -154,7 +154,7 @@ cd "$DEPLOY_DIR"
 echo "INFO: ### BEGIN COMPOSER INSTALL ###"
 echo "INFO: SYMFONY_ENV: $SYMFONY_ENV"
 echo "INFO: COMPOSER_OPTIONS: $COMPOSER_OPTIONS"
-echo "INFO:	CONSOLE_OPTIONS: $CONSOLE_OPTIONS"
+echo "INFO: CONSOLE_OPTIONS: $CONSOLE_OPTIONS"
 
 cat > ${TMP_SCRIPT} <<EOF
 #!/bin/bash
@@ -223,10 +223,10 @@ echo "INFO: Cleaning up..."
 CURRENT_RELEASE=$(basename $(readlink $REAL_DIR))
 RECENT_RELEASES=$(ls -tr1 "$DEPLOY_ROOT" | grep -vE "shared|$CURRENT_RELEASE" | tail -n4)
 for OLD_RELEASE in $(ls -tr1 "$DEPLOY_ROOT" | grep -vE "shared|$CURRENT_RELEASE"); do
-	if ! echo "$OLD_RELEASE" | grep -q "$RECENT_RELEASES"; then
-		echo "INFO: Deleted old release - $OLD_RELEASE"
-		rm -rf "${DEPLOY_ROOT}/${OLD_RELEASE}"
-	fi
+  if ! echo "$OLD_RELEASE" | grep -q "$RECENT_RELEASES"; then
+    echo "INFO: Deleted old release - $OLD_RELEASE"
+    rm -rf "${DEPLOY_ROOT}/${OLD_RELEASE}"
+  fi
 done
 
 # Delete tmp script
