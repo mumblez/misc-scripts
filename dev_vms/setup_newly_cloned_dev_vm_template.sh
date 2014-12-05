@@ -15,7 +15,7 @@ HOSTNAME="dev-${FIRSTNAME:0:1}${LASTNAME}"
 # check it also doesn't exist (and maybe setup SVN)
 PASSWORD="@option.password@"   # passed from rundeck
 OWNIP=$(curl -s -L http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/@option.parent_exec_id@/ip | jq -r '.node.value')
-WORKSTATION_IP="@option.workstation_ip@"	# pass in via RD - too much hassle to pull automatically
+WORKSTATION_IP="@option.workstation_ip@"        # pass in via RD - too much hassle to pull automatically
 TOOLS="chpasswd svn git adduser"
 WORKING_DIR=$(mktemp -d /tmp/new_user_setup_XXX)
 NEW_DIRS=$(mktemp $WORKING_DIR/new_dirs_XXX.txt)
@@ -72,7 +72,7 @@ cat > "${NEW_DIRS}" <<EOF
 EOF
 
 while read line; do
-	mkdir -p "$line"
+        mkdir -p "$line"
 done < "${NEW_DIRS}"
 
 
@@ -173,7 +173,7 @@ EOF
 while read line; do
         #echo "INFO: Creating symlinks...."
         #echo "INFO: Creating symlink for $line"
-	ln -snf $line
+        ln -snf $line
         #[ -h /***REMOVED***/lib/php5/***REMOVED***/projects/intranet/phplib ] && echo "WARNING: Found dodgy link" 
 done < "${SYMLINKS_FILE}"
 
@@ -216,7 +216,7 @@ chown ${USERNAME} ${GIT_CONFIG}
 # backup /etc/php52/php.ini before symlinking dev one
 cd /etc/php52
 if [ -e php.ini ]; then
-	cp php.ini php.ini.bak
+        cp php.ini php.ini.bak
 fi
 
 # symlink dev php.ini (php52)
@@ -236,7 +236,7 @@ cp smb.conf.clone smb.conf
 # edit php and apache configs
 service apache2 stop
 service php52-fpm stop
-CONFIGS_TO_EDIT="/etc/apache2/envars \
+CONFIGS_TO_EDIT="/etc/apache2/envvars \
 /usr/local/php52/etc/php-fpm.conf"
 for AP_CONFIG in $CONFIGS_TO_EDIT; do
         sed "s/www-data/$USERNAME/" -i "$AP_CONFIG"
@@ -244,7 +244,9 @@ done
 
 chown ${USERNAME}:dev /var/lock/apache2/ -R
 chown ${USERNAME}:dev /var/www/fast***REMOVED***i/ -R
-chown ${USERNAME}:dev /var/run/apache2/* -R
+chown ${USERNAME}:dev /var/run/apache2/ -R
+chown ${USERNAME}:dev /var/lib/apache2/ -R
+chown ${USERNAME}:dev /***REMOVED***/log/ -R
 
 
 
@@ -296,6 +298,9 @@ echo "$OWNIP    zaibatsu.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    specialist.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    restserver.dev.***REMOVED***.com" >> /etc/hosts
 echo "$OWNIP    auth.dev.***REMOVED***.com" >> /etc/hosts
+echo "$OWNIP    externalapi.dev.***REMOVED***.com" >> /etc/hosts
+echo "$OWNIP    pluginapi.dev.***REMOVED***.com" >> /etc/hosts
+echo "$OWNIP    intranet-v2.dev.***REMOVED***.com" >> /etc/hosts
 
 # enable sites
 echo "INFO: Enabling apache vhosts..."
