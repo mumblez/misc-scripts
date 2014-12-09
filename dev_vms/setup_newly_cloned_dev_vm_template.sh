@@ -170,6 +170,9 @@ EOF
 
 [ -h /***REMOVED***/lib/php5/***REMOVED***/projects/intranet/phplib ] && echo "WARNING: Found dodgy link" 
 
+# Initialise rabbitmq exchange / queue
+php /***REMOVED***/bin/intranet/amqpExchangeAndQueueSetup.php -e***REMOVED*** -qsymfony --run
+
 while read line; do
         #echo "INFO: Creating symlinks...."
         #echo "INFO: Creating symlink for $line"
