@@ -205,6 +205,9 @@ ln -snf "$REAL_DIR/web" "$WEBROOT" && echo "INFO: Symlinked deployment release w
 # Set permission to web***REMOVED*** (incase apache only follows symlinks with same owner)
 chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
 
+# Expose symfony log files to /***REMOVED***/logs/<project>/symfony
+ln -snf ${REAL_DIR}/app/logs /***REMOVED***/logs/${S_PROJECT}/symfony
+
 # Restart php-fpm as it keeps handles open from previous files!
 "$PHP_FPM" restart || die "ERROR: Failed to restart $PHP_FPM service"
 
