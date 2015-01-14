@@ -8,13 +8,14 @@
 
 # SETTINGS #
 DIR=$(cd "$(dirname "$0")" && pwd)
-REMOTE_DB_SERVER="***REMOVED***.230" # in future generalise in rundeck
-SSH_USER="***REMOVED***"
+REMOTE_DB_SERVER=@option.remote_db_server@ # in future generalise in rundeck
+SSH_USER=@option.ssh_user@
 EXCLUDE_FILE="$DIR/excludeFiles.txt"
 JOB_COUNT_DIR="$DIR/counter"
-SNAPSHOT_FREESPACE=5000 # make configurable in rundeck, will need to be adjusted in future according to how write busy the DB gets
-MAX_RSYNC_THREADS=10 # make configurable in rundeck
+SNAPSHOT_FREESPACE=@option.snapshot_freespace@ # make configurable in rundeck, will need to be adjusted in future according to how write busy the DB gets
+MAX_RSYNC_THREADS=@option.rsync_threads@ # make configurable in rundeck
 EXCLUDE_LIST="services service_configuration scheduled_task"
+#EXCLUDE_LIST="tools"
 START_TIME=$(date)
 
 
@@ -31,16 +32,16 @@ env_tables () {
   for TABLE in $EXCLUDE_LIST; do
     if [[ "$1" == "backup" && ! -f "$DIR/***REMOVED***.$TABLE.sql" ]]; then
       echo "Backing up ***REMOVED***.$TABLE...$(date)"
-      mysqldump -B ***REMOVED*** --tables "$TABLE" --create-option > "$DIR/***REMOVED***.$TABLE.sql"
+      mysqldump -B ***REMOVED*** --tables "$TABLE" --create-options > "$DIR/***REMOVED***.$TABLE.sql"
     elif [ "$1" == "restore" ]; then
       echo "Restoring ***REMOVED***.$TABLE...$(date)"
       mysql -B ***REMOVED*** < "$DIR/***REMOVED***.$TABLE.sql"
+      #mysql -B ***REMOVED*** < /***REMOVED***/rsyncFromBackup/***REMOVED***.$TABLE.sql
       # cleanup / delete sql file after successful restore
       rm -f "$DIR/***REMOVED***.$TABLE"
     fi
   done
 }
-
 
 # VALIDATION and more settings
 
@@ -69,7 +70,7 @@ else
 fi
 
 # Check data directory location (locally, remote will actually be the snapshot location)
-LOCAL_MYSQL_DIR=$(awk '/^datadir/{ print $3 }' "$LOCAL_MYCNF"); [ -z $LOCAL_MYSQL_DIR ] && die "ERROR: Local mysql datadir could not be located"
+LOCAL_MYSQL_DIR=$(awk '/^datadir /{ print $3 }' "$LOCAL_MYCNF"); [ -z $LOCAL_MYSQL_DIR ] && die "ERROR: Local mysql datadir could not be located"
 echo "INFO: local mysql datadir: $LOCAL_MYSQL_DIR"
 REAL_REMOTE_MYSQL_DIR=$(rc awk "'/^datadir/{ print \$3 }' "$REMOTE_MYCNF""); [ -z $REAL_REMOTE_MYSQL_DIR ] && die "ERROR: Remote mysql datadir could not be located"
 echo "INFO: remote mysql datadir: $REAL_REMOTE_MYSQL_DIR"
@@ -79,7 +80,7 @@ LVM_MYSQL=$(rc "df -P" | awk '$0~v { print $1 }' v=$REAL_REMOTE_MYSQL_DIR); [ -z
 
 # find srv partition and make sure at least ~5GB free space available
 LVM_SNAPSHOT=$(rc "df -P" | awk '/\/srv|lv_snapshots/ { print $1 }'); [ -z $LVM_SNAPSHOT ] && die "ERROR: /srv lvm partition could not be located"
-if [[ $(rc "df -Pm" | awk '/\/srv/ { print $4 }') -lt $SNAPSHOT_FREESPACE ]]; then
+if [[ $(rc "df -Pm" | awk '/\/srv|lv_snapshots/ { print $4 }') -lt $SNAPSHOT_FREESPACE ]]; then
   die "ERROR: Not enough free space for snapshot copy on write operations"
 fi
 
@@ -87,14 +88,22 @@ fi
 [ -d "${JOB_COUNT_DIR}" ] || mkdir "${JOB_COUNT_DIR}"
 
 # What to exclude from rsync operation
+#cat > ${EXCLUDE_FILE} <<EOF
+#- /***REMOVED***/scheduled_task*
+#- /***REMOVED***/service_configuration*
+#- /***REMOVED***/services*
+#- /mysqld-relay*
+#- /relay-log.info 
+#- /mysql-bin.*
+#- /master.info 
+#EOF
+
+# What to exclude from rsync operation
 cat > ${EXCLUDE_FILE} <<EOF
-- /***REMOVED***/scheduled_task*
-- /***REMOVED***/service_configuration*
-- /***REMOVED***/services*
-- /mysqld-relay*
-- /relay-log.info 
-- /mysql-bin.*
-- /master.info 
+/mysqld-relay*
+/relay-log.info
+/mysql-bin.*
+/master.info
 EOF
 
 # Ensure no snapshot exists
@@ -207,6 +216,7 @@ fi
 echo "INFO: Starting mysql..."
 service mysql start
 sleep 5
+mysql -e 'stop slave; reset slave all'
 
 # Restore our qa tables, if doesn't work will have to go down the discard route
 env_tables restore
