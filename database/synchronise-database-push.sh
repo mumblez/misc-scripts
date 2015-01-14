@@ -29,11 +29,11 @@ EXCLUDE_LIST="services service_configuration scheduled_task" # turn into RD mult
 #MAX_RSYNC_THREADS="8"
 #EXCLUDE_LIST="services service_configuration scheduled_task"
 
-die() { echo $* 1>&2 ; exit 1 ; }
-# Check job isn't already running
-[ -e "$EXCLUDE_FILE" ] &&  die "Job is already running, quitting...";
-
 # FUNTIONS
+die() { echo $* 1>&2 ; exit 1 ; }
+
+# Check job isn't already running
+[ -e "$EXCLUDE_FILE" ] && die "Job is already running, quitting...";
 
 # Prepare our remote commands function
 rc () {
@@ -55,7 +55,7 @@ env_tables () {
         echo "INFO: $TABLE backup already exists, skipping..."
       else
         echo "INFO: Backing up ***REMOVED***.$TABLE...$(date)"
-        rcc "mysqldump -B ***REMOVED*** --tables "$TABLE" --create-option > "$DIR/***REMOVED***.$TABLE.sql""  || die "ERROR: backup of env tables failed"
+        rcc "mysqldump -B ***REMOVED*** --tables "$TABLE" --create-options > "$DIR/***REMOVED***.$TABLE.sql""  || die "ERROR: backup of env tables failed"
       fi
     elif [ "$1" == "restore" ]; then
       echo "INFO: Restoring ***REMOVED***.$TABLE...$(date)"
@@ -69,10 +69,10 @@ env_tables () {
 # VALIDATION and more settings
 
 # Check we can ssh onto remote mysql server
-rc "echo INFO: remote connection successful"
+rc "echo INFO: remote connection successful" || die "ERROR: remote connection failed"
 
 # clear bad connection attempts
-rc mysqladmin flush-hosts
+#rc mysqladmin flush-hosts
 
 # Check my.cnf location remotely
 if rcc test -f /etc/mysql/my.cnf; then
@@ -94,7 +94,7 @@ fi
 
 # Check data directory location (locally, remote will actually be the snapshot location)
 # SWAP - local = snapshot, remote is real
-REMOTE_MYSQL_DIR=$(rc awk "'/^datadir/{ print \$3 }' "$REMOTE_MYCNF""); [ -z $REMOTE_MYSQL_DIR ] && die "ERROR: remote mysql datadir could not be located"
+REMOTE_MYSQL_DIR=$(rc awk "'/^datadir /{ print \$3 }' "$REMOTE_MYCNF""); [ -z $REMOTE_MYSQL_DIR ] && die "ERROR: remote mysql datadir could not be located"
 echo "INFO: remote mysql datadir: $REMOTE_MYSQL_DIR"
 REAL_MYSQL_DIR=$(awk '/^datadir/{ print $3 }' "$LOCAL_MYCNF"); [ -z $REAL_MYSQL_DIR ] && die "ERROR: local mysql datadir could not be located"
 echo "INFO: local mysql datadir: $REAL_MYSQL_DIR"
@@ -115,13 +115,11 @@ fi
 #- /***REMOVED***/scheduled_task*
 #- /***REMOVED***/service_configuration*
 #- /***REMOVED***/services*
-# removed above 3 from exclude list as causes major issues with it crashes and very difficult to recover,
-# safer to sync everything then rely on the restore scripts to drop the table and re-create!!!
 cat > ${EXCLUDE_FILE} <<EOF
-- /mysqld-relay*
-- /relay-log.info 
-- /mysql-bin.*
-- /master.info 
+/mysqld-relay*
+/relay-log.info
+/mysql-bin.*
+/master.info
 EOF
 
 # Ensure no snapshot exists # swap for local
@@ -153,7 +151,7 @@ cleanList=$(rsync -rtlIP --inplace -n --exclude-from="${EXCLUDE_FILE}" "${SNAPSH
 dbCounter=$(rsync -rtlIP --inplace -n --exclude-from="${EXCLUDE_FILE}" "${SNAPSHOT_MYSQL_DIR}/" "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" | head -n -3 | sed -n '3,$p' | wc -l) || { die "ERROR: Failed to count number of files to sync"; }
 
 # Get list of files / tables removed # swaparound
-droppedTables=$(rsync -rvn --delete "${SNAPSHOT_MYSQL_DIR}/" "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" | awk '/^deleting/ { print $2 }')
+droppedTables=$(rsync -rvn --delete "${SNAPSHOT_MYSQL_DIR}/" "${SSH_USER}"@"${REMOTE_DB_SERVER}":"${REMOTE_MYSQL_DIR}/" | awk '/^deleting / { print $2 }')
 
 # Backup QA Tables
 env_tables backup
@@ -231,9 +229,9 @@ rc chown mysql:mysql /var/lib/mysql/ -R  # do remotely
 # chown mysql:mysql -R $REMOTE_MYSQL_DIR/
 
 # Clear qa tables - do remotely
-for TABLE in $EXCLUDE_LIST; do
-  rc rm -rf "${REMOTE_MYSQL_DIR}/***REMOVED***/${TABLE}.ibd" ## SWAP AROUND ##
-done
+#for TABLE in $EXCLUDE_LIST; do
+#  rc rm -rf "${REMOTE_MYSQL_DIR}/***REMOVED***/${TABLE}.ibd" ## SWAP AROUND ##
+#done
 # Will cause startup errors for our excluded tables, restoring backed up env_tables will fix
 
 # Clear tables that have been dropped / removed - do remotely
@@ -256,9 +254,10 @@ env_tables restore # do remotely, seperate RD job reference ## DO REMOTELY ##
 # Restart again to catch remaining errors
 rc service mysql restart # do remotely, seperate RD job ## DO REMOTELY ##
 
-# clear slave info - need to confirm it works
-rcc "mysql -e 'stop slave; reset slave all;'"
+rcc mysqladmin flush-hosts
 
+rcc mysql -e 'stop slave;' || echo "WARNING: !!!! could not stop slave replication !!!!!!"
+rcc mysql -e 'reset slave all;' || echo "WARNING: !!!! slave info could not be removed !!!!!!"
 
 echo "INFO: Cleanup operations..."
 rm -rf "${EXCLUDE_FILE}"
