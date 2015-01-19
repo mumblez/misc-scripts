@@ -1,0 +1,28 @@
+#!/bin/bash
+
+process_ref() {
+    oldrev=$(git rev-parse $1)
+    newrev=$(git rev-parse $2)
+    refname="$3"
+    echo "before case: $3" > /tmp/zz.txt
+    echo "pwd: `pwd`" >> /tmp/zz.txt
+    case "$refname","$rev_type" in
+      refs/tags/*)
+        # un-annotated tag
+        refname_type="tag"
+        short_refname=${refname##refs/tags/}
+        if echo "$short_refname" | grep -sqE ".*v?[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"; then
+          /usr/bin/sudo /***REMOVED***/scripts/tag-latest.sh `pwd` "$short_refname"
+        fi
+        ;;
+    esac
+}
+
+LFILE="/tmp/tag-latest-lock"
+if [ -e $LFILE ]; then
+  exit 0;
+else
+  touch $LFILE
+  while read REF; do process_ref $REF; done
+  rm -f $LFILE
+fi
