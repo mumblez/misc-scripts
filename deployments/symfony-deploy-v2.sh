@@ -20,6 +20,7 @@ GIT_REPO="@option.repository_url@"
 GIT_OPTIONS="--recursive" #(optional, if using submodules)
 GIT_BRANCH="@option.branch@"
 GIT_TAG="@option.tag@"
+VENDORS_CLEAR="@option.vendors_clear@"
 REAL_DIR="/***REMOVED***/lib/php5/${S_PROJECT}" # Is this even necessary? exposes .git directory of project!!!
 SYMFONY_ROOT="/srv/symfony"
 DEPLOY_ROOT="${SYMFONY_ROOT}/${S_PROJECT}"
@@ -41,8 +42,8 @@ chown $SITE_USER:$SITE_GROUP $TMP_SCRIPT
 # add production specific settings
 if [[ "$APP_ENV" == "prod" ]]; then
     export SYMFONY_ENV=prod
-	COMPOSER_OPTIONS="$COMPOSER_OPTIONS --no-dev --optimize-autoloader"
-	CONSOLE_OPTIONS="--env=prod --no-debug"
+  COMPOSER_OPTIONS="$COMPOSER_OPTIONS --no-dev --optimize-autoloader"
+  CONSOLE_OPTIONS="--env=prod --no-debug"
 fi
 
 ### Validation ###
@@ -85,9 +86,9 @@ ssh-agent bash -c "ssh-add $DEPLOY_KEY >/dev/null 2>&1 && git clone $GIT_REPO $D
 
 cd $DEPLOY_DIR
 if [[ "$APP_ENV" == "prod" ]]; then
-	git checkout "$GIT_TAG"
+  git checkout "$GIT_TAG"
 else
-	git checkout "$GIT_BRANCH" # (just leave on master?)
+  git checkout "$GIT_BRANCH" # (just leave on master?)
 fi
 
 
@@ -134,6 +135,11 @@ chmod 775 "${SHARED_ROOT}/vendor" -R
 chown -h "$SITE_USER":"$SITE_GROUP" "${DEPLOY_DIR}/vendor"
 rm -f "${SHARED_ROOT}/vendor/zzzzzzbla.txt"
 
+# clear vendors directory if asked to
+if [[ "$VENDORS_CLEAR" == 'yes' ]]; then
+  rm -rf "${SHARED_ROOT}/vendor/*"
+fi
+
 # Set permissions
 chown "$SITE_USER:$SITE_GROUP" "$DEPLOY_DIR" -R
 
@@ -154,7 +160,7 @@ cd "$DEPLOY_DIR"
 echo "INFO: ### BEGIN COMPOSER INSTALL ###"
 echo "INFO: SYMFONY_ENV: $SYMFONY_ENV"
 echo "INFO: COMPOSER_OPTIONS: $COMPOSER_OPTIONS"
-echo "INFO:	CONSOLE_OPTIONS: $CONSOLE_OPTIONS"
+echo "INFO: CONSOLE_OPTIONS: $CONSOLE_OPTIONS"
 
 cat > ${TMP_SCRIPT} <<EOF
 #!/bin/bash
@@ -227,10 +233,10 @@ echo "INFO: Cleaning up..."
 CURRENT_RELEASE=$(basename $(readlink $REAL_DIR))
 RECENT_RELEASES=$(ls -tr1 "$DEPLOY_ROOT" | grep -vE "shared|$CURRENT_RELEASE" | tail -n4)
 for OLD_RELEASE in $(ls -tr1 "$DEPLOY_ROOT" | grep -vE "shared|$CURRENT_RELEASE"); do
-	if ! echo "$OLD_RELEASE" | grep -q "$RECENT_RELEASES"; then
-		echo "INFO: Deleted old release - $OLD_RELEASE"
-		rm -rf "${DEPLOY_ROOT}/${OLD_RELEASE}"
-	fi
+  if ! echo "$OLD_RELEASE" | grep -q "$RECENT_RELEASES"; then
+    echo "INFO: Deleted old release - $OLD_RELEASE"
+    rm -rf "${DEPLOY_ROOT}/${OLD_RELEASE}"
+  fi
 done
 
 # Delete tmp script
