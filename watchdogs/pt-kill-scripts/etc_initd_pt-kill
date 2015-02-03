@@ -24,7 +24,7 @@ ptk_start () {
     pt-kill \
       --pid /var/run/pt-kill.pid \
       --daemonize \
-      --interval 30s
+      --interval 30s \
       --busy-time 600s \
       --wait-after-kill 15s \
       --ignore-info '(?i-smx:^insert|^update|^delete|^load|mailqueue)' \
