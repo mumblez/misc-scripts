@@ -124,7 +124,6 @@ if [ ! -d "${SHARED_ROOT}/vendor" ]; then
 fi
 
 # replace and symlink vendors directory
-
 if [ -e "$DEPLOY_DIR/vendor" ]; then
   rm -rf "$DEPLOY_DIR/vendor" && echo "INFO: ${DEPLOY_DIR}/vendor deleted"
 fi
@@ -137,7 +136,7 @@ rm -f "${SHARED_ROOT}/vendor/zzzzzzbla.txt"
 
 # clear vendors directory if asked to
 if [[ "$VENDORS_CLEAR" == 'yes' ]]; then
-  rm -rf "${SHARED_ROOT}/vendor/*"
+  rm -rf ${DEPLOY_DIR}/vendor/*
 fi
 
 # Set permissions
@@ -212,7 +211,7 @@ ln -snf "$REAL_DIR/web" "$WEBROOT" && echo "INFO: Symlinked deployment release w
 chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
 
 # Expose symfony log files to /***REMOVED***/logs/<project>/symfony
-ln -snf ${REAL_DIR}/app/logs /***REMOVED***/logs/${S_PROJECT}/symfony
+ln -snf "${REAL_DIR}/app/logs" "/***REMOVED***/log/${S_PROJECT}/symfony"
 
 # Restart php-fpm as it keeps handles open from previous files!
 "$PHP_FPM" restart || die "ERROR: Failed to restart $PHP_FPM service"
