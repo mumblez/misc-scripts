@@ -188,7 +188,7 @@ fi
 
 ## Run unit tests ###
 if [[ "$S_PROJECT" == "pluginapi" ]]; then
-  cd $DEPLOY_ROOT
+  cd $DEPLOY_DIR
   ln -snf parameters.$APP_ENV.yml parameters.local.yml
   phpunit
 fi
@@ -214,7 +214,8 @@ chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
 ln -snf "${REAL_DIR}/app/logs" "/***REMOVED***/log/${S_PROJECT}/symfony"
 
 # Restart php-fpm as it keeps handles open from previous files!
-"$PHP_FPM" restart || die "ERROR: Failed to restart $PHP_FPM service"
+#"$PHP_FPM" restart || die "ERROR: Failed to restart $PHP_FPM service"
+"$PHP_FPM" reload || die "ERROR: Failed to reload $PHP_FPM service"
 
 # DB migration tasks?????
 
