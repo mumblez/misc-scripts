@@ -186,11 +186,13 @@ if [[ "$S_PROJECT" != "pluginapi" ]]; then
 fi
 
 
-## Run unit tests ###
+## Run unit tests ? ###
 if [[ "$S_PROJECT" == "pluginapi" ]]; then
   cd $DEPLOY_DIR
   ln -snf parameters.$APP_ENV.yml parameters.local.yml
-  phpunit
+  if [[ "$APP_ENV" != "prod" ]]; then
+    phpunit
+  fi
 fi
 
 
