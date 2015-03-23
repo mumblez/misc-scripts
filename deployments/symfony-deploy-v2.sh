@@ -183,7 +183,7 @@ echo "INFO: ### END COMPOSER INSTALL ###"
 if [[ "$S_PROJECT" != "pluginapi" ]]; then
   # new symfony (2.7 onwards and new structure)
   if [ -d "${DEPLOY_DIR}/var" ]; then
-    CONSOLE="$DEPLOY_DIR/app/console"
+    CONSOLE="$DEPLOY_DIR/bin/console"
       # make cache and log dir writeable
     chmod 777 "$DEPLOY_DIR/var" -R
     chmod 777 "$DEPLOY_DIR/var" -R
