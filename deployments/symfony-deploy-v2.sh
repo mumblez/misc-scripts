@@ -134,8 +134,13 @@ chmod 775 "${SHARED_ROOT}/vendor" -R
 chown -h "$SITE_USER":"$SITE_GROUP" "${DEPLOY_DIR}/vendor"
 rm -f "${SHARED_ROOT}/vendor/zzzzzzbla.txt"
 
+# delete ***REMOVED*** vendor, always causes issues!!!
+echo "INFO: clearing ***REMOVED*** vendor..."
+rm -rf ${DEPLOY_DIR}/vendor/***REMOVED***
+
 # clear vendors directory if asked to
 if [[ "$VENDORS_CLEAR" == 'yes' ]]; then
+  echo "INFO: clearing ALL vendors..."
   rm -rf ${DEPLOY_DIR}/vendor/*
 fi
 
@@ -187,6 +192,7 @@ fi
 
 
 ## Run unit tests ? ###
+set -x
 if [[ "$S_PROJECT" == "pluginapi" ]]; then
   cd $DEPLOY_DIR
   ln -snf parameters.$APP_ENV.yml parameters.local.yml
@@ -194,6 +200,7 @@ if [[ "$S_PROJECT" == "pluginapi" ]]; then
     phpunit
   fi
 fi
+set +x
 
 
 # document
