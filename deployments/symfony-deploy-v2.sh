@@ -203,7 +203,6 @@ fi
 
 
 ## Run unit tests ? ###
-set -x
 if [[ "$S_PROJECT" == "pluginapi" ]]; then
   cd $DEPLOY_DIR
   ln -snf parameters.$APP_ENV.yml parameters.local.yml
@@ -211,7 +210,6 @@ if [[ "$S_PROJECT" == "pluginapi" ]]; then
     phpunit
   fi
 fi
-set +x
 
 
 # document
