@@ -229,7 +229,11 @@ ln -snf "$REAL_DIR/web" "$WEBROOT" && echo "INFO: Symlinked deployment release w
 chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
 
 # Expose symfony log files to /***REMOVED***/logs/<project>/symfony
-ln -snf "${REAL_DIR}/app/logs" "/***REMOVED***/log/${S_PROJECT}/symfony"
+if [ ! -d "${DEPLOY_DIR}/var" ]; then
+  ln -snf "${REAL_DIR}/app/logs" "/***REMOVED***/log/${S_PROJECT}/symfony"
+else
+  ln -snf "${REAL_DIR}/var/logs" "/***REMOVED***/log/${S_PROJECT}/symfony"
+fi
 
 # Restart php-fpm as it keeps handles open from previous files!
 #"$PHP_FPM" restart || die "ERROR: Failed to restart $PHP_FPM service"
