@@ -181,13 +181,24 @@ sudo -u "$SITE_USER" /bin/bash ${TMP_SCRIPT} || die "ERROR: Composer: update fai
 echo "INFO: ### END COMPOSER INSTALL ###"
 
 if [[ "$S_PROJECT" != "pluginapi" ]]; then
+  # new symfony (2.7 onwards and new structure)
+  if [ -d "${DEPLOY_DIR}/var" ]; then
+    CONSOLE="$DEPLOY_DIR/app/console"
+      # make cache and log dir writeable
+    chmod 777 "$DEPLOY_DIR/var" -R
+    chmod 777 "$DEPLOY_DIR/var" -R
+  fi
+
+
   sudo -u "$SITE_USER" "$PHP" "$CONSOLE" cache:clear $CONSOLE_OPTIONS && echo "INFO: Console - cache cleared" || die "ERROR: Console: cache clear failed"
   sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assetic:dump $CONSOLE_OPTIONS && echo "INFO: Console - dump assets" || die "ERROR: Console: dumping assets failed"
   sudo -u "$SITE_USER" "$PHP" "$CONSOLE" assets:install $CONSOLE_OPTIONS && echo "INFO: Console - install assets" || die "ERROR: Console: installing assets failed"
 
-  # make cache and log dir writeable
-  chmod 777 "$DEPLOY_DIR/app/logs" -R
-  chmod 777 "$DEPLOY_DIR/app/cache" -R
+  if [ ! -d "${DEPLOY_DIR}/var" ]; then
+    # make cache and log dir writeable
+    chmod 777 "$DEPLOY_DIR/app/logs" -R
+    chmod 777 "$DEPLOY_DIR/app/cache" -R
+  fi
 fi
 
 
