@@ -23,7 +23,7 @@ DIR=$(cd "$(dirname "$0")" && pwd)
 IBI_LOCK="/var/run/dbbackup"
 ZB_LOCK="/var/run/zbackup"
 ZB_LOG="/var/log/zbackup/mysql-full-backup.log"
-TOOLS"zbackup innobackupex"
+TOOLS="zbackup innobackupex"
 DIRECTORIES="IB_BASE ZBACKUP_BASE IB_INCREMENTAL_BASE IB_CHECKPOINT IB_HOTCOPY"
 
 
@@ -82,7 +82,7 @@ done
 
 ibi_lock_check()
 {
-	[ -e $IBI_LOCK ] || die "ERROR: Backup job still running, remove $IBI_LOCK if not true."
+	[ -e $IBI_LOCK ] && die "ERROR: Backup job still running, remove $IBI_LOCK if not true."
 }
 
 
@@ -101,23 +101,23 @@ incremental_backup()
 	## save realised checkpoint
 	REALISED_CHECKPOINT=$(cat "${REALISED_COPY}/xtrabackup_checkpoints" | awk '/^to_lsn/ {print $3}')
 	## find incremental with matching checkpoint and ensure it's 2nd to last
-	INCREMENTAL_TMP=$(ls -1 "$IB_INCREMENTAL_BASE" | tail -n 2 | head -n 1)
-	INCREMENTAL_CURRENT="${$IB_INCREMENTAL_BASE}/${INCREMENTAL_TMP}"
+	INCREMENTAL_TMP=$(ls -1 "$IB_INCREMENTAL_BASE" | tail -n 3 | head -n 1)
+	INCREMENTAL_CURRENT="${IB_INCREMENTAL_BASE}/${INCREMENTAL_TMP}"
 	INC_CHECKPOINT=$(cat "${INCREMENTAL_CURRENT}/xtrabackup_checkpoints" | awk '/^from_lsn/ {print $3}')
 
 	if [ "$INC_CHECKPOINT" -eq "$REALISED_CHECKPOINT" ]; then
 		INC_APPLY_LOG="/tmp/inc_apply.log"
-		innobackupex --apply-log "$IB_HOTCOPY" --incremental-dir "$INCREMENTAL_DIR" &> "$INC_APPLY_LOG"
+		innobackupex --apply-log "$REALISED_COPY" --incremental-dir "$INCREMENTAL_CURRENT" &> "$INC_APPLY_LOG"
 
 		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
-			echo "INFO: applying incremental successful - $INCREMENTAL_DIR - `date`"
+			echo "INFO: applying incremental successful - $INCREMENTAL_CURRENT - `date`"
 			rm -f "$INC_APPLY_LOG"
 		else
-			die "ERROR: applying incremental failed - $INCREMENTAL_DIR - `date`"
+			die "ERROR: applying incremental failed - $INCREMENTAL_CURRENT - `date`"
 		fi
 
 	else
-		echo "WARN: Checkpoints don't match for $INCREMENTAL_DIR, skip rolling in incremental"
+		echo "WARN: Checkpoints don't match for $INCREMENTAL_CURRENT, skip rolling in incremental"
 	fi
 
 	# Keep limited number of incrementals and delete old ones
@@ -178,7 +178,7 @@ full_backup()
 	echo "INFO: `date` - running zbackup of $IB_HOTCOPY to $ZBACKUP_FILE..." | tee >> "$ZB_LOG"
 	
 	# run prepared hotcopy through zbackup
-	tar -cf - -C "$IB_HOTCOPY" . | zbackup --password-file "$ZB_KEY" backup "$ZBACKUP_FILE" &> "$ZB_LOG"
+	tar -cf - -C "$IB_HOTCOPY" . | zbackup --password-file "$ZB_KEY" backup "$ZBACKUP_FILE" &>> "$ZB_LOG"
 
 	echo "### Finish full backup: $(date) ###" | tee >> "$ZB_LOG"
 	rm -f $ZB_LOCK
