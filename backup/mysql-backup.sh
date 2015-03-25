@@ -163,7 +163,7 @@ full_backup()
 	INC_COUNTER=1
 	INC_APPLY_LOG="/tmp/inc_apply.log"
 
-	for INCREMENTAL_DIR in INCREMENTAL_DIRS; do
+	for INCREMENTAL_DIR in $INCREMENTAL_DIRS; do
 		# validate checkpoints
 		HOTCOPY_CHECKPOINT=$(cat "${IB_HOTCOPY}/xtrabackup_checkpoints" | awk '/^to_lsn/ {print $3}')
 		INC_CHECKPOINT=$(cat "${INCREMENTAL_DIR}/xtrabackup_checkpoints" | awk '/^from_lsn/ {print $3}')
