@@ -124,7 +124,7 @@ incremental_backup()
 	if [ "$(ls -1 | wc -l)" -gt "$INCREMENTALS_TO_KEEP" ]; then
 		for OLD_INC in $(diff <(ls -1 | tail -n "$INCREMENTALS_TO_KEEP") <(ls -1) | sed '1d' | awk '{print $2}');
 		do
-			rm -rf "$OLD_INC" && echo "INFO: Deleted incremental - $OLD_INC - `date`"
+			[ ! -z "$OLD_INC" ] && rm -rf "$OLD_INC" && echo "INFO: Deleted incremental - $OLD_INC - `date`"
 		done
 	fi
 
