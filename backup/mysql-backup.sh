@@ -90,13 +90,22 @@ incremental_backup()
 {
 	ibi_lock_check
 	touch "$IBI_LOCK"
+	INC_APPLY_LOG="/tmp/inc_apply.log"
 	echo "### Starting incremental: $(date) ###"
 	INCREMENTAL_DATE=$(date +%Y-%m-%d)
 	# create incremental
 	innobackupex --incremental \
 	--extra-lsndir "$IB_CHECKPOINT" \
 	--incremental-basedir "$IB_CHECKPOINT" \
-	"$IB_INCREMENTAL_BASE"
+	"$IB_INCREMENTAL_BASE" &> "$INC_APPLY_LOG"
+
+	# check it completed successfully
+	if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
+		echo "INFO: incremental backup successful - $INCREMENTAL_CURRENT - `date`"
+		rm -f "$INC_APPLY_LOG"
+	else
+		die "ERROR: incremental backup failed - $INCREMENTAL_CURRENT - `date`"
+	fi
 
 	# roll into realised directory, always 3rd from last
 	## save realised checkpoint
@@ -107,7 +116,6 @@ incremental_backup()
 	INC_CHECKPOINT=$(cat "${INCREMENTAL_CURRENT}/xtrabackup_checkpoints" | awk '/^from_lsn/ {print $3}')
 
 	if [ "$INC_CHECKPOINT" -eq "$REALISED_CHECKPOINT" ]; then
-		INC_APPLY_LOG="/tmp/inc_apply.log"
 		innobackupex --apply-log "$REALISED_COPY" --incremental-dir "$INCREMENTAL_CURRENT" &> "$INC_APPLY_LOG"
 
 		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
