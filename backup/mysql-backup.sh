@@ -156,7 +156,7 @@ full_backup()
 	echo "### Starting full backup: $(date) ###"
 
 	# find and roll in the days hourly incrementals
-	INCREMENTAL_DIRS=$(find $IB_INCREMENTAL_BASE -maxdepth 1 -type d -name ${INCREMENTAL_DATE}_\* | sort -n)
+	INCREMENTAL_DIR=$(find $IB_INCREMENTAL_BASE -maxdepth 1 -type d -name ${INCREMENTAL_DATE}_\* | sort -n)
 
 
 	# loop through and apply increments, will validate xtrabackup_checkpoints
