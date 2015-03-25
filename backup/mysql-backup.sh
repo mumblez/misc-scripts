@@ -121,10 +121,12 @@ incremental_backup()
 
 	# Keep limited number of incrementals and delete old ones
 	cd "$IB_INCREMENTAL_BASE"
-	for OLD_INC in $(diff <(ls -1 | tail -n "$INCREMENTALS_TO_KEEP") <(ls -1) | sed '1d' | awk '{print $2}');
-	do
-		rm -rf "$OLD_INC" && echo "INFO: Deleted incremental - $OLD_INC - `date`"
-	done
+	if [ "$(ls -1 | wc -l)" -gt "$INCREMENTALS_TO_KEEP" ]; then
+		for OLD_INC in $(diff <(ls -1 | tail -n "$INCREMENTALS_TO_KEEP") <(ls -1) | sed '1d' | awk '{print $2}');
+		do
+			rm -rf "$OLD_INC" && echo "INFO: Deleted incremental - $OLD_INC - `date`"
+		done
+	fi
 
 	rm -f "$IBI_LOCK"
 	echo "### Finish incremental: $(date) ###"
