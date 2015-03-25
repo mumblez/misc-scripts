@@ -156,7 +156,7 @@ full_backup()
 	echo "### Starting full backup: $(date) ###"
 
 	# find and roll in the days hourly incrementals
-	INCREMENTAL_DIR=$(find $IB_INCREMENTAL_BASE -maxdepth 1 -type d -name ${INCREMENTAL_DATE}_\* | sort -n)
+	INCREMENTAL_DIRS=$(find $IB_INCREMENTAL_BASE -maxdepth 1 -type d -name ${INCREMENTAL_DATE}_\* | sort -n)
 
 
 	# loop through and apply increments, will validate xtrabackup_checkpoints
@@ -170,13 +170,13 @@ full_backup()
 		[ "$INC_CHECKPOINT" -ne "$HOTCOPY_CHECKPOINT" ] && die "ERROR: Checkpoints don't match for $INCREMENTAL_DIR"
 
 		# start applying incrementals into the hotcopy
-		echo "INFO: applying incremental number - $INC_COUNTER - $INCREMENTAL_DIR - `date`"
+		echo "INFO: FULL - applying incremental number - $INC_COUNTER - $INCREMENTAL_DIR - `date`"
 		innobackupex --apply-log "$IB_HOTCOPY" --incremental-dir "$INCREMENTAL_DIR" &> "$INC_APPLY_LOG"
 		# validate completed successfully
 		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
-			echo "INFO: applying incremental -$INC_COUNTER successful - $INCREMENTAL_DIR - `date`"
+			echo "INFO: FULL - applying incremental -$INC_COUNTER successful - $INCREMENTAL_DIR - `date`"
 		else
-			die "ERROR: applying incremental - $INC_COUNTER failed  - $INCREMENTAL_DIR - `date`"
+			die "ERROR: FULL - applying incremental - $INC_COUNTER failed  - $INCREMENTAL_DIR - `date`"
 		fi
 		INC_COUNTER=$(($INC_COUNTER+1))
 	done
