@@ -115,7 +115,7 @@ incremental_backup()
 	INCREMENTAL_CURRENT="${IB_INCREMENTAL_BASE}/${INCREMENTAL_TMP}"
 	INC_CHECKPOINT=$(cat "${INCREMENTAL_CURRENT}/xtrabackup_checkpoints" | awk '/^from_lsn/ {print $3}')
 
-	if [ "$INC_CHECKPOINT" -eq "$REALISED_CHECKPOINT" ]; then
+	if [ "$INC_CHECKPOINT" -eq "$REALISED_CHECKPOINT" -a "$(ls -1 $IB_INCREMENTAL_BASE | wc -l)" -gt 2 ]; then
 		innobackupex --apply-log "$REALISED_COPY" --incremental-dir "$INCREMENTAL_CURRENT" &> "$INC_APPLY_LOG"
 
 		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
