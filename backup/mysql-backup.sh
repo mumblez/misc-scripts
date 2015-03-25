@@ -82,13 +82,14 @@ done
 
 ibi_lock_check()
 {
-	[ -e $IBI_LOCK ] && die "ERROR: Backup job still running, remove $IBI_LOCK if not true."
+	[ -e $IBI_LOCK ] && die "ERROR: `date` - Backup job still running, remove $IBI_LOCK if not true."
 }
 
 
 incremental_backup()
 {
 	ibi_lock_check
+	touch "$IBI_LOCK"
 	echo "### Starting incremental: $(date) ###"
 	INCREMENTAL_DATE=$(date +%Y-%m-%d)
 	# create incremental
