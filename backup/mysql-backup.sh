@@ -22,6 +22,7 @@ DATE=$(date +%Y-%m-%d)
 DIR=$(cd "$(dirname "$0")" && pwd)
 IBI_LOCK="/var/run/dbbackup"
 ZB_LOCK="/var/run/zbackup"
+ZB_LOG="/var/log/zbackup/mysql-full-backup.log"
 TOOLS"zbackup innobackupex"
 DIRECTORIES="IB_BASE ZBACKUP_BASE IB_INCREMENTAL_BASE IB_CHECKPOINT IB_HOTCOPY"
 
@@ -174,12 +175,12 @@ full_backup()
 	touch $ZB_LOCK
 	ZBACKUP_FILE="${ZBACKUP_BASE}/${INCREMENTAL_DATE}.tar"
 
-	echo "INFO: `date` - running zbackup of $IB_HOTCOPY to $ZBACKUP_FILE..."
+	echo "INFO: `date` - running zbackup of $IB_HOTCOPY to $ZBACKUP_FILE..." | tee >> "$ZB_LOG"
 	
 	# run prepared hotcopy through zbackup
-	tar -cf - -C "$IB_HOTCOPY" . | zbackup --password-file "$ZB_KEY" backup "$ZBACKUP_FILE"
+	tar -cf - -C "$IB_HOTCOPY" . | zbackup --password-file "$ZB_KEY" backup "$ZBACKUP_FILE" &> "$ZB_LOG"
 
-	echo "### Finish full backup: $(date) ###"
+	echo "### Finish full backup: $(date) ###" | tee >> "$ZB_LOG"
 	rm -f $ZB_LOCK
 	rm -f $INC_APPLY_LOG
 }
