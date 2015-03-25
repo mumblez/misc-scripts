@@ -71,7 +71,7 @@ fi
 
 # ensure tools exist
 for tool in $TOOLS; do
-	which $tool || die "ERROR: $tool is not available on the system."
+	which $tool &> /dev/null || die "ERROR: $tool is not available on the system."
 done
 
 # ensure directories and files exist
