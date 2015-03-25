@@ -1,6 +1,9 @@
 #!/bin/bash
 
 DIR=$(cd "$(dirname "$0")" && pwd)
+exec > >(${DIR}/init-inno.log)
+exec 2>&1
+
 
 # create the first backup and checkpoint directory
 innobackupex --no-timestamp --extra-lsndir ${DIR}/last-checkpoint ${DIR}/hotcopy
