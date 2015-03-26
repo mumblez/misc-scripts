@@ -89,6 +89,8 @@ incremental_backup()
 	# create incremental
 	innobackupex --incremental \
 	--extra-lsndir "$IB_CHECKPOINT" \
+	--safe-slave-backup \
+	--slave-info \
 	--incremental-basedir "$IB_CHECKPOINT" \
 	"$IB_INCREMENTAL_BASE" &> "$INC_APPLY_LOG"
 
