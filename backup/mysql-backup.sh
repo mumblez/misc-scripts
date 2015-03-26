@@ -94,10 +94,10 @@ incremental_backup()
 
 	# check it completed successfully
 	if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
-		echo "INFO: incremental backup successful - $INCREMENTAL_CURRENT - `date`"
+		echo "INFO: incremental backup successful - `date`"
 		rm -f "$INC_APPLY_LOG"
 	else
-		die "ERROR: incremental backup failed - $INCREMENTAL_CURRENT - `date`"
+		die "ERROR: incremental backup failed - `date`"
 	fi
 
 	# roll into realised directory, always 3rd from last
@@ -163,11 +163,11 @@ full_backup()
 		[ "$INC_CHECKPOINT" -ne "$HOTCOPY_CHECKPOINT" ] && die "ERROR: Checkpoints don't match for $INCREMENTAL_DIR"
 
 		# start applying incrementals into the hotcopy
-		echo "INFO: FULL - applying incremental number - $INC_COUNTER - $INCREMENTAL_DIR - `date`"
+		echo "INFO: FULL - applying incremental - $INC_COUNTER ... - $INCREMENTAL_DIR - `date`"
 		innobackupex --apply-log "$IB_HOTCOPY" --incremental-dir "$INCREMENTAL_DIR" &> "$INC_APPLY_LOG"
 		# validate completed successfully
 		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
-			echo "INFO: FULL - applying incremental -$INC_COUNTER successful - $INCREMENTAL_DIR - `date`"
+			echo "INFO: FULL - applying incremental - $INC_COUNTER successful - $INCREMENTAL_DIR - `date`"
 		else
 			die "ERROR: FULL - applying incremental - $INC_COUNTER failed  - $INCREMENTAL_DIR - `date`"
 		fi
