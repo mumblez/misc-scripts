@@ -44,9 +44,7 @@ DIRECTORIES="IB_BASE ZBACKUP_BASE IB_INCREMENTAL_BASE IB_CHECKPOINT IB_HOTCOPY"
 
 
 #full backup with rollup
-#DATE=$(date +%Y-%m-%d) # run asap within full backup function
 #while loop on lock so last incremental can finish
-#INCREMENTS=$(find $INCREMENTS_BASE_DIR -type d -maxdepth 1 -name ${DATE}_\* -print0 | xargs -0 -I{} echo "{}”)
 #-validate checkpoints
 #-touch lock???
 #-roll in with apply-log and redo-only
@@ -54,15 +52,10 @@ DIRECTORIES="IB_BASE ZBACKUP_BASE IB_INCREMENTAL_BASE IB_CHECKPOINT IB_HOTCOPY"
 #-continue with next folder
 #for loop and check checkpoints file until last checkpoint not found
 #-remove lock
-#
 #call zbackup and create a lock (general zbackup lock for all future backups)
 #
 #any restores require apply-log
 
-
-
-
-# find "$IB_INCREMENTAL_BASE" -maxdepth 1 -type d -name "2015-03*"
 
 # ensure user passes in argument of either full or incremental
 if [ $# -lt 1 ]; then
@@ -90,7 +83,7 @@ incremental_backup()
 {
 	ibi_lock_check
 	touch "$IBI_LOCK"
-	INC_APPLY_LOG="/tmp/inc_apply.log"
+	INC_APPLY_LOG="/tmp/inc_apply_realised.log"
 	echo "### Starting incremental: $(date) ###"
 	INCREMENTAL_DATE=$(date +%Y-%m-%d)
 	# create incremental
@@ -161,7 +154,7 @@ full_backup()
 
 	# loop through and apply increments, will validate xtrabackup_checkpoints
 	INC_COUNTER=1
-	INC_APPLY_LOG="/tmp/inc_apply.log"
+	INC_APPLY_LOG="/tmp/inc_apply_hotcopy.log"
 
 	for INCREMENTAL_DIR in $INCREMENTAL_DIRS; do
 		# validate checkpoints
@@ -181,6 +174,7 @@ full_backup()
 		INC_COUNTER=$(($INC_COUNTER+1))
 	done
 
+	rm -f "$INC_APPLY_LOG"
 	touch $ZB_LOCK
 	ZBACKUP_FILE="${ZBACKUP_BASE}/${INCREMENTAL_DATE}.tar"
 
