@@ -96,9 +96,9 @@ sleep 5
 
 # What files to exclude from sync
 cat > ${EXCLUDE_FILE} <<EOF
-mysqld-relay*
+'mysqld-relay*'
 relay-log.info
-mysql-bin.*
+'mysql-bin.*'
 master.info
 EOF
 
