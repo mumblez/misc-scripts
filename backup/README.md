@@ -1,6 +1,26 @@
 innobackupex
 ============
 
+Setup
+-----
+
+Create base directory where backups will live and run the init-inno-setup.sh script to setup the directories
+and initial full backups.
+
+Assumes zbackup and xtrabackup is already setup and log folders created under /var/log/{innobackupex,zbackup}
+
+Add the crons if not already added, e.g.
+
+# mysql backup
+# incremental
+00 * * * *	***REMOVED***	/***REMOVED***/scripts/mysql-backup.sh incremental &>> /var/log/innobackupex/incremental-backup.log
+# full
+15 23 * * *	***REMOVED***	/***REMOVED***/scripts/mysql-backup.sh full &>> /var/log/innobackupex/full-backup.log
+
+
+NOTES
+=====
+
 USE init-inno... script to initialise innodb directories
 
 --extra-lsndir = put lsn start stop numbers in this directory (last checkpoint)
@@ -10,11 +30,11 @@ backup / last checkpoint)
 
 full / hotcopy backup (and prepare for incrementals)
 ----------------------------------------------------
-innobackupex --no-timestamp --extra-lsndir /srv/r5/backups/mysql-innobackupex/last-checkpoint /srv/r5/innobackupex/mysql-hotcopy && innobackupex --apply-log --redo-only /srv/r5/backups/mysql-innobackupex/mysql-hotcopy && cp -ar /srv/r5/backups/mysql-innobackupex/mysql-hotcopy /srv/r5/backups/mysql-innobackupex/realised
+```innobackupex --no-timestamp --extra-lsndir /srv/r5/backups/mysql-innobackupex/last-checkpoint /srv/r5/innobackupex/mysql-hotcopy && innobackupex --apply-log --redo-only /srv/r5/backups/mysql-innobackupex/mysql-hotcopy && cp -ar /srv/r5/backups/mysql-innobackupex/mysql-hotcopy /srv/r5/backups/mysql-innobackupex/realised```
 
 incrementals
 ------------
-innobackupex --incremental --extra-lsndir /srv/r5/backups/mysql-innobackupex/last-checkpoint --incremental-basedir /srv/r5/backups/mysql-innobackupex/last-checkpoint /srv/r5/backups/mysql-innobackupex/incrementals
+```innobackupex --incremental --extra-lsndir /srv/r5/backups/mysql-innobackupex/last-checkpoint --incremental-basedir /srv/r5/backups/mysql-innobackupex/last-checkpoint /srv/r5/backups/mysql-innobackupex/incrementals```
 
 (create and check for locks, likely to overrun an hour in future)
 
@@ -43,18 +63,18 @@ Use lzma as it's multi-threaded!!!
 
 zbackup commands
 ================
-backup - START=$(date); tar -cf - -C /srv/r5/backups/mysql-innobackupex/mysql-hotcopy . | zbackup --password-file /***REMOVED***/keys/zbackup backup /srv/r5/backups/zbackup-repo/backups/<something....with...date>.tar
+backup - ```START=$(date); tar -cf - -C /srv/r5/backups/mysql-innobackupex/mysql-hotcopy . | zbackup --password-file /***REMOVED***/keys/zbackup backup /srv/r5/backups/zbackup-repo/backups/<something....with...date>.tar```
 
 (best to cd to directory and tar else restore looks confusing)
 DO NOT COMPRESS OR ENCRYPT FILES AHEAD OF TIME else will alleviate benefit of deduplication
 (defaults to 16 threads if needed, add cache setting when extracting but no larger than a couple gig)
 
-restore - START=$(date); date; zbackup --cache-size 3000mb --password-file /***REMOVED***/keys/zbackup restore <backup to restore>.tar | tar -xf - -C /path/to/extract/to; echo "start: $START"; echo "end: $(date)"; echo "zbackup restore test complete" | mail -s "zbackup restore test complete" ***REMOVED***@***REMOVED***.com
+restore - ```START=$(date); date; zbackup --cache-size 3000mb --password-file /***REMOVED***/keys/zbackup restore <backup to restore>.tar | tar -xf - -C /path/to/extract/to; echo "start: $START"; echo "end: $(date)"; echo "zbackup restore test complete" | mail -s "zbackup restore test complete" ***REMOVED***@***REMOVED***.com```
 
 
 prune old backups (bundle files)
 --------------------------------
-zbackup --non-encrypted gc /srv/r5/zbackups/zbackup-repo
+```zbackup --non-encrypted gc /srv/r5/backups/zbackup-repo```
 
 delete or archive old backups and prune, the real data is in bundles but only delete hash reference
 files in 'backup' directory under zbackup-repo
