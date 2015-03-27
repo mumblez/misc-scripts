@@ -1,12 +1,15 @@
 #!/bin/bash
 
 DIR=$(cd "$(dirname "$0")" && pwd)
-exec > >(${DIR}/init-inno.log)
-exec 2>&1
+#LOG="${DIR}/init-inno.log"
+#touch "$LOG"
+#chmod 777 "$LOG"
+#exec > >("$LOG")
+#exec 2>&1
 
 
 # create the first backup and checkpoint directory
-innobackupex --no-timestamp --extra-lsndir ${DIR}/last-checkpoint ${DIR}/hotcopy
+innobackupex --safe-slave-backup --slave-info --no-timestamp --extra-lsndir ${DIR}/last-checkpoint ${DIR}/hotcopy
 
 # apply log ready for incrementals
 innobackupex --apply-log --redo-only ${DIR}/hotcopy
