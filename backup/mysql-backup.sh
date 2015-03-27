@@ -148,35 +148,45 @@ full_backup()
 	[ -e $ZB_LOCK ] && die "ERROR: zbackup still running..."
 	[ -e $ZB_KEY ] || die "ERROR: zbackup key file not found"
 
-	echo "### Starting full backup: $(date) ###"
+	echo "### Start rolling the days incrementals into hotcopy - $IB_HOTCOPY - $(date) ###"
 
 	# find and roll in the days hourly incrementals
 	INCREMENTAL_DIRS=$(find $IB_INCREMENTAL_BASE -maxdepth 1 -type d -name ${INCREMENTAL_DATE}_\* | sort -n)
 
 
-	# loop through and apply increments, will validate xtrabackup_checkpoints
-	INC_COUNTER=1
-	INC_APPLY_LOG="/tmp/inc_apply_hotcopy.log"
+	if [ -n $INCREMENTAL_DIRS ]; then
+		# loop through and apply increments, will validate xtrabackup_checkpoints
+		INC_COUNTER=1
+		INC_APPLY_LOG="/tmp/inc_apply_hotcopy.log"
+		for INCREMENTAL_DIR in $INCREMENTAL_DIRS; do
+			# validate checkpoints
+			HOTCOPY_CHECKPOINT=$(cat "${IB_HOTCOPY}/xtrabackup_checkpoints" | awk '/^to_lsn/ {print $3}')
+			INC_CHECKPOINT=$(cat "${INCREMENTAL_DIR}/xtrabackup_checkpoints" | awk '/^from_lsn/ {print $3}')
+			[ "$INC_CHECKPOINT" -ne "$HOTCOPY_CHECKPOINT" ] && die "ERROR: Checkpoints don't match for $INCREMENTAL_DIR"
 
-	for INCREMENTAL_DIR in $INCREMENTAL_DIRS; do
-		# validate checkpoints
-		HOTCOPY_CHECKPOINT=$(cat "${IB_HOTCOPY}/xtrabackup_checkpoints" | awk '/^to_lsn/ {print $3}')
-		INC_CHECKPOINT=$(cat "${INCREMENTAL_DIR}/xtrabackup_checkpoints" | awk '/^from_lsn/ {print $3}')
-		[ "$INC_CHECKPOINT" -ne "$HOTCOPY_CHECKPOINT" ] && die "ERROR: Checkpoints don't match for $INCREMENTAL_DIR"
+			# start applying incrementals into the hotcopy
+			echo "INFO: FULL - applying incremental - $INC_COUNTER ... - $INCREMENTAL_DIR - `date`"
+			innobackupex --apply-log --redo-only "$IB_HOTCOPY" --incremental-dir "$INCREMENTAL_DIR" &> "$INC_APPLY_LOG"
+			# validate completed successfully
+			if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
+				echo "INFO: FULL - applying incremental - $INC_COUNTER successful - $INCREMENTAL_DIR - `date`"
+			else
+				die "ERROR: FULL - applying incremental - $INC_COUNTER failed - $INCREMENTAL_DIR - `date`"
+			fi
+			INC_COUNTER=$(($INC_COUNTER+1))
+			rm -f "$INC_APPLY_LOG"
+		done
 
-		# start applying incrementals into the hotcopy
-		echo "INFO: FULL - applying incremental - $INC_COUNTER ... - $INCREMENTAL_DIR - `date`"
-		innobackupex --apply-log --redo-only "$IB_HOTCOPY" --incremental-dir "$INCREMENTAL_DIR" &> "$INC_APPLY_LOG"
-		# validate completed successfully
-		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
-			echo "INFO: FULL - applying incremental - $INC_COUNTER successful - $INCREMENTAL_DIR - `date`"
-		else
-			die "ERROR: FULL - applying incremental - $INC_COUNTER failed - $INCREMENTAL_DIR - `date`"
-		fi
-		INC_COUNTER=$(($INC_COUNTER+1))
-	done
+		echo "### Finished rolling the days incrementals into hotcopy - $IB_HOTCOPY - $(date) ###"
+	else
+		echo "WARN: No incremental backups found for today - $INCREMENTAL_DATE - inside $IB_INCREMENTAL_BASE"
+	fi
 
-	rm -f "$INC_APPLY_LOG"
+	echo "### Start daily zbackup of $IB_HOTCOPY - $(date) ###"	
+
+	[ -e "$ZB_LOCK" ] && die "ERROR: zbackup lock found, skiping zbackup backup"
+
+	# Create zbackup of todays hotcopy
 	touch $ZB_LOCK
 	ZBACKUP_FILE="${ZBACKUP_BASE}/${INCREMENTAL_DATE}.tar"
 
@@ -185,9 +195,8 @@ full_backup()
 	# run prepared hotcopy through zbackup
 	tar -cf - -C "$IB_HOTCOPY" . | zbackup --password-file "$ZB_KEY" backup "$ZBACKUP_FILE" &>> "$ZB_LOG"
 
-	echo "### Finish full backup: $(date) ###" | tee >> "$ZB_LOG"
+	echo "### Finished daily zbackup of $IB_HOTCOPY - $(date) ###"	
 	rm -f "$ZB_LOCK"
-	rm -f "$INC_APPLY_LOG"
 }
 
 
