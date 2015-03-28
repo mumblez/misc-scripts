@@ -154,7 +154,7 @@ full_backup()
 	INCREMENTAL_DIRS=$(find $IB_INCREMENTAL_BASE -maxdepth 1 -type d -name ${INCREMENTAL_DATE}_\* | sort -n)
 
 
-	if [ -n $INCREMENTAL_DIRS ]; then
+	if [ -n "$INCREMENTAL_DIRS" ]; then
 		# loop through and apply increments, will validate xtrabackup_checkpoints
 		INC_COUNTER=1
 		INC_APPLY_LOG="/tmp/inc_apply_hotcopy.log"
