@@ -11,6 +11,20 @@ MYSQL_VERSION_MASTER=$(mysqladmin version | grep 'Server version' | grep -oE "5.
 # FUNTIONS
 die() { echo $* 1>&2 ; exit 1 ; }
 
+cleanup ()
+{
+	echo "INFO: Cleanup operations..."
+	# clean up files
+	rm -rf "${EXCLUDE_FILE}"
+	rm -f "$MASTER_LOG"
+
+	# Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
+	echo "INFO: Removing snapshot..."
+	hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
+}
+
+trap cleanup EXIT
+
 # Check job isn't already running
 [ -e "$EXCLUDE_FILE" ] && die "Job is already running, quitting...";
 
@@ -26,6 +40,8 @@ rcc () {
 
 MYSQL_VERSION_SLAVE=$(rcc mysqladmin version | grep 'Server version' | grep -oE "5.[56]")
 [ -z "$MYSQL_VERSION_SLAVE" ] && MYSQL_VERSION_SLAVE=$(rc dpkg -l | grep 'mysql-server-' | grep -oE "5.[56]" | head -n 1)
+echo "INFO: mysql version - master = $MYSQL_VERSION_MASTER"
+echo "INFO: mysql version - slave = $MYSQL_VERSION_SLAVE"
 
 # Backup or Restore qa / test specific tables - do as seperate RD job reference
 # call snippets/database/table backup or restore RD job
@@ -88,7 +104,7 @@ cat > ${EXCLUDE_FILE} <<EOF
 EOF
 
 # Check data directory location (locally, remote will actually be the snapshot location)
-REMOTE_MYSQL_DIR=$(rc grep \"^datadir\" $REMOTE_MYCNF | grep -oE \"/.*\"); [ -z "$REMOTE_MYSQL_DIR" ] && die "ERROR: remote mysql datadir could not be located"
+REMOTE_MYSQL_DIR=$(rc grep ^datadir $REMOTE_MYCNF | grep -oE "/.*"); [ -z "$REMOTE_MYSQL_DIR" ] && die "ERROR: remote mysql datadir could not be located"
 echo "INFO: remote mysql datadir: $REMOTE_MYSQL_DIR"
 REAL_MYSQL_DIR=$(awk '/^datadir/{ print $3 }' "$LOCAL_MYCNF"); [ -z "$REAL_MYSQL_DIR" ] && die "ERROR: local mysql datadir could not be located"
 echo "INFO: local mysql datadir: $REAL_MYSQL_DIR"
@@ -213,18 +229,3 @@ rc mysql -e 'show slave status \G' | grep 'Running' | tail -n 1 | grep -q 'Yes'
 
 # if mysql version is higher then upgrade
 [ "${MYSQL_VERSION_MASTER:2:1}" -lt "${MYSQL_VERSION_SLAVE:2:1}" ] && rc mysql_upgrade
-
-cleanup ()
-{
-	echo "INFO: Cleanup operations..."
-	# clean up files
-	rm -rf "${EXCLUDE_FILE}"
-	rm -f "$MASTER_LOG"
-
-	# Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
-	echo "INFO: Removing snapshot..."
-	hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
-}
-
-trap cleanup EXIT
-
