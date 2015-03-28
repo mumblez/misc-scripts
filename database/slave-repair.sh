@@ -24,7 +24,8 @@ rcc () {
   ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_DB_SERVER} "sudo $@"
 }
 
-MYSQL_VERSION_SLAVE=$(rc mysqladmin version | grep 'Server version' | grep -oE "5.[56]")
+MYSQL_VERSION_SLAVE=$(rcc mysqladmin version | grep 'Server version' | grep -oE "5.[56]")
+[ -z "$MYSQL_VERSION_SLAVE" ] && MYSQL_VERSION_SLAVE=$(rc dpkg -l | grep 'mysql-server-' | grep -oE "5.[56]" | head -n 1)
 
 # Backup or Restore qa / test specific tables - do as seperate RD job reference
 # call snippets/database/table backup or restore RD job
