@@ -87,7 +87,7 @@ master.info
 EOF
 
 # Check data directory location (locally, remote will actually be the snapshot location)
-REMOTE_MYSQL_DIR=$(rc awk "'/^datadir /{ print \$3 }' $REMOTE_MYCNF"); [ -z "$REMOTE_MYSQL_DIR" ] && die "ERROR: remote mysql datadir could not be located"
+REMOTE_MYSQL_DIR=$(rc grep \"^datadir\" $REMOTE_MYCNF | grep -oE \"/.*\"); [ -z "$REMOTE_MYSQL_DIR" ] && die "ERROR: remote mysql datadir could not be located"
 echo "INFO: remote mysql datadir: $REMOTE_MYSQL_DIR"
 REAL_MYSQL_DIR=$(awk '/^datadir/{ print $3 }' "$LOCAL_MYCNF"); [ -z "$REAL_MYSQL_DIR" ] && die "ERROR: local mysql datadir could not be located"
 echo "INFO: local mysql datadir: $REAL_MYSQL_DIR"
