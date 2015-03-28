@@ -139,7 +139,13 @@ incremental_backup()
 
 full_backup()
 {
-	INCREMENTAL_DATE=$(date +%Y-%m-%d)
+        # allow manually passing in the date as 2nd argument
+        if [ -n "$2" ]; then
+                INCREMENTAL_DATE="$2"
+        else
+                INCREMENTAL_DATE=$(date +%Y-%m-%d)
+        fi
+
 	# Let incremental finish if still running
 	while [ -e $IBI_LOCK ]; do
 		sleep 60;
@@ -154,7 +160,7 @@ full_backup()
 	INCREMENTAL_DIRS=$(find $IB_INCREMENTAL_BASE -maxdepth 1 -type d -name ${INCREMENTAL_DATE}_\* | sort -n)
 
 
-	if [ -n $INCREMENTAL_DIRS ]; then
+	if [ -n "$INCREMENTAL_DIRS" ]; then
 		# loop through and apply increments, will validate xtrabackup_checkpoints
 		INC_COUNTER=1
 		INC_APPLY_LOG="/tmp/inc_apply_hotcopy.log"
@@ -189,6 +195,7 @@ full_backup()
 	# Create zbackup of todays hotcopy
 	touch $ZB_LOCK
 	ZBACKUP_FILE="${ZBACKUP_BASE}/${INCREMENTAL_DATE}.tar"
+	[ -e "$ZBACKUP_FILE" ] && rm -f "$ZBACKUP_FILE" && "WARN: Found and deleted existing version of backup"
 
 	echo "INFO: `date` - running zbackup of $IB_HOTCOPY to $ZBACKUP_FILE..." | tee >> "$ZB_LOG"
 	
