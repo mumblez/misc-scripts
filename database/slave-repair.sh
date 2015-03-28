@@ -120,7 +120,7 @@ EOF
 
 MASTER_LOG_FILE=$(awk '{print $1}' $MASTER_LOG)
 MASTER_LOG_POS=$(awk '{print $2}' $MASTER_LOG)
-MASTER_IP=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
+MASTER_IP=$(hostname -i | awk {'print $2'})
 MASTER_USER=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
 MASTER_PASS=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
 
