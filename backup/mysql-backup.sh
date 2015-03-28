@@ -88,6 +88,7 @@ incremental_backup()
 	ibi_lock_check
 	touch "$IBI_LOCK"
 	INC_APPLY_LOG="/tmp/inc_apply_realised.log"
+	echo "-"
 	echo "### Starting incremental: $(date) ###"
 	INCREMENTAL_DATE=$(date +%Y-%m-%d)
 	# create incremental
@@ -161,6 +162,7 @@ full_backup()
 	[ -e $ZB_LOCK ] && die "ERROR: zbackup still running..."
 	[ -e $ZB_KEY ] || die "ERROR: zbackup key file not found"
 
+	echo "-"
 	echo "### Start rolling the days incrementals into hotcopy - $IB_HOTCOPY - $(date) ###"
 
 	# find and roll in the days hourly incrementals
