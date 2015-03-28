@@ -139,7 +139,13 @@ incremental_backup()
 
 full_backup()
 {
-	INCREMENTAL_DATE=$(date +%Y-%m-%d)
+        # allow manually passing in the date as 2nd argument
+        if [ -n "$2" ]; then
+                INCREMENTAL_DATE="$2"
+        else
+                INCREMENTAL_DATE=$(date +%Y-%m-%d)
+        fi
+
 	# Let incremental finish if still running
 	while [ -e $IBI_LOCK ]; do
 		sleep 60;
