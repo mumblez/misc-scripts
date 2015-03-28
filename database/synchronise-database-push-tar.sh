@@ -176,7 +176,7 @@ echo "INFO: Ready to sync..."
 START_TIME=$(date)
 echo "####################################################################"
 echo "INFO: Starting sync..."
-tar -cvf - -C "${FINAL_MYSQL_DIR}" . --exclude-from="${EXCLUDE_FILE}" \
+tar -cvf - -C "${FINAL_MYSQL_DIR}" --exclude-from="${EXCLUDE_FILE}" . \
 | ssh ${SSH_OPTIONS} "${SSH_USER}"@"${REMOTE_DB_SERVER}" "sudo tar -xf - -C /var/lib/mysql"
 
 [ $? == 0 ] || { die "ERROR: the sync job failed!"; }
