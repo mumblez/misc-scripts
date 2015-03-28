@@ -152,8 +152,6 @@ full_backup()
                 INCREMENTAL_DATE=$(date +%Y-%m-%d)
         fi
 
-	exit 0
-
 	# Let incremental finish if still running
 	while [ -e $IBI_LOCK ]; do
 		sleep 60;
