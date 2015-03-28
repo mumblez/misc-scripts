@@ -6,6 +6,7 @@ SSH_USER="rundeck" # using ssh-agent feature in RD 2.4.0+
 SSH_OPTIONS="-T -c arcfour -o StrictHostKeyChecking=no -o Compression=no -x"
 EXCLUDE_FILE="$DIR/excludeFiles.txt" # converted for tar --exclude-from feature
 EXCLUDE_LIST="services service_configuration scheduled_task" # turn into RD multi-valued list from high
+MYSQL_VERSION_MASTER=$(mysqladmin version | grep 'Server version' | grep -oE "5.[56]")
 
 # FUNTIONS
 die() { echo $* 1>&2 ; exit 1 ; }
@@ -22,6 +23,8 @@ rc () {
 rcc () {
   ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_DB_SERVER} "sudo $@"
 }
+
+MYSQL_VERSION_SLAVE=$(rc mysqladmin version | grep 'Server version' | grep -oE "5.[56]")
 
 # Backup or Restore qa / test specific tables - do as seperate RD job reference
 # call snippets/database/table backup or restore RD job
@@ -118,12 +121,6 @@ START SLAVE;
 quit
 EOF
 
-MASTER_LOG_FILE=$(awk '{print $1}' $MASTER_LOG)
-MASTER_LOG_POS=$(awk '{print $2}' $MASTER_LOG)
-MASTER_IP=$(hostname -i | awk {'print $2'})
-MASTER_USER=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
-MASTER_PASS=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
-
 [ $? == 0 ] || { die "ERROR: Failed to stop slave, flush, create snapshot, unlock and start slave, log onto DB and check!!!!"; }
 
 # swap for local - should probably rename, e.g. mysqldatadir_snapshot
@@ -131,6 +128,12 @@ SNAPSHOT_MYSQL_DIR=$(hcp -l | awk '/Mounted:/ { print $2 }') || { die "ERROR: Fa
 echo "INFO: Snapshot volume: $SNAPSHOT_MYSQL_DIR"
 
 FINAL_MYSQL_DIR="$SNAPSHOT_MYSQL_DIR"
+
+MASTER_LOG_FILE=$(awk '{print $1}' $MASTER_LOG)
+MASTER_LOG_POS=$(awk '{print $2}' $MASTER_LOG)
+MASTER_IP=$(hostname -i | grep -oE "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}")
+MASTER_USER=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
+MASTER_PASS=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
 
 # do a clean mysql instance on datadir and shutdown
 ## get innodb_log_file_size 
@@ -211,6 +214,10 @@ rc CHANGE MASTER TO MASTER_HOST=\'${MASTER_IP}\', MASTER_USER=\'${MASTER_USER}\'
 # check slave successfully running
 rc mysql -e 'show slave status \G' | grep 'Running' | head -n 1 | grep -q 'Yes'
 rc mysql -e 'show slave status \G' | grep 'Running' | tail -n 1 | grep -q 'Yes'
+
+# if mysql version is higher then upgrade
+[ "${MYSQL_VERSION_MASTER:2:1}" -lt "${MYSQL_VERSION_SLAVE:2:1}" ] && rc mysql_upgrade
+
 
 echo "INFO: Cleanup operations..."
 rm -rf "${EXCLUDE_FILE}"
