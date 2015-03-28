@@ -138,7 +138,7 @@ START SLAVE;
 quit
 EOF
 
-echo "INFO: ### MASTER LOG DETAILS: $MASTER_LOG"
+echo "INFO: ### MASTER LOG DETAILS: `cat $MASTER_LOG`"
 
 [ $? == 0 ] || { die "ERROR: Failed to stop slave, flush, create snapshot, unlock and start slave, log onto DB and check!!!!"; }
 
