@@ -136,14 +136,14 @@ else
 
   # Flush data to disk before transfer, create snapshot and resume # swap for local (and no need to specifiy host nor ssh)
   echo "INFO: Connecting to source database..."
-  mysql << EOF
-  STOP SLAVE;
-  FLUSH TABLES WITH READ LOCK;
-  SYSTEM hcp -o $LVM_MYSQL -c $LVM_SNAPSHOT 2>&1 > /dev/null
-  UNLOCK TABLES;
-  START SLAVE;
-  quit
-  EOF
+mysql << EOF
+STOP SLAVE;
+FLUSH TABLES WITH READ LOCK;
+SYSTEM hcp -o $LVM_MYSQL -c $LVM_SNAPSHOT 2>&1 > /dev/null
+UNLOCK TABLES;
+START SLAVE;
+quit
+EOF
 
   [ $? == 0 ] || { die "ERROR: Failed to stop slave, flush, create snapshot, unlock and start slave, log onto DB and check!!!!"; }
 
@@ -179,11 +179,6 @@ echo "INFO: Snapshot / COW final size..."
 ## SWAP AROUND ##
 hcp -l | grep "Changed Blocks"
 
-# Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
-echo "INFO: Removing snapshot..."
-## SWAP AROUND ##
-hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
-
 # Ensure permissions consistent
 rc chown mysql:mysql "${REMOTE_MYSQL_DIR}" -R
 
@@ -202,5 +197,16 @@ rcc mysqladmin flush-hosts
 rcc mysql -e 'stop slave;' || echo "WARNING: !!!! could not stop slave replication !!!!!!"
 rcc mysql -e 'reset slave all;' || echo "WARNING: !!!! slave info could not be removed !!!!!!"
 
-echo "INFO: Cleanup operations..."
-rm -rf "${EXCLUDE_FILE}"
+
+cleanup ()
+{
+        echo "INFO: Cleanup operations..."
+        # clean up files
+        rm -rf "${EXCLUDE_FILE}"
+
+        # Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
+        echo "INFO: Removing snapshot..."
+        hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
+}
+
+trap cleanup EXIT

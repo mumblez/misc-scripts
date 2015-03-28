@@ -179,11 +179,6 @@ echo "INFO: Snapshot / COW final size..."
 ## SWAP AROUND ##
 hcp -l | grep "Changed Blocks"
 
-# Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
-echo "INFO: Removing snapshot..."
-## SWAP AROUND ##
-hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
-
 # Ensure permissions consistent
 rc chown mysql:mysql "${REMOTE_MYSQL_DIR}" -R
 
@@ -218,7 +213,17 @@ rc mysql -e 'show slave status \G' | grep 'Running' | tail -n 1 | grep -q 'Yes'
 # if mysql version is higher then upgrade
 [ "${MYSQL_VERSION_MASTER:2:1}" -lt "${MYSQL_VERSION_SLAVE:2:1}" ] && rc mysql_upgrade
 
+cleanup ()
+{
+	echo "INFO: Cleanup operations..."
+	# clean up files
+	rm -rf "${EXCLUDE_FILE}"
+	rm -f "$MASTER_LOG"
 
-echo "INFO: Cleanup operations..."
-rm -rf "${EXCLUDE_FILE}"
-rm -f "$MASTER_LOG"
+	# Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
+	echo "INFO: Removing snapshot..."
+	hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
+}
+
+trap cleanup EXIT
+
