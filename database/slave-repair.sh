@@ -97,10 +97,10 @@ sleep 5
 
 # What files to exclude from sync
 cat > ${EXCLUDE_FILE} <<EOF
-'*mysqld-relay*'
-'*relay-log.info'
-'*mysql-bin.*'
-'*master.info'
+*mysqld-relay*
+*relay-log.info
+*mysql-bin.*
+*master.info
 EOF
 
 # Check data directory location (locally, remote will actually be the snapshot location)
@@ -137,6 +137,8 @@ UNLOCK TABLES;
 START SLAVE;
 quit
 EOF
+
+echo "INFO: ### MASTER LOG DETAILS: $MASTER_LOG"
 
 [ $? == 0 ] || { die "ERROR: Failed to stop slave, flush, create snapshot, unlock and start slave, log onto DB and check!!!!"; }
 
