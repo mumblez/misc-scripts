@@ -29,6 +29,19 @@ USE_BACKUP="@option.use_backup@" # don't use to repair slave, always errors, but
 # FUNTIONS
 die() { echo $* 1>&2 ; exit 1 ; }
 
+cleanup ()
+{
+        echo "INFO: Cleanup operations..."
+        # clean up files
+        rm -rf "${EXCLUDE_FILE}"
+
+        # Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
+        echo "INFO: Removing snapshot..."
+        hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
+}
+
+trap cleanup EXIT
+
 # Check job isn't already running
 [ -e "$EXCLUDE_FILE" ] && die "Job is already running, quitting...";
 
@@ -104,7 +117,7 @@ EOF
 
 # Check data directory location (locally, remote will actually be the snapshot location)
 #REMOTE_MYSQL_DIR=$(rc awk "'/^datadir /{ print \$3 }' $REMOTE_MYCNF"); [ -z "$REMOTE_MYSQL_DIR" ] && die "ERROR: remote mysql datadir could not be located"
-REMOTE_MYSQL_DIR=$(rc grep \"^datadir\" $REMOTE_MYCNF | grep -oE \"/.*\"); [ -z "$REMOTE_MYSQL_DIR" ] && die "ERROR: remote mysql datadir could not be located"
+REMOTE_MYSQL_DIR=$(rc grep ^datadir $REMOTE_MYCNF | grep -oE "/.*"); [ -z "$REMOTE_MYSQL_DIR" ] && die "ERROR: remote mysql datadir could not be located"
 echo "INFO: remote mysql datadir: $REMOTE_MYSQL_DIR"
 REAL_MYSQL_DIR=$(awk '/^datadir/{ print $3 }' "$LOCAL_MYCNF"); [ -z "$REAL_MYSQL_DIR" ] && die "ERROR: local mysql datadir could not be located"
 echo "INFO: local mysql datadir: $REAL_MYSQL_DIR"
@@ -198,15 +211,3 @@ rcc mysql -e 'stop slave;' || echo "WARNING: !!!! could not stop slave replicati
 rcc mysql -e 'reset slave all;' || echo "WARNING: !!!! slave info could not be removed !!!!!!"
 
 
-cleanup ()
-{
-        echo "INFO: Cleanup operations..."
-        # clean up files
-        rm -rf "${EXCLUDE_FILE}"
-
-        # Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
-        echo "INFO: Removing snapshot..."
-        hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
-}
-
-trap cleanup EXIT
