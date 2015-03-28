@@ -222,6 +222,7 @@ rcc mysql -e 'reset slave all;' || echo "WARNING: !!!! slave info could not be r
 #MASTER_PASS=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
 
 rc CHANGE MASTER TO MASTER_HOST=\'${MASTER_IP}\', MASTER_USER=\'${MASTER_USER}\', MASTER_PASSWORD=\'${MASTER_PASS}\', MASTER_LOG_FILE=\'${MASTER_LOG_FILE}\', MASTER_LOG_POS=${MASTER_LOG_POS};
+rc mysql -e 'start slave;'
 
 # check slave successfully running
 rc mysql -e 'show slave status \G' | grep 'Running' | head -n 1 | grep -q 'Yes'
