@@ -2,6 +2,10 @@
 
 # for use on rackspace dedicated backup server
 
+if [ -n "$2" ]; then
+	MANUAL_DATE="$2"
+fi
+
 die() 
 { 
 	echo $* 1>&2
@@ -21,7 +25,7 @@ REALISED_COPY="/srv/r5/backups/mysql-innobackupex/realised"
 DATE=$(date +%Y-%m-%d)
 DIR=$(cd "$(dirname "$0")" && pwd)
 IBI_LOCK="/var/run/dbbackup"
-ZB_LOCK="/var/run/zbackup"
+ZB_LOCK="/var/run/zbackup-intranet-db"
 ZB_LOG="/var/log/zbackup/mysql-full-backup.log"
 TOOLS="zbackup innobackupex"
 DIRECTORIES="IB_BASE ZBACKUP_BASE IB_INCREMENTAL_BASE IB_CHECKPOINT IB_HOTCOPY"
@@ -140,11 +144,14 @@ incremental_backup()
 full_backup()
 {
         # allow manually passing in the date as 2nd argument
-        if [ -n "$2" ]; then
-                INCREMENTAL_DATE="$2"
+        if [ -n "$MANUAL_DATE" ]; then
+                INCREMENTAL_DATE="$MANUAL_DATE"
+		echo "INFO: manual date passed in - $MANUAL_DATE <----------------------------------------"
         else
                 INCREMENTAL_DATE=$(date +%Y-%m-%d)
         fi
+
+	exit 0
 
 	# Let incremental finish if still running
 	while [ -e $IBI_LOCK ]; do
