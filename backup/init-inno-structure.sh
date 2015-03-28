@@ -22,7 +22,7 @@ if [ -e $IBI_LOCK -o -e $ZB_LOCK ]; then
 	echo "Backups are in progress, either kill them or try again later!"
 fi
 
-[ -e "$BACKUP_SCRIPT" ] || { echo "ERROR: could not find backup script - $BACKUP_SCRIPT"; exit 1 }
+[ -e "$BACKUP_SCRIPT" ] || { echo "ERROR: could not find backup script - $BACKUP_SCRIPT"; exit 1; }
 
 # create the first backup and checkpoint directory
 innobackupex --safe-slave-backup --slave-info --no-timestamp --extra-lsndir ${DIR}/last-checkpoint ${DIR}/hotcopy
@@ -41,11 +41,14 @@ cp -ar ${DIR}/hotcopy ${DIR}/realised
 
 # make our cron
 
-cat > "$CRON" <<EOF
+cat > $CRON <<_EOF_
 # mysql backup - intranet
 # incremental
 00 * * * *	***REMOVED***	$BACKUP_SCRIPT incremental &>> $LOG_INCREMENTAL
 # full
 15 23 * * *	***REMOVED***	$BACKUP_SCRIPT full &>> $LOG_FULL
-EOF
+_EOF_
 
+echo "Finished initialisation - `date`"
+
+exit 0
