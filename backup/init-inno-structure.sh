@@ -41,7 +41,7 @@ cp -ar ${DIR}/hotcopy ${DIR}/realised
 
 # make our cron
 
-cat "$CRON" <<EOF
+cat > "$CRON" <<EOF
 # mysql backup - intranet
 # incremental
 00 * * * *	***REMOVED***	$BACKUP_SCRIPT incremental &>> $LOG_INCREMENTAL
