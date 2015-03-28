@@ -80,10 +80,10 @@ sleep 5
 
 # What files to exclude from sync
 cat > ${EXCLUDE_FILE} <<EOF
-'mysqld-relay*'
-relay-log.info
-'mysql-bin.*'
-master.info
+'*mysqld-relay*'
+'*relay-log.info'
+'*mysql-bin.*'
+'*master.info'
 EOF
 
 # Check data directory location (locally, remote will actually be the snapshot location)
