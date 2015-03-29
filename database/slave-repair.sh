@@ -181,7 +181,7 @@ rc service mysql stop
 
 # clear remote mysql datadir
 echo "INFO: clearing remote $REMOTE_MYSQL_DIR ..."
-cd $REMOTE_MYSQL_DATADIR && rm -rf *
+cd $REMOTE_MYSQL_DIR && rm -rf *
 echo "INFO: Ready to sync..."
 
 ############# MAIN TASK ####################################################################
