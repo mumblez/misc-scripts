@@ -19,8 +19,10 @@ cleanup ()
 	rm -f "$MASTER_LOG"
 
 	# Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
-	echo "INFO: Removing snapshot..."
-	hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
+    if [ -e /dev/hcp1 ]; then
+	    echo "INFO: Removing snapshot..."
+	    hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
+    fi
 }
 
 trap cleanup EXIT
@@ -176,6 +178,10 @@ mysqladmin --socket="$SNAPSHOT_SOCKET" shutdown || die "ERROR: error starting an
 
 # Stop mysql remotely
 rc service mysql stop
+
+# clear remote mysql datadir
+echo "INFO: clearing remote $REMOTE_MYSQL_DIR ..."
+cd $REMOTE_MYSQL_DATADIR && rm -rf *
 echo "INFO: Ready to sync..."
 
 ############# MAIN TASK ####################################################################

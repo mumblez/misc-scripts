@@ -36,8 +36,10 @@ cleanup ()
         rm -rf "${EXCLUDE_FILE}"
 
         # Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
-        echo "INFO: Removing snapshot..."
-        hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
+        if [ -e /dev/hcp1 ]; then
+            echo "INFO: Removing snapshot..."
+            hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
+        fi
 }
 
 trap cleanup EXIT
@@ -170,6 +172,10 @@ fi
 
 # Stop mysql remotely
 rc service mysql stop
+
+# clear remote mysql datadir
+echo "INFO: Clearing destination $REMOTE_MYSQL_DIR ..."
+cd "$REMOTE_MYSQL_DIR" && rm -rf *
 echo "INFO: Ready to sync..."
 
 ############# MAIN TASK ####################################################################
@@ -177,7 +183,7 @@ START_TIME=$(date)
 echo "####################################################################"
 echo "INFO: Starting sync..."
 tar -cvf - -C "${FINAL_MYSQL_DIR}" --exclude-from="${EXCLUDE_FILE}" . \
-| ssh ${SSH_OPTIONS} "${SSH_USER}"@"${REMOTE_DB_SERVER}" "sudo tar -xf - -C /var/lib/mysql"
+| ssh ${SSH_OPTIONS} "${SSH_USER}"@"${REMOTE_DB_SERVER}" "sudo tar -xf - -C ${REMOTE_MYSQL_DIR}"
 
 [ $? == 0 ] || { die "ERROR: the sync job failed!"; }
 
