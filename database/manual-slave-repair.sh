@@ -222,8 +222,8 @@ rc service mysql restart # do remotely, seperate RD job ## DO REMOTELY ##
 
 rcc mysqladmin flush-hosts
 
-rcc mysql -e 'stop slave;' || echo "WARNING: !!!! could not stop slave replication !!!!!!"
-rcc mysql -e 'reset slave all;' || echo "WARNING: !!!! slave info could not be removed !!!!!!"
+rcc mysql -e 'stop slave;'
+rcc mysql -e 'reset slave all;'
 
 # setup slave with master binlog file and position
 #MASTER_LOG_FILE=$(awk '{print $1}' $MASTER_LOG)
