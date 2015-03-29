@@ -116,7 +116,11 @@ incremental_backup()
 	INC_CHECKPOINT=$(cat "${INCREMENTAL_CURRENT}/xtrabackup_checkpoints" | awk '/^from_lsn/ {print $3}')
 
 	if [ "$INC_CHECKPOINT" -eq "$REALISED_CHECKPOINT" -a "$(ls -1 $IB_INCREMENTAL_BASE | wc -l)" -gt 2 ]; then
-		innobackupex --apply-log --redo-only "$REALISED_COPY" --incremental-dir "$INCREMENTAL_CURRENT" &> "$INC_APPLY_LOG"
+		innobackupex --apply-log --redo-only \
+            "$REALISED_COPY" \
+            --incremental-dir "$INCREMENTAL_CURRENT" \
+            --use-memory=4GB \
+            &> "$INC_APPLY_LOG"
 
 		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
 			echo "INFO: applying incremental successful - $INCREMENTAL_CURRENT - `date`"
@@ -179,7 +183,10 @@ full_backup()
 
 			# start applying incrementals into the hotcopy
 			echo "INFO: FULL - applying incremental - $INC_COUNTER ... - $INCREMENTAL_DIR - `date`"
-			innobackupex --apply-log --redo-only "$IB_HOTCOPY" --incremental-dir "$INCREMENTAL_DIR" &> "$INC_APPLY_LOG"
+			innobackupex --apply-log --redo-only "$IB_HOTCOPY" \
+                --incremental-dir "$INCREMENTAL_DIR" \
+                --use-memory=4GB \
+                &> "$INC_APPLY_LOG"
 			# validate completed successfully
 			if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
 				echo "INFO: FULL - applying incremental - $INC_COUNTER successful - $INCREMENTAL_DIR - `date`"
