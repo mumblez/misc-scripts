@@ -132,7 +132,7 @@ if [[ "$USE_BACKUP" == "yes" ]]; then
 
   # job should not be run during or close time of full backup / roll in (11pm)
   # let's say no later than 9pm
-  [[ "$(date +%H)" -ge 21 ]] || die "ERROR: To avoid inconsistent data, refusing to sync as the full backup and incremental will take place soon (11pm)"
+  [[ "$(date +%H)" -ge 21 ]] && die "ERROR: To avoid inconsistent data, refusing to sync as the full backup and incremental will take place soon (11pm)"
 
   FINAL_MYSQL_DIR="$HOT_COPY"
 else
