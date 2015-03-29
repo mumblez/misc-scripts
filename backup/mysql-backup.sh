@@ -188,6 +188,7 @@ full_backup()
 			fi
 			INC_COUNTER=$(($INC_COUNTER+1))
 			rm -f "$INC_APPLY_LOG"
+			sleep 10
 		done
 
 		echo "### Finished rolling the days incrementals into hotcopy - $IB_HOTCOPY - $(date) ###"
