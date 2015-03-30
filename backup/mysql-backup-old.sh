@@ -17,7 +17,7 @@ die()
 IB_BASE="/srv/r5/backups/mysql-innobackupex"
 ZBACKUP_BASE="/srv/r5/backups/zbackup-repo/backups/mysql/intranet"
 ZB_KEY="/***REMOVED***/keys/zbackup"
-INCREMENTALS_TO_KEEP="9"
+INCREMENTALS_TO_KEEP="49"
 IB_INCREMENTAL_BASE="${IB_BASE}/incrementals"
 IB_CHECKPOINT="${IB_BASE}/last-checkpoint"
 IB_HOTCOPY="${IB_BASE}/hotcopy"
@@ -31,19 +31,35 @@ TOOLS="zbackup innobackupex"
 DIRECTORIES="IB_BASE ZBACKUP_BASE IB_INCREMENTAL_BASE IB_CHECKPOINT IB_HOTCOPY"
 
 
-# Instead of realised, hotcopy and incrementals (which seem to always fail when
-# rolling in, we just create a full backup and 3 incrementals, it doesn't matter
-# too much if the incrementals fail but a bonus if they work, a brand new
-# full will be created every day and then 3 incrementals based on that (same date)
-# 23:00 = full
-# 05:00 = inc
-# 11:00 = inc
-# 17:00 = inc
-# Full + zbackup, inc x3, attempt to roll in when next Full, if fail then
-# run full again.
 
-# In the event we do want to restore and try rolling in an incremental, we should
-# make a copy of the full / hotcopy, just in case the incremental
+# mysql backups with innobackupex and zbackup
+# initial setup, create backup, apply-log and redo-log and make copy, 1 copy = hotcopy, 1 = realised
+# also create zbackup
+# realised = most current backup with all incrementals applied - for fast recovery
+# - every hour run an incremental
+# -- roll latest (3rd to last) incremental into realised (gives us 2hr fallback)
+# - keep last 24 incrementals or 2 days worth
+#
+#
+# roll in the days incrementals
+# @11 find all incrementals with same date
+# roll in incrementals and verify with xtradb_checkpoints (to_lsn and from_lsn should match)
+# then verify last line output = "completed OK!"
+
+
+#full backup with rollup
+#while loop on lock so last incremental can finish
+#-validate checkpoints
+#-touch lock???
+#-roll in with apply-log and redo-only
+#-validate complete OK!
+#-continue with next folder
+#for loop and check checkpoints file until last checkpoint not found
+#-remove lock
+#call zbackup and create a lock (general zbackup lock for all future backups)
+#
+#any restores require apply-log
+
 
 # ensure user passes in argument of either full or incremental
 if [ $# -lt 1 ]; then
@@ -91,32 +107,31 @@ incremental_backup()
 		die "ERROR: incremental backup failed - `date`"
 	fi
 
-#	# roll into realised directory, always 3rd from last
-#	## save realised checkpoint
-#	REALISED_CHECKPOINT=$(cat "${REALISED_COPY}/xtrabackup_checkpoints" | awk '/^to_lsn/ {print $3}')
-#	## find incremental with matching checkpoint and ensure it's 2nd to last
-#	#INCREMENTAL_TMP=$(ls -1 "$IB_INCREMENTAL_BASE" | tail -n 3 | head -n 1)
-#	INCREMENTAL_TMP=$(ls -1 "$IB_INCREMENTAL_BASE" | tail -n 1)
-#	INCREMENTAL_CURRENT="${IB_INCREMENTAL_BASE}/${INCREMENTAL_TMP}"
-#	INC_CHECKPOINT=$(cat "${INCREMENTAL_CURRENT}/xtrabackup_checkpoints" | awk '/^from_lsn/ {print $3}')
-#
-#	if [ "$INC_CHECKPOINT" -eq "$REALISED_CHECKPOINT" -a "$(ls -1 $IB_INCREMENTAL_BASE | wc -l)" -gt 2 ]; then
-#		innobackupex --apply-log --redo-only \
-#            "$REALISED_COPY" \
-#            --incremental-dir "$INCREMENTAL_CURRENT" \
-#            --use-memory=4GB \
-#            &> "$INC_APPLY_LOG"
-#
-#		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
-#			echo "INFO: applying incremental successful - $INCREMENTAL_CURRENT - `date`"
-#			rm -f "$INC_APPLY_LOG"
-#		else
-#			die "ERROR: applying incremental failed - $INCREMENTAL_CURRENT - `date`"
-#		fi
-#
-#	else
-#		echo "WARN: Checkpoints don't match for $INCREMENTAL_CURRENT, skip rolling in incremental"
-#	fi
+	# roll into realised directory, always 3rd from last
+	## save realised checkpoint
+	REALISED_CHECKPOINT=$(cat "${REALISED_COPY}/xtrabackup_checkpoints" | awk '/^to_lsn/ {print $3}')
+	## find incremental with matching checkpoint and ensure it's 2nd to last
+	INCREMENTAL_TMP=$(ls -1 "$IB_INCREMENTAL_BASE" | tail -n 3 | head -n 1)
+	INCREMENTAL_CURRENT="${IB_INCREMENTAL_BASE}/${INCREMENTAL_TMP}"
+	INC_CHECKPOINT=$(cat "${INCREMENTAL_CURRENT}/xtrabackup_checkpoints" | awk '/^from_lsn/ {print $3}')
+
+	if [ "$INC_CHECKPOINT" -eq "$REALISED_CHECKPOINT" -a "$(ls -1 $IB_INCREMENTAL_BASE | wc -l)" -gt 2 ]; then
+		innobackupex --apply-log --redo-only \
+            "$REALISED_COPY" \
+            --incremental-dir "$INCREMENTAL_CURRENT" \
+            --use-memory=4GB \
+            &> "$INC_APPLY_LOG"
+
+		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
+			echo "INFO: applying incremental successful - $INCREMENTAL_CURRENT - `date`"
+			rm -f "$INC_APPLY_LOG"
+		else
+			die "ERROR: applying incremental failed - $INCREMENTAL_CURRENT - `date`"
+		fi
+
+	else
+		echo "WARN: Checkpoints don't match for $INCREMENTAL_CURRENT, skip rolling in incremental"
+	fi
 
 	# Keep limited number of incrementals and delete old ones
 	cd "$IB_INCREMENTAL_BASE"
@@ -155,7 +170,6 @@ full_backup()
 	# find and roll in the days hourly incrementals
 	INCREMENTAL_DIRS=$(find $IB_INCREMENTAL_BASE -maxdepth 1 -type d -name ${INCREMENTAL_DATE}_\* | sort -n)
 
-    INC_APPLY_ERROR="no"
 
 	if [ -n "$INCREMENTAL_DIRS" ]; then
 		# loop through and apply increments, will validate xtrabackup_checkpoints
@@ -177,30 +191,14 @@ full_backup()
 			if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
 				echo "INFO: FULL - applying incremental - $INC_COUNTER successful - $INCREMENTAL_DIR - `date`"
 			else
-				echo "ERROR: FULL - applying incremental - $INC_COUNTER failed - $INCREMENTAL_DIR - `date`"
-                # Trigger full backup + zbackup
-                INC_APPLY_ERROR="yes"
-                break
+				die "ERROR: FULL - applying incremental - $INC_COUNTER failed - $INCREMENTAL_DIR - `date`"
 			fi
 			INC_COUNTER=$(($INC_COUNTER+1))
 			rm -f "$INC_APPLY_LOG"
 			sleep 30
 		done
 
-        if [ "$INC_APPLY_ERROR" = "no" ]; then
-  		    echo "### Finished rolling the days incrementals into hotcopy - $IB_HOTCOPY - $(date) ###"
-        else
-
-            rm -rf "$IB_HOTCOPY"
-            innobackupex --no-timestamp --extra-lsndir "$IB_CHECKPOINT" "$IB_HOTCOPY" &> "$INC_APPLY_LOG"
-        	# check it completed successfully
-        	if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
-        		echo "INFO: FULL backup successful - `date`"
-        		rm -f "$INC_APPLY_LOG"
-        	else
-        		die "ERROR: FULL backup failed - `date`"
-        	fi
-        fi
+		echo "### Finished rolling the days incrementals into hotcopy - $IB_HOTCOPY - $(date) ###"
 	else
 		echo "WARN: No incremental backups found for today - $INCREMENTAL_DATE - inside $IB_INCREMENTAL_BASE"
 	fi

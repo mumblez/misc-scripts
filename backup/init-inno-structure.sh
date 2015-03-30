@@ -44,9 +44,9 @@ ln -snf "$LOG_BASE" logs
 cat > $CRON <<_EOF_
 # mysql backup - intranet
 # incremental
-00 5,11,17 * * *	***REMOVED***	$BACKUP_SCRIPT incremental &>> $LOG_INCREMENTAL
+00 5,11,17,23 * * *	***REMOVED***	$BACKUP_SCRIPT incremental &>> $LOG_INCREMENTAL
 # full
-00 23 * * *	***REMOVED***	$BACKUP_SCRIPT full &>> $LOG_FULL
+30 23 * * *	***REMOVED***	$BACKUP_SCRIPT full &>> $LOG_FULL
 _EOF_
 
 echo "Finished initialisation - `date`"
