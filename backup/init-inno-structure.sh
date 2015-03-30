@@ -37,16 +37,16 @@ mkdir ${DIR}/incrementals
 ln -snf "$LOG_BASE" logs
 
 # create realised directory
-cp -ar ${DIR}/hotcopy ${DIR}/realised
+#cp -ar ${DIR}/hotcopy ${DIR}/realised
 
 # make our cron
 
 cat > $CRON <<_EOF_
 # mysql backup - intranet
 # incremental
-00 * * * *	***REMOVED***	$BACKUP_SCRIPT incremental &>> $LOG_INCREMENTAL
+00 5,11,17 * * *	***REMOVED***	$BACKUP_SCRIPT incremental &>> $LOG_INCREMENTAL
 # full
-15 23 * * *	***REMOVED***	$BACKUP_SCRIPT full &>> $LOG_FULL
+00 23 * * *	***REMOVED***	$BACKUP_SCRIPT full &>> $LOG_FULL
 _EOF_
 
 echo "Finished initialisation - `date`"
