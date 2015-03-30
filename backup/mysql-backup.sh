@@ -187,20 +187,19 @@ full_backup()
 			sleep 30
 		done
 
-        if [ "$INC_APPLY_ERROR" = "no" ]; then
+        	if [ "$INC_APPLY_ERROR" = "no" ]; then
   		    echo "### Finished rolling the days incrementals into hotcopy - $IB_HOTCOPY - $(date) ###"
-        else
-
-            rm -rf "$IB_HOTCOPY"
-            innobackupex --no-timestamp --extra-lsndir "$IB_CHECKPOINT" "$IB_HOTCOPY" &> "$INC_APPLY_LOG"
-        	# check it completed successfully
-        	if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
-        		echo "INFO: FULL backup successful - `date`"
-        		rm -f "$INC_APPLY_LOG"
         	else
-        		die "ERROR: FULL backup failed - `date`"
+			rm -rf "$IB_HOTCOPY"
+            		innobackupex --no-timestamp --extra-lsndir "$IB_CHECKPOINT" "$IB_HOTCOPY" &> "$INC_APPLY_LOG"
+        		# check it completed successfully
+        		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
+        			echo "INFO: FULL backup successful - `date`"
+        			rm -f "$INC_APPLY_LOG"
+        		else
+        			die "ERROR: FULL backup failed - `date`"
+        		fi
         	fi
-        fi
 	else
 		echo "WARN: No incremental backups found for today - $INCREMENTAL_DATE - inside $IB_INCREMENTAL_BASE"
 	fi
