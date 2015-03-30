@@ -15,7 +15,7 @@ die()
 
 # SETTINGS
 IB_BASE="/srv/r5/backups/mysql-innobackupex"
-ZBACKUP_BASE="/srv/r5/backups/zbackup-repo/backups/mysql/intranet"
+ZBACKUP_BASE="/srv/r5/backups/zbackup-repo/backups/mysql/intranet/daily"
 ZB_KEY="/***REMOVED***/keys/zbackup"
 INCREMENTALS_TO_KEEP="9"
 IB_INCREMENTAL_BASE="${IB_BASE}/incrementals"
@@ -225,7 +225,7 @@ full_backup()
 
 
 
-# main
+# main..
 
 case $1 in
 	incremental )
