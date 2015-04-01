@@ -15,7 +15,7 @@ die()
 
 # SETTINGS
 IB_BASE="/srv/r5/backups/mysql-innobackupex"
-ZBACKUP_BASE="/srv/r5/backups/zbackup-repo/backups/mysql/intranet/daily"
+ZBACKUP_BASE="/srv/r5/backups/zbackup-dbs/backups"
 ZB_KEY="/***REMOVED***/keys/zbackup"
 INCREMENTALS_TO_KEEP="13"
 IB_INCREMENTAL_BASE="${IB_BASE}/incrementals"
@@ -210,7 +210,7 @@ full_backup()
 
 	# Create zbackup of todays hotcopy
 	touch $ZB_LOCK
-	ZBACKUP_FILE="${ZBACKUP_BASE}/${INCREMENTAL_DATE}.tar"
+	ZBACKUP_FILE="${ZBACKUP_BASE}/mysql-db-cl-${INCREMENTAL_DATE}.tar"
 	[ -e "$ZBACKUP_FILE" ] && rm -f "$ZBACKUP_FILE" && "WARN: Found and deleted existing version of backup"
 
 	echo "INFO: `date` - running zbackup of $IB_HOTCOPY to $ZBACKUP_FILE..." | tee >> "$ZB_LOG"
