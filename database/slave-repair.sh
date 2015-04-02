@@ -5,7 +5,6 @@ REMOTE_DB_SERVER="@option.remote_db_server@" # in future generalise in rundeck
 SSH_USER="rundeck" # using ssh-agent feature in RD 2.4.0+
 SSH_OPTIONS="-T -c arcfour -o StrictHostKeyChecking=no -o Compression=no -x"
 EXCLUDE_FILE="$DIR/excludeFiles.txt" # converted for tar --exclude-from feature
-EXCLUDE_LIST="services service_configuration scheduled_task" # turn into RD multi-valued list from high
 MYSQL_VERSION_MASTER=$(mysqladmin version | grep 'Server version' | grep -oE "5.[56]")
 
 # FUNTIONS
@@ -40,39 +39,16 @@ rcc () {
   ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_DB_SERVER} "sudo $@"
 }
 
-MYSQL_VERSION_SLAVE=$(rcc mysqladmin version | grep 'Server version' | grep -oE "5.[56]")
+MYSQL_VERSION_SLAVE=$(rcc 'mysqladmin version' | grep 'Server version' | grep -oE "5.[56]")
 [ -z "$MYSQL_VERSION_SLAVE" ] && MYSQL_VERSION_SLAVE=$(rc dpkg -l | grep 'mysql-server-' | grep -oE "5.[56]" | head -n 1)
 echo "INFO: mysql version - master = $MYSQL_VERSION_MASTER"
 echo "INFO: mysql version - slave = $MYSQL_VERSION_SLAVE"
 
-# Backup or Restore qa / test specific tables - do as seperate RD job reference
-# call snippets/database/table backup or restore RD job
-env_tables () {
-  for TABLE in $EXCLUDE_LIST; do
-    if [ "$1" == "backup" ]; then
-      # see if file exists first
-      if rcc test -f "$DIR/***REMOVED***.$TABLE.sql"; then
-        echo "INFO: $TABLE backup already exists, skipping..."
-      else
-        echo "INFO: Backing up ***REMOVED***.$TABLE...$(date)"
-        rcc "mysqldump -B ***REMOVED*** --tables $TABLE --create-options > $DIR/***REMOVED***.$TABLE.sql"  || die "ERROR: backup of env tables failed"
-      fi
-    elif [ "$1" == "restore" ]; then
-      echo "INFO: Restoring ***REMOVED***.$TABLE...$(date)"
-      rcc "mysql -B ***REMOVED*** < $DIR/***REMOVED***.$TABLE.sql" || die "ERROR: restore of env tables failed"
-      # cleanup / delete sql file after successful restore
-      rcc "rm -f $DIR/***REMOVED***.$TABLE.sql"
-    fi
-  done
-}
 
 # VALIDATION and more settings
 
 # Check we can ssh onto remote mysql server
 rc "echo INFO: remote connection successful" || die "ERROR: remote connection failed"
-
-# clear bad connection attempts
-#rc mysqladmin flush-hosts
 
 # Check my.cnf location remotely
 if rcc test -f /etc/mysql/my.cnf; then
@@ -92,10 +68,6 @@ else
     die "ERROR: local my.cnf could not be found!"
 fi
 
-
-# Backup QA Tables
-env_tables backup
-sleep 5
 
 # What files to exclude from sync
 cat > ${EXCLUDE_FILE} <<EOF
@@ -158,27 +130,14 @@ MASTER_PASS=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
 
 # do a clean mysql instance on datadir and shutdown
 ## get innodb_log_file_size 
-
-#get variable with mysqladmin variables | grep innodb_log_file_size | awk '{print $4}'
-#mysqld_safe --no-defaults --port=3307 --socket=/var/run/mysqld/mysqld-snapshot.sock --datadir=<snapshot> --innodb-log-file-size=<grep it> —skip-slave-start &
-#make sure innodb log file size is the same
-#
-#mysqladmin —socket X shutdown
 INNODB_LOG_SIZE=$(mysqladmin variables | grep innodb_log_file_size | awk '{print $4}')
 SNAPSHOT_SOCKET="/var/run/mysqld/mysqld-snapshot.sock"
 mysqld_safe --no-defaults --port=3307 --socket="$SNAPSHOT_SOCKET" --datadir="$FINAL_MYSQL_DIR" --innodb-log-file-size="$INNODB_LOG_SIZE" --skip-slave-start &
 sleep 10
 mysqladmin --socket="$SNAPSHOT_SOCKET" shutdown || die "ERROR: error starting and shutting down mysql snapshot instance"
 
-
-
-# add delay?
-
-
-
 # Stop mysql remotely
 rc service mysql stop
-
 # clear remote mysql datadir
 echo "INFO: clearing remote $REMOTE_MYSQL_DIR ..."
 cd $REMOTE_MYSQL_DIR && rm -rf *
@@ -211,30 +170,18 @@ echo "INFO: Starting mysql..." # do remotely, seperate RD job
 rc service mysql start ## DO REMOTELY ##
 sleep 5 ## DO REMOTELY ##
 
-# Restore our qa tables, if doesn't work will have to go down the discard route
-env_tables restore # do remotely, seperate RD job reference ## DO REMOTELY ##
-
 # Restart again to catch remaining errors
 rc service mysql restart # do remotely, seperate RD job ## DO REMOTELY ##
 
-rcc mysqladmin flush-hosts
-
-rcc mysql -e 'stop slave;' || echo "WARNING: !!!! could not stop slave replication !!!!!!"
-rcc mysql -e 'reset slave all;' || echo "WARNING: !!!! slave info could not be removed !!!!!!"
-
-# setup slave with master binlog file and position
-#MASTER_LOG_FILE=$(awk '{print $1}' $MASTER_LOG)
-#MASTER_LOG_POS=$(awk '{print $2}' $MASTER_LOG)
-#MASTER_IP=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
-#MASTER_USER=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
-#MASTER_PASS=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
-
-rc CHANGE MASTER TO MASTER_HOST=\'${MASTER_IP}\', MASTER_USER=\'${MASTER_USER}\', MASTER_PASSWORD=\'${MASTER_PASS}\', MASTER_LOG_FILE=\'${MASTER_LOG_FILE}\', MASTER_LOG_POS=${MASTER_LOG_POS};
-rc mysql -e 'start slave;'
+rcc 'mysqladmin flush-hosts'
+rcc 'mysql -e "stop slave;"' || echo "WARNING: !!!! could not stop slave replication !!!!!!"
+rcc 'mysql -e "reset slave all;"' || echo "WARNING: !!!! slave info could not be removed !!!!!!"
+rc "CHANGE MASTER TO MASTER_HOST='${MASTER_IP}', MASTER_USER='${MASTER_USER}', MASTER_PASSWORD='${MASTER_PASS}', MASTER_LOG_FILE='${MASTER_LOG_FILE}', MASTER_LOG_POS=${MASTER_LOG_POS};"
+rc 'mysql -e "start slave;"'
 
 # check slave successfully running
-rc mysql -e 'show slave status \G' | grep 'Running' | head -n 1 | grep -q 'Yes'
-rc mysql -e 'show slave status \G' | grep 'Running' | tail -n 1 | grep -q 'Yes'
+rc 'mysql -e "show slave status \G"' | grep 'Running' | head -n 1 | grep -q 'Yes'
+rc 'mysql -e "show slave status \G"' | grep 'Running' | tail -n 1 | grep -q 'Yes'
 
 # if mysql version is higher then upgrade
 [ "${MYSQL_VERSION_MASTER:2:1}" -lt "${MYSQL_VERSION_SLAVE:2:1}" ] && rc mysql_upgrade

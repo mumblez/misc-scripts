@@ -211,9 +211,12 @@ env_tables restore # do remotely, seperate RD job reference ## DO REMOTELY ##
 # Restart again to catch remaining errors
 rc service mysql restart # do remotely, seperate RD job ## DO REMOTELY ##
 
-rcc mysqladmin flush-hosts
+rcc 'mysqladmin flush-hosts'
 
-rcc mysql -e 'stop slave;' || echo "WARNING: !!!! could not stop slave replication !!!!!!"
-rcc mysql -e 'reset slave all;' || echo "WARNING: !!!! slave info could not be removed !!!!!!"
+# working
+# rcc 'mysql -e "stop slave;"' # put single quotes around entire command
+
+rcc 'mysql -e "stop slave;"' || echo "WARNING: !!!! could not stop slave replication !!!!!!"
+rcc 'mysql -e "reset slave all;"' || echo "WARNING: !!!! slave info could not be removed !!!!!!"
 
 
