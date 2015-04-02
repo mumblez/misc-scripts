@@ -17,6 +17,8 @@ python code
 	
 .. code:: Python
 
+.. highlight:: python
+
     #!/usr/bin/python
     
     def some_function():
