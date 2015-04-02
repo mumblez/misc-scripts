@@ -9,6 +9,7 @@ php code
 .. code:: PHP
    :number-lines:
 
+    <php
     use Administration\HeaderBundle\Menu\Factory\MenuFactory;
     use Administration\HeaderBundle\Menu\Renderer\JsonRenderer;
 	
@@ -16,7 +17,9 @@ python code
 	
 .. code:: Python
 
-   def some_function():
+    #!/usr/bin/python
+    
+    def some_function():
        interesting = False
        print 'This line is highlighted.'
        print 'This one is not...'
