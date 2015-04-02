@@ -13,7 +13,7 @@ code
     use Administration\HeaderBundle\Menu\Renderer\JsonRenderer;
 	
 	
-.. code-block:: python
+.. code:: python
    :emphasize-lines: 3,5
 
    def some_function():
