@@ -15,7 +15,7 @@ php code
 	
 python code
 	
-.. code:: python
+.. code:: Python
     :highlight: python
 
     #!/usr/bin/python
