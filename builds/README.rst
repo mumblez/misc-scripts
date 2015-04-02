@@ -16,7 +16,6 @@ code
 code
 
 .. code:: PHP
-
    :number-lines:
 
     use Administration\HeaderBundle\Menu\Factory\MenuFactory;
