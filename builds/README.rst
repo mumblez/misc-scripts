@@ -4,7 +4,7 @@ short paragraph
     bla
 
 
-code
+php code
 
 .. code:: PHP
    :number-lines:
@@ -12,6 +12,7 @@ code
     use Administration\HeaderBundle\Menu\Factory\MenuFactory;
     use Administration\HeaderBundle\Menu\Renderer\JsonRenderer;
 	
+python code
 	
 .. code:: python
    :emphasize-lines: 3,5
@@ -21,6 +22,12 @@ code
        print 'This line is highlighted.'
        print 'This one is not...'
        print '...but this one is.'
+       
+
+---
+line break
+
+---
 
 *italics*
 **bold**
