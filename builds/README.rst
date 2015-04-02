@@ -13,13 +13,14 @@ code
     use Administration\HeaderBundle\Menu\Renderer\JsonRenderer;
 	
 	
-code
+.. code-block:: python
+   :emphasize-lines: 3,5
 
-.. code:: PHP
-   :number-lines:
-
-    use Administration\HeaderBundle\Menu\Factory\MenuFactory;
-    use Administration\HeaderBundle\Menu\Renderer\JsonRenderer;
+   def some_function():
+       interesting = False
+       print 'This line is highlighted.'
+       print 'This one is not...'
+       print '...but this one is.'
 
 *italics*
 **bold**
