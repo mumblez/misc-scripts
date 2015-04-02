@@ -23,7 +23,7 @@ SSH_USER="rundeck" # using ssh-agent feature in RD 2.4.0+
 SSH_OPTIONS="-T -c arcfour -o StrictHostKeyChecking=no -o Compression=no -x"
 EXCLUDE_FILE="$DIR/excludeFiles.txt" # converted for tar --exclude-from feature
 SNAPSHOT_FREESPACE="@option.snapshot_freespace@" # at least 1-2GB to be safe
-EXCLUDE_LIST="services service_configuration scheduled_task" # turn into RD multi-valued list from high
+EXCLUDE_LIST="services service_configuration scheduled_task mailqueue" # turn into RD multi-valued list from high
 USE_BACKUP="@option.use_backup@" # don't use to repair slave, always errors, but fine for non-slaves
 
 # FUNTIONS
