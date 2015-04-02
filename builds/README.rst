@@ -14,8 +14,7 @@ php code
 	
 python code
 	
-.. code:: python
-   :emphasize-lines: 3,5
+.. code:: Python
 
    def some_function():
        interesting = False
@@ -25,7 +24,12 @@ python code
        
 
 ---
+
 line break
+***
+___
+
+---
 
 ---
 
