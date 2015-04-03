@@ -2,6 +2,11 @@
 
 # for use on rackspace dedicated backup server
 
+# until patched used compiled zbackup
+ZBACKUP_BIN="/usr/local/bin/zbackup"
+#ZBACKUP_BIN="/bin/zbackup"
+PATH="${PATH}:/usr/local/bin"
+
 if [ -n "$2" ]; then
 	MANUAL_DATE="$2"
 fi
@@ -49,6 +54,8 @@ DIRECTORIES="IB_BASE ZBACKUP_BASE IB_INCREMENTAL_BASE IB_CHECKPOINT IB_HOTCOPY"
 if [ $# -lt 1 ]; then
 	die "ERROR: you need to pass in an argument - [full|incremental]"
 fi
+
+[ -x $ZBACKUP_BIN ] || die "ERROR: zbackup not found"
 
 # ensure tools exist
 for tool in $TOOLS; do
@@ -227,7 +234,7 @@ full_backup()
 	echo "INFO: `date` - running zbackup of $IB_HOTCOPY to $ZBACKUP_FILE..." | tee >> "$ZB_LOG"
 	
 	# run prepared hotcopy through zbackup
-	tar -cf - -C "$IB_HOTCOPY" . | zbackup --password-file "$ZB_KEY" backup "$ZBACKUP_FILE" &>> "$ZB_LOG"
+	tar -cf - -C "$IB_HOTCOPY" . | "$ZBACKUP_BIN" --password-file "$ZB_KEY" backup "$ZBACKUP_FILE" &>> "$ZB_LOG"
 
 	echo "### Finished daily zbackup of $IB_HOTCOPY - $(date) ###"	
 	rm -f "$ZB_LOCK"
