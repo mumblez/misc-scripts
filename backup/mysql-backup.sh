@@ -20,7 +20,7 @@ die()
 
 # SETTINGS
 IB_BASE="/srv/r5/backups/mysql-innobackupex"
-ZBACKUP_BASE="/srv/r5/backups/zbackup-dbs/backups"
+ZBACKUP_BASE="/srv/r5/backups/zbackup-dbs/backups/cl-web/daily"
 ZB_KEY="/***REMOVED***/keys/zbackup"
 INCREMENTALS_TO_KEEP="13"
 IB_INCREMENTAL_BASE="${IB_BASE}/incrementals"
@@ -256,3 +256,6 @@ case $1 in
 		die "ERROR: invalid argument! use [full|incremental]"
 		;;
 esac
+
+# give datadog read writes so can monitor directories
+setfacl -Rm u:dd-agent:rx /srv/r5/backups
