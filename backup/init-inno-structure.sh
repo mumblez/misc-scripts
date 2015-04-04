@@ -41,13 +41,27 @@ ln -snf "$LOG_BASE" logs
 
 # make our cron
 
+if which dogwrap &>/dev/null; then
 cat > $CRON <<_EOF_
+MAILTO=""
 # mysql backup - intranet
 # incremental
-00 5,11,17,23 * * *	***REMOVED***	$BACKUP_SCRIPT incremental &>> $LOG_INCREMENTAL
+00 5,11,17,23 * * *     ***REMOVED***     dogwrap -n "DB - CL-WEB - incremental backup" -k \$(cat /***REMOVED***/keys/datadogapi) --submit_mode all "/***REMOVED***/scripts/mysql-backup.sh incremental"
 # full
-30 23 * * *	***REMOVED***	$BACKUP_SCRIPT full &>> $LOG_FULL
+25 23 * * *     ***REMOVED***    dogwrap -n "DB - CL-WEB - full backup" -k \$(cat /***REMOVED***/keys/datadogapi) --submit_mode all "/***REMOVED***/scripts/mysql-backup.sh full"
 _EOF_
+
+else
+cat > $CRON <<_EOF_
+MAILTO=""
+# mysql backup - intranet
+# incremental
+00 5,11,17,23 * * *	***REMOVED***	$BACKUP_SCRIPT incremental &>/dev/null
+# full
+30 23 * * *	***REMOVED***	$BACKUP_SCRIPT full &>/dev/null
+_EOF_
+
+fi
 
 echo "Finished initialisation - `date`"
 
