@@ -32,6 +32,9 @@ DIR=$(cd "$(dirname "$0")" && pwd)
 IBI_LOCK="/var/run/dbbackup"
 ZB_LOCK="/var/run/zbackup-intranet-db"
 ZB_LOG="/var/log/zbackup/mysql-full-backup.log"
+LOG_BASE="/var/log/innobackupex"
+LOG_FULL="${LOG_BASE}/full-backup.log"
+LOG_INC="${LOG_BASE}/incremental-backup.log"
 TOOLS="zbackup innobackupex"
 DIRECTORIES="IB_BASE ZBACKUP_BASE IB_INCREMENTAL_BASE IB_CHECKPOINT IB_HOTCOPY"
 
@@ -57,6 +60,9 @@ fi
 
 [ -x $ZBACKUP_BIN ] || die "ERROR: zbackup not found"
 
+# ensure log path exists
+[ -d "$LOG_BASE" ] || mkdir "$LOG_BASE"
+
 # ensure tools exist
 for tool in $TOOLS; do
 	which $tool &> /dev/null || die "ERROR: $tool is not available on the system."
@@ -76,6 +82,7 @@ ibi_lock_check()
 
 incremental_backup()
 {
+    exec &> >(tee -a "$LOG_INC")
 	ibi_lock_check
 	touch "$IBI_LOCK"
 	INC_APPLY_LOG="/tmp/inc_apply_realised.log"
@@ -140,13 +147,14 @@ incremental_backup()
 
 full_backup()
 {
-        # allow manually passing in the date as 2nd argument
-        if [ -n "$MANUAL_DATE" ]; then
-                INCREMENTAL_DATE="$MANUAL_DATE"
-		echo "INFO: manual date passed in - $MANUAL_DATE <----------------------------------------"
-        else
-                INCREMENTAL_DATE=$(date +%Y-%m-%d)
-        fi
+    exec &> >(tee -a "$LOG_FULL")
+    # allow manually passing in the date as 2nd argument
+    if [ -n "$MANUAL_DATE" ]; then
+            INCREMENTAL_DATE="$MANUAL_DATE"
+	echo "INFO: manual date passed in - $MANUAL_DATE <----------------------------------------"
+    else
+            INCREMENTAL_DATE=$(date +%Y-%m-%d)
+    fi
 
 	# Let incremental finish if still running
 	while [ -e $IBI_LOCK ]; do
