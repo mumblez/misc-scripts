@@ -142,8 +142,11 @@ mysqladmin --socket="$SNAPSHOT_SOCKET" shutdown || die "ERROR: error starting an
 # Stop mysql remotely
 rc service mysql stop
 # clear remote mysql datadir
-echo "INFO: clearing remote $REMOTE_MYSQL_DIR ..."
-rc "rm -rf ${REMOTE_MYSQL_DIR}/*"
+#echo "INFO: clearing remote $REMOTE_MYSQL_DIR ..."
+#rc "rm -rf ${REMOTE_MYSQL_DIR}"
+#sleep 10
+#rc "mkdir ${REMOTE_MYSQL_DIR}"
+#rc "chown mysql:mysql -R ${REMOTE_MYSQL_DIR}"
 
 echo "INFO: Ready to sync..."
 
@@ -152,7 +155,7 @@ START_TIME=$(date)
 echo "####################################################################"
 echo "INFO: Starting sync..."
 tar -cvf - -C "${FINAL_MYSQL_DIR}" --exclude-from="${EXCLUDE_FILE}" . \
-| pv -s `du -sb "${FINAL_MYSQL_DIR}" | awk '{print $1}'` |
+| pv -s $(du -sb "${FINAL_MYSQL_DIR}" | awk '{print $1}') \
 | ssh ${SSH_OPTIONS} "${SSH_USER}"@"${REMOTE_DB_SERVER}" "sudo tar -xf - -C $REMOTE_MYSQL_DIR"
 
 [ $? == 0 ] || { die "ERROR: the sync job failed!"; }
