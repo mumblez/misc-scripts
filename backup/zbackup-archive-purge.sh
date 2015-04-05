@@ -45,6 +45,7 @@ copy_backup()
     cd "$ZBACKUP_REPOS_BASE"
     for REPO in $(ls)
     do
+        echo "INFO: zbackup repo = $REPO"
         REPO_BASE="${REPO}/backups"
         [ -d "$REPO_BASE" ] && cd "$REPO_BASE" || die "ERROR: could not find $REPO_BASE"
         for APP in $(ls)
@@ -53,21 +54,18 @@ copy_backup()
             # cp last / latest backup into ../[daily|weekly] folder
             LATEST=$(ls -tr1 | tail -n 1)
             echo "INFO: copying $APP - $LATEST to ../${FOLDER} ..."
-            #cp -f "$LATEST" "../${FOLDER}"
-            echo "${ZBACKUP_REPOS_BASE}/${REPO_BASE}"
+            cp -f "$LATEST" "../${FOLDER}"
             cd "${ZBACKUP_REPOS_BASE}/${REPO_BASE}"
-            pwd
         done
         cd "$ZBACKUP_REPOS_BASE"
-        pwd
     done
+    echo "INFO: successfully created $FOLDER zbackups"
 }
 
 if [[ "$1" == "weekly" || "$1" == "monthly" ]]
 then
-    #copy_backup "$1"
+    copy_backup "$1"
     # ovh archive
-    echo "$1"
 else
     die "ERROR: invalid argument"
 fi
