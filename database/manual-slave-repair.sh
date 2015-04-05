@@ -126,9 +126,9 @@ FINAL_MYSQL_DIR="$SNAPSHOT_MYSQL_DIR"
 
 MASTER_LOG_FILE=$(awk '{print $1}' $MASTER_LOG)
 MASTER_LOG_POS=$(awk '{print $2}' $MASTER_LOG)
-MASTER_IP=$(hostname -i | grep -oE "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}")
-MASTER_USER=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
-MASTER_PASS=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
+MASTER_IP=$(hostname -i | grep -oE "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
+MASTER_USER=$(sed -n '5p' ${SNAPSHOT_MYSQL_DIR}/master.info)
+MASTER_PASS=$(sed -n '6p' ${SNAPSHOT_MYSQL_DIR}/master.info)
 
 # do a clean mysql instance on datadir and shutdown
 ## get innodb_log_file_size 
@@ -182,7 +182,7 @@ sleep 5
 rcc 'mysqladmin flush-hosts'
 rcc 'mysql -e "stop slave;"' || echo "WARNING: !!!! could not stop slave replication !!!!!!"
 rcc 'mysql -e "reset slave all;"' || echo "WARNING: !!!! slave info could not be removed !!!!!!"
-rc "CHANGE MASTER TO MASTER_HOST='${MASTER_IP}', MASTER_USER='${MASTER_USER}', MASTER_PASSWORD='${MASTER_PASS}', MASTER_LOG_FILE='${MASTER_LOG_FILE}', MASTER_LOG_POS=${MASTER_LOG_POS};"
+rc "mysql -e \"CHANGE MASTER TO MASTER_HOST='${MASTER_IP}', MASTER_USER='${MASTER_USER}', MASTER_PASSWORD='${MASTER_PASS}', MASTER_LOG_FILE='${MASTER_LOG_FILE}', MASTER_LOG_POS=${MASTER_LOG_POS};\""
 
 rc 'mysql -e "start slave;"'
 
