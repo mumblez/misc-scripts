@@ -44,7 +44,7 @@ rcc () {
 }
 
 MYSQL_VERSION_SLAVE=$(rcc 'mysqladmin version' | grep 'Server version' | grep -oE "5.[56]")
-[ -z "$MYSQL_VERSION_SLAVE" ] && MYSQL_VERSION_SLAVE=$(rc dpkg -l | grep 'mysql-server-' | grep -oE "5.[56]" | head -n 1)
+[ -z "$MYSQL_VERSION_SLAVE" ] && MYSQL_VERSION_SLAVE=$(rc 'dpkg -l' | grep 'mysql.*server' | grep -E "^ii" | grep -oE "5.[56]" | head -n 1)
 echo "INFO: mysql version - master = $MYSQL_VERSION_MASTER"
 echo "INFO: mysql version - slave = $MYSQL_VERSION_SLAVE"
 
@@ -134,9 +134,9 @@ MASTER_PASS=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
 ## get innodb_log_file_size 
 INNODB_LOG_SIZE=$(mysqladmin variables | grep innodb_log_file_size | awk '{print $4}')
 SNAPSHOT_SOCKET="/var/run/mysqld/mysqld-snapshot.sock"
-
-mysqld_safe --no-defaults --port=3307 --socket="$SNAPSHOT_SOCKET" --datadir="$FINAL_MYSQL_DIR" --innodb-log-file-size="$INNODB_LOG_SIZE" --skip-slave-start &
+( mysqld_safe --no-defaults --port=3307 --socket="$SNAPSHOT_SOCKET" --datadir="$FINAL_MYSQL_DIR" --innodb-log-file-size="$INNODB_LOG_SIZE" --skip-slave-start & )
 sleep 10
+echo "INFO: shutting down snapshot mysql instance..."
 mysqladmin --socket="$SNAPSHOT_SOCKET" shutdown || die "ERROR: error starting and shutting down mysql snapshot instance"
 
 # Stop mysql remotely
