@@ -20,7 +20,8 @@ die()
 
 # SETTINGS
 IB_BASE="/srv/r5/backups/mysql-innobackupex"
-ZBACKUP_BASE="/srv/r5/backups/zbackup-dbs/backups/cl-web/daily"
+ZBACKUP_REPOS_BASE="/srv/r5/backups/zbackup-repos"
+ZBACKUP_BASE="${ZBACKUP_REPOS_BASE}/intranet-db/backups/daily"
 ZB_KEY="/***REMOVED***/keys/zbackup"
 INCREMENTALS_TO_KEEP="13"
 IB_INCREMENTAL_BASE="${IB_BASE}/incrementals"
