@@ -140,7 +140,7 @@ mysqladmin --socket="$SNAPSHOT_SOCKET" shutdown || die "ERROR: error starting an
 rc service mysql stop
 # clear remote mysql datadir
 echo "INFO: clearing remote $REMOTE_MYSQL_DIR ..."
-cd $REMOTE_MYSQL_DIR && rm -rf *
+rc "rm -rf ${REMOTE_MYSQL_DIR}/*"
 echo "INFO: Ready to sync..."
 
 ############# MAIN TASK ####################################################################
