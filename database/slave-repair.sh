@@ -12,15 +12,15 @@ die() { echo $* 1>&2 ; exit 1 ; }
 
 cleanup ()
 {
-	echo "INFO: Cleanup operations..."
-	# clean up files
-	rm -rf "${EXCLUDE_FILE}"
-	rm -f "$MASTER_LOG"
+    echo "INFO: Cleanup operations..."
+    # clean up files
+    rm -rf "${EXCLUDE_FILE}"
+    rm -f "$MASTER_LOG"
 
-	# Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
+    # Remove snapshot (/dev/hcp1 hardcoded yes, but we ensured earlier no other snapshots existed)
     if [ -e /dev/hcp1 ]; then
-	    echo "INFO: Removing snapshot..."
-	    hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
+        echo "INFO: Removing snapshot..."
+        hcp -r /dev/hcp1 > /dev/null || echo "WARNING: Failed to remove remote snapshot!!!!! - REMOVE MANUALLY!!!"
     fi
 }
 
@@ -39,11 +39,11 @@ rcc () {
   ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_DB_SERVER} "sudo $@"
 }
 
+
 MYSQL_VERSION_SLAVE=$(rcc 'mysqladmin version' | grep 'Server version' | grep -oE "5.[56]")
-[ -z "$MYSQL_VERSION_SLAVE" ] && MYSQL_VERSION_SLAVE=$(rc dpkg -l | grep 'mysql-server-' | grep -oE "5.[56]" | head -n 1)
+[ -z "$MYSQL_VERSION_SLAVE" ] && MYSQL_VERSION_SLAVE=$(rc 'dpkg -l' | grep 'mysql.*server' | grep -E "^ii" | grep -oE "5.[56]" | head -n 1)
 echo "INFO: mysql version - master = $MYSQL_VERSION_MASTER"
 echo "INFO: mysql version - slave = $MYSQL_VERSION_SLAVE"
-
 
 # VALIDATION and more settings
 
@@ -132,8 +132,9 @@ MASTER_PASS=$(sed -n '4p' ${SNAPSHOT_MYSQL_DIR}/master.info)
 ## get innodb_log_file_size 
 INNODB_LOG_SIZE=$(mysqladmin variables | grep innodb_log_file_size | awk '{print $4}')
 SNAPSHOT_SOCKET="/var/run/mysqld/mysqld-snapshot.sock"
-mysqld_safe --no-defaults --port=3307 --socket="$SNAPSHOT_SOCKET" --datadir="$FINAL_MYSQL_DIR" --innodb-log-file-size="$INNODB_LOG_SIZE" --skip-slave-start &
+( mysqld_safe --no-defaults --port=3307 --socket="$SNAPSHOT_SOCKET" --datadir="$FINAL_MYSQL_DIR" --innodb-log-file-size="$INNODB_LOG_SIZE" --skip-slave-start & )
 sleep 10
+echo "INFO: shutting down snapshot mysql instance..."
 mysqladmin --socket="$SNAPSHOT_SOCKET" shutdown || die "ERROR: error starting and shutting down mysql snapshot instance"
 
 # Stop mysql remotely
@@ -185,3 +186,4 @@ rc 'mysql -e "show slave status \G"' | grep 'Running' | tail -n 1 | grep -q 'Yes
 
 # if mysql version is higher then upgrade
 [ "${MYSQL_VERSION_MASTER:2:1}" -lt "${MYSQL_VERSION_SLAVE:2:1}" ] && rc mysql_upgrade
+
