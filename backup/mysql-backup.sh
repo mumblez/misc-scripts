@@ -38,6 +38,7 @@ LOG_FULL="${LOG_BASE}/full-backup.log"
 LOG_INC="${LOG_BASE}/incremental-backup.log"
 TOOLS="zbackup innobackupex"
 DIRECTORIES="IB_BASE ZBACKUP_BASE IB_INCREMENTAL_BASE IB_CHECKPOINT IB_HOTCOPY"
+RETENTION_POLICY_DAILY=8
 
 
 # Instead of realised, hotcopy and incrementals (which seem to always fail when
@@ -244,6 +245,15 @@ full_backup()
 	
 	# run prepared hotcopy through zbackup
 	tar -cf - -C "$IB_HOTCOPY" . | "$ZBACKUP_BIN" --password-file "$ZB_KEY" backup "$ZBACKUP_FILE" &>> "$ZB_LOG"
+
+    # purge old backups
+    cd "$ZBACKUP_BASE"
+	if [ "$(ls -1 | wc -l)" -gt "$RETENTION_POLICY_DAILY" ]; then
+		for OLD_DAILY in $(diff <(ls -1 | tail -n "$RETENTION_POLICY_DAILY") <(ls -1) | sed '1d' | awk '{print $2}');
+		do
+			[ ! -z "$OLD_DAILY" ] && rm -rf "$OLD_DAILY" && echo "INFO: Deleted old daily - $OLD_DAILY - `date`"
+		done
+	fi
 
 	echo "### Finished daily zbackup of $IB_HOTCOPY - $(date) ###"	
 	rm -f "$ZB_LOCK"
