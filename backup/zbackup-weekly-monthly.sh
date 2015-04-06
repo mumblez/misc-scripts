@@ -11,6 +11,9 @@ RETENTION POLICY
     full backup every day, keep for 8 days
     full backup every week, Sunday, keep for 8 weeks 
     full backup every month, upload to ovh also
+
+Daily purges will be done in the originating backup scripts
+Weekly purges will be done by this script when called by cron
 INTRO
 
 
@@ -26,18 +29,27 @@ DIR=$(cd "$(dirname "$0")" && pwd)
 ZBACKUP_REPOS_BASE="/srv/r5/backups/zbackup-repos"
 DATE=$(date +%Y-%m-%d)
 ZB_LOCKS[0]="/var/run/zbackup-intranet-db"
-RP_DAILY=8
 RP_WEEKLY=8
 
 # Ensure there are no zbackup jobs running
-#for LOCK in "${ZB_LOCKS[@]}"
-#do
-#    echo "INFO: checking for locks - $LOCK"
-#    [ -e "$LOCK" ] && die "ERROR: Lock - $LOCK found, exiting."
-#done
+for LOCK in "${ZB_LOCKS[@]}"
+do
+    echo "INFO: checking for locks - $LOCK"
+    [ -e "$LOCK" ] && die "ERROR: Lock - $LOCK found, exiting."
+done
 
 # Ensure zbackup repos base exists
-#[ -d "$ZBACKUP_REPOS_BASE" ] || die "ERROR: zbackup repo base not found - $ZBACKUP_REPOS_BASE"
+[ -d "$ZBACKUP_REPOS_BASE" ] || die "ERROR: zbackup repo base not found - $ZBACKUP_REPOS_BASE"
+
+delete_weekly_backups()
+{
+    if [ "$(ls -1 | wc -l)" -gt "$RP_WEEKLY" ]; then
+        for OLD_BAK in $(diff <(ls -1 | tail -n "$RP_WEEKLY") <(ls -1) | sed '1d' | awk '{print $2}');
+        do
+            [ ! -z "$OLD_BAK" ] && rm -rf "$OLD_BAK" && echo "INFO: Deleted $FOLDER - $APP - $OLD_BAK - `date`"
+        done
+    fi
+}
 
 copy_backup()
 {
@@ -55,19 +67,28 @@ copy_backup()
             LATEST=$(ls -tr1 | tail -n 1)
             echo "INFO: copying $APP - $LATEST to ../${FOLDER} ..."
             cp -f "$LATEST" "../${FOLDER}"
+            # purge old backups if weekly run#
+            [[ "$FOLDER" == "weekly" ]] && cd ../weekly && delete_weekly_backups 
             cd "${ZBACKUP_REPOS_BASE}/${REPO_BASE}"
+            # for monthly purge, need to implement!
+            # clone repo
+            # delete weekly and daily dir's from each app
+            # keep latest 6 months and archive 6 months
+            # zbackup gc on repo
+            # upload to ovh - do in 2016 after May's monthly!!!
         done
         cd "$ZBACKUP_REPOS_BASE"
     done
     echo "INFO: successfully created $FOLDER zbackups"
 }
 
+# main
 if [[ "$1" == "weekly" || "$1" == "monthly" ]]
 then
     copy_backup "$1"
     # ovh archive
 else
-    die "ERROR: invalid argument"
+    die "ERROR: invalid argument! ./${0} [weekly|monthly]"
 fi
 
 exit 0
