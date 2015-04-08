@@ -21,12 +21,18 @@ cleanup ()
 {
 	echo "INFO: Cleanup operations..."
 	# clean up zbackup key
+
+	# restore IFS
+	IFS=$SAVEIFS;
+
+
 }
 
 trap cleanup EXIT
 
 # SETTINGS
 DIR=$(cd "$(dirname "$0")" && pwd)
+SAVEIFS=$IFS;
 
 ZB_REPOS_BASE="/srv/r5/backups/zbackup-repos"
 ZB_JOBS="${DIR}/zbackup-remote-backup-jobs.csv"
@@ -44,6 +50,7 @@ rcc () {
 }
 
 
+IFS=',';
 sed 1d "$ZB_JOBS" | while read REMOTE_IP REMOTE_SOURCE_DIRS TAR_DIR APP REMOTE_TMPDIR ZB_REPO_NAME PRE_COMMANDS POST_COMMANDS;
 do
 	echo "Remote IP: $REMOTE_IP"
