@@ -41,7 +41,7 @@ REMOTE_SERVER=""
 ZB_REPOS_BASE="/srv/r5/backups/zbackup-repos"
 ZB_JOBS="/***REMOVED***/scripts/zbackup-remote-backup-jobs.csv"
 ZB_KEY="/***REMOVED***/keys/zbackup"
-DIRECTORIES=
+DIRECTORIES="ZB_REPOS_BASE ZB_JOBS ZB_KEY"
 
 # Prepare our remote commands function
 rc () {
