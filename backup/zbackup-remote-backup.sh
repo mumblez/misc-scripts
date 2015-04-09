@@ -60,7 +60,7 @@ rcc () {
 # validate directories
 # ensure directories and files exist
 for directory in $DIRECTORIES; do
-	[ -d "${!directory}" ] || die "ERROR: $directory can not be found."
+	[ -e "${!directory}" ] || die "ERROR: $directory can not be found."
 done
 
 IFS=',';
