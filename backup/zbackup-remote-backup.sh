@@ -40,22 +40,19 @@ SSH_OPTIONS="-o StrictHostKeyChecking=no"
 REMOTE_SERVER=""
 ZB_REPOS_BASE="/srv/r5/backups/zbackup-repos"
 ZB_JOBS="/***REMOVED***/scripts/zbackup-remote-backup-jobs.csv"
+#ZB_JOBS="/***REMOVED***/scripts/debug.csv"
 ZB_KEY="/***REMOVED***/keys/zbackup"
 DIRECTORIES="ZB_REPOS_BASE ZB_JOBS ZB_KEY"
 
 # Prepare our remote commands function
 rc () {
-  ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_SERVER} "sudo $@" < /dev/null || { die "ERROR: Failed executing - $@ - on ${REMOTE_SERVER}"; }
+  ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_SERVER} "sudo sh -c '$@'" < /dev/null || { die "ERROR: Failed executing - $@ - on ${REMOTE_SERVER}"; }
 }
 
 # rc without dying
 rcc () {
-  ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_SERVER} "sudo $@"  < /dev/null
+  ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_SERVER} "sudo sh -c '$@'"  < /dev/null
 }
-
-# use compiled version of zbackup
-#[ -x /usr/local/bin/zbackup ] && ZB_BIN="/usr/local/bin/zbackup" || ZB_BIN="/usr/bin/zbackup"
-#[ -z "$ZB_BIN" ] && die "ERROR: zbackup not installed"
 
 # validate directories
 # ensure directories and files exist
@@ -71,16 +68,19 @@ do
 	then
 		SSH_USER="***REMOVED***" # (requires Defaults:***REMOVED*** !requiretty on destination sudoers config)
 		ZB_JOBS="/home/***REMOVED***/test.job"
-		echo "Remote IP: $REMOTE_IP"
-		echo "Remote dirs: $REMOTE_SOURCE_DIRS"
-		echo "Tar directory: $TAR_DIR"
-		echo "App Name: $APP"
-		echo "Remote tmpdir: $REMOTE_TMPDIR"
-		echo "zbackup repo: $ZB_REPO_NAME"
-		echo "Pre-commands: $PRE_COMMANDS"
-		echo "Post-commands: $POST_COMMANDS"
-		echo "============================"
 	fi
+
+	echo "Remote IP: $REMOTE_IP"
+	echo "Remote dirs: $REMOTE_SOURCE_DIRS"
+	echo "Tar directory: $TAR_DIR"
+	echo "App Name: $APP"
+	echo "Remote tmpdir: $REMOTE_TMPDIR"
+	echo "zbackup repo: $ZB_REPO_NAME"
+	echo "Pre-commands: $PRE_COMMANDS"
+	echo "Post-commands: $POST_COMMANDS"
+	echo "============================"
+
+	REMOTE_SERVER="${REMOTE_IP}"
 
 	echo "INFO: Backing up $APP..."
 	# add condition for rundeck / commander server itself (can't ssh into itself)
@@ -90,13 +90,7 @@ do
 
 	# add check for zbackup binary
 	rcc "test -x /usr/local/bin/zbackup" && ZB_BIN="/usr/local/bin/zbackup" || ZB_BIN="/bin/zbackup"
-
-
-	# Fix teampass backup logic
-	# find: `/var/www/teampass/htdocs/backups/tp_backups*.sql': No such file or directory
-	# 16:56:23			ERROR: Failed executing - find /var/www/teampass/htdocs/backups/tp_backups*.sql - on ***REMOVED***.52
-
-	REMOTE_SERVER="${REMOTE_IP}"
+	rcc "test -x $ZB_BIN" || ZB_BIN="/usr/bin/zbackup" 
 
 	# check tmpdir (working directory) exists
 	rcc "test -d $REMOTE_TMPDIR" || rc "mkdir -p $REMOTE_TMPDIR"
@@ -112,7 +106,7 @@ do
 	if rcc "test ! -d $ZB_REPO_TMP";
 	then
 		echo "INFO: initialising zbackup repo..."
-		rc "zbackup --password-file ${REMOTE_TMPDIR}/zbackup init $ZB_REPO_TMP"
+		rc "$ZB_BIN --password-file ${REMOTE_TMPDIR}/zbackup init $ZB_REPO_TMP"
 	fi
 
 	# symlink the info file into the repo
@@ -133,16 +127,22 @@ do
 	if [ "$TAR_DIR" = "yes" ]
 	then
 		# backup some known directories / files
-		rc "tar c $REMOTE_SOURCE_DIRS | sudo $ZB_BIN --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE"
+		rc "tar c $REMOTE_SOURCE_DIRS | $ZB_BIN --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE"
 	else
 		# backup latest backup triggered by pre-command(s), ideally all tar'd in one file
 		# $REMOTE_SOURCE_DIRS should be ONE directory
-		FILE=$(rc "find $REMOTE_SOURCE_DIRS" | tail -n 1)
+		FILE=$(rcc "find $REMOTE_SOURCE_DIRS" | tail -n 1)
 		echo "INFO: Backing up file - $FILE"
 		if echo "$FILE" | grep -q "No such file or directory"; then die "ERROR: $FILE could not be found"; fi
 		if [ -z "$FILE" ]; then die "ERROR: $FILE could not be found"; fi
-		echo "INFO: Backing up file - $FILE"
-		rc "cat $FILE | sudo $ZB_BIN --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE"
+        
+        # check file and amend if not tar
+        if [[ ${FILE: -3} != "tar" ]]; then
+            BACKUP_FILE="${BACKUP_FILE:0:-3}${FILE: -3}"
+        fi
+
+        # create our backup of the file
+		rc "cat $FILE | $ZB_BIN --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE"
 	fi		
 
 	# rsync new data to main backup server
