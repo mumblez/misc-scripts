@@ -32,7 +32,7 @@ trap cleanup EXIT
 
 # SETTINGS
 DIR=$(cd "$(dirname "$0")" && pwd)
-SAVEIFS=$IFS;
+SAVEIFS=$IFS
 
 DEBUG="FALSE"
 SSH_USER="rundeck"
@@ -63,7 +63,7 @@ for directory in $DIRECTORIES; do
 	[ -e "${!directory}" ] || die "ERROR: $directory can not be found."
 done
 
-IFS=',';
+IFS=','
 
 sed 1d "$ZB_JOBS" | while read REMOTE_IP REMOTE_SOURCE_DIRS TAR_DIR APP REMOTE_TMPDIR ZB_REPO_NAME PRE_COMMANDS POST_COMMANDS;
 do
@@ -138,7 +138,7 @@ do
 		# backup latest backup triggered by pre-command(s), ideally all tar'd in one file
 		# $REMOTE_SOURCE_DIRS should be ONE directory
 		FILE=$(rc "find $REMOTE_SOURCE_DIRS" | tail -n 1)
-		if echo "$FILE" | grep -q "No such file or directory"; then die "ERROR: $FILE could not be found"
+		if echo "$FILE" | grep -q "No such file or directory"; then die "ERROR: $FILE could not be found" fi
 		echo "INFO: Backing up file - $FILE"
 		rc "cat $FILE | sudo zbackup --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE"
 	fi		
