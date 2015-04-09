@@ -138,6 +138,7 @@ do
 		# backup latest backup triggered by pre-command(s), ideally all tar'd in one file
 		# $REMOTE_SOURCE_DIRS should be ONE directory
 		FILE=$(rc "find $REMOTE_SOURCE_DIRS" | tail -n 1)
+		echo "INFO: Backing up file - $FILE"
 		if echo "$FILE" | grep -q "No such file or directory"; then die "ERROR: $FILE could not be found"; fi
 		if [ -z "$FILE" ]; then die "ERROR: $FILE could not be found"; fi
 		echo "INFO: Backing up file - $FILE"
