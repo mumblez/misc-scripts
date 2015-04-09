@@ -133,14 +133,15 @@ do
 	if [ "$TAR_DIR" = "yes" ]
 	then
 		# backup some known directories / files
-		rc "tar c $REMOTE_SOURCE_DIRS | sudo zbackup --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE"
+		rc "tar c $REMOTE_SOURCE_DIRS | sudo $ZB_BIN --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE"
 	else
 		# backup latest backup triggered by pre-command(s), ideally all tar'd in one file
 		# $REMOTE_SOURCE_DIRS should be ONE directory
 		FILE=$(rc "find $REMOTE_SOURCE_DIRS" | tail -n 1)
-		if echo "$FILE" | grep -q "No such file or directory"; then die "ERROR: $FILE could not be found" fi
+		if echo "$FILE" | grep -q "No such file or directory"; then die "ERROR: $FILE could not be found"; fi
+		if [ -z "$FILE" ]; then die "ERROR: $FILE could not be found"; fi
 		echo "INFO: Backing up file - $FILE"
-		rc "cat $FILE | sudo zbackup --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE"
+		rc "cat $FILE | sudo $ZB_BIN --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE"
 	fi		
 
 	# rsync new data to main backup server
