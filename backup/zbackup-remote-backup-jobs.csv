@@ -2,7 +2,6 @@ Remote IP,Remote Source Path,Tar Dir?,Remote App name,Remote zbackup repo path,z
 172.31.0.229,/srv/deb_repository,yes,deb_repo,/srv/temp,files,,
 172.31.0.229,/srv/svn,yes,svn,/srv/temp,files,,
 172.31.0.229,/srv/www /etc/apache2/sites-available /etc/apache2/sites-enabled,yes,bishop_web_apps,/srv/temp,files,,
-***REMOVED***.52,/var/www/teampass/htdocs/backups/tp_backups*.sql,no,teampass,/tmp/tp,files,/usr/bin/php -f /var/www/teampass/htdocs/backups/script.backup.php;,rm -f  /var/www/teampass/htdocs/backups/tp_backups*.sql;
-***REMOVED***.92,/var/lib/apacheds-2.0.0-M15/default,yes,apacheds,/tmp/ads,files,/etc/init.d/apacheds-2.0.0-M15-default stop,/etc/init.d/apacheds-2.0.0-M15-default start;
+***REMOVED***.52,/var/www/teampass/htdocs/backups/tp_backups*.sql,no,teampass,/tmp/tp,files,cd /var/www/teampass/htdocs/backups; bash /***REMOVED***/scripts/teampass-backup.sh;,rm -f  /var/www/teampass/htdocs/backups/tp_backups*.sql;
+***REMOVED***.51,/var/lib/apacheds-2.0.0-M15/default,yes,apacheds,/tmp/ads,files,/etc/init.d/apacheds-2.0.0-M15-default stop,/etc/init.d/apacheds-2.0.0-M15-default start;
 ***REMOVED***.53,/mnt/ssd/gitlab-backup/*.tar,no,gitlab,/mnt/ssd/temp,files,bash /***REMOVED***/scripts/gitlab-backup.sh,rm -f /mnt/ssd/gitlab-backup/*.tar
-***REMOVED***.50,/tmp/backup/*.tar,no,rundeck,/tmp/backup,files,bash /***REMOVED***/scripts/rundeck-backup.sh,rm -f /tmp/backup/*.tar
