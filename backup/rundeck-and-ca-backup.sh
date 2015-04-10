@@ -22,9 +22,9 @@ ZB_KEY="/srv/zbackup"
 ZB_INFO="/srv/info"
 
 # run local backups
-rd-jobs list -p Everything -f "$JOBS" --format yaml
+rd-jobs list -p Everything -f "$JOBS" --format yaml &>/dev/null
 /usr/bin/mysqldump --defaults-file=/***REMOVED***/.my.cnf -B rundeck > "$DB"
-tar -cf "$ARCHIVE" "$JOBS" "$DB" --remove-files
+tar -cf "$ARCHIVE" "$JOBS" "$DB" --remove-files &>/dev/null
 tar --append --file="$ARCHIVE" "$RD_PROJECTS"
 tar --append --file="$ARCHIVE" "$CA_DIR"
 
