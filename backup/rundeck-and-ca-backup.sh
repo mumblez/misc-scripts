@@ -58,9 +58,9 @@ rsync -ar -e "ssh -i $SSH_KEY" --rsync-path="sudo rsync" "${ZB_REPO}/index/" "${
 echo "INFO: cleaning up..."
 set -x
 rm -f "$ARCHIVE"
-rm -rf "${ZB_REPO}/backups/*"
-rm -rf "${ZB_REPO}/bundles/*"
-rm -rf "${ZB_REPO}/index/*"
+rm -rf ${ZB_REPO}/backups/*
+rm -rf ${ZB_REPO}/bundles/*
+rm -rf ${ZB_REPO}/index/*
 
 # shred keys and backups
 shred -u "$ZB_INFO"
