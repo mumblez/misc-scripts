@@ -42,16 +42,16 @@ ln -snf "$ZB_INFO" "${ZB_REPO}/"
 rsync -ar -e "ssh -i $SSH_KEY" --rsync-path="sudo rsync" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/index" "${ZB_REPO}/"
 
 # run backup through zbackup
-cat "$ARCHIVE" | "$ZB_BIN" --password-file "$ZB_KEY" backup "${ZB_REPO}/backups/$(basename $ARCHIVE)"
+cat "$ARCHIVE" | "$ZB_BIN" --password-file "$ZB_KEY" backup "${ZB_REPO}/backups/$(basename $ARCHIVE)" &>/dev/null
 
 # rsync backup, bundles, index to backup
-rsync -ar -e "ssh -i $SSH_KEY" --rsync-path="sudo rsync" "${ZB_REPO}/backups/" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/backups/{ZB_APP_NAME}/daily"
+rsync -ar -e "ssh -i $SSH_KEY" --rsync-path="sudo rsync" "${ZB_REPO}/backups/" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/backups/${ZB_APP_NAME}/daily"
 rsync -ar -e "ssh -i $SSH_KEY" --rsync-path="sudo rsync" "${ZB_REPO}/bundles/" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/bundles"
 rsync -ar -e "ssh -i $SSH_KEY" --rsync-path="sudo rsync" "${ZB_REPO}/index/" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/index"
 
 # delete backup files, bundles and index 
 rm -f "$ARCHIVE"
-rm -f "${ZB_REPO}/backups/*"
+rm -rf "${ZB_REPO}/backups/*"
 rm -rf "${ZB_REPO}/bundles/*"
 rm -rf "${ZB_REPO}/index/*"
 
