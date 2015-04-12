@@ -35,12 +35,12 @@ fi
 
 # Prepare our remote commands function
 rc () {
-  ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_DB_SERVER} "sudo $@" || { die "ERROR: Failed executing - $@ - on ${REMOTE_DB_SERVER}"; }
+  ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_DB_SERVER} "sudo sh -c '$@'" < /dev/null || { die "ERROR: Failed executing - $@ - on ${REMOTE_DB_SERVER}"; }
 }
 
 # rc without dying
 rcc () {
-  ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_DB_SERVER} "sudo $@"
+  ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_DB_SERVER} "sudo sh -c '$@'" < /dev/null
 }
 
 MYSQL_VERSION_SLAVE=$(rcc 'mysqladmin version' | grep 'Server version' | grep -oE "5.[56]")
@@ -142,9 +142,9 @@ mysqladmin --socket="$SNAPSHOT_SOCKET" shutdown || die "ERROR: error starting an
 # Stop mysql remotely
 rc service mysql stop
 # clear remote mysql datadir
-#echo "INFO: clearing remote $REMOTE_MYSQL_DIR ..."
-#rc "rm -rf ${REMOTE_MYSQL_DIR}"
-#sleep 10
+echo "INFO: clearing remote $REMOTE_MYSQL_DIR ..."
+rc "rm -rf ${REMOTE_MYSQL_DIR}/*"
+sleep 10
 #rc "mkdir ${REMOTE_MYSQL_DIR}"
 #rc "chown mysql:mysql -R ${REMOTE_MYSQL_DIR}"
 
@@ -172,7 +172,7 @@ echo "INFO: Snapshot / COW final size..."
 hcp -l | grep "Changed Blocks"
 
 # Ensure permissions consistent
-rc chown mysql:mysql "${REMOTE_MYSQL_DIR}" -R
+rc chown mysql:mysql "${REMOTE_MYSQL_DIR}/" -R
 
 echo "INFO: Starting mysql..." # do remotely, seperate RD job
 rc service mysql start ## DO REMOTELY ##

@@ -30,6 +30,7 @@ ZBACKUP_REPOS_BASE="/srv/r5/backups/zbackup-repos"
 DATE=$(date +%Y-%m-%d)
 ZB_LOCKS[0]="/var/run/zbackup-intranet-db"
 RP_WEEKLY=8
+RP_DAILY=14
 
 # Ensure there are no zbackup jobs running
 for LOCK in "${ZB_LOCKS[@]}"
@@ -41,10 +42,10 @@ done
 # Ensure zbackup repos base exists
 [ -d "$ZBACKUP_REPOS_BASE" ] || die "ERROR: zbackup repo base not found - $ZBACKUP_REPOS_BASE"
 
-delete_weekly_backups()
+delete_old_backups()
 {
-    if [ "$(ls -1 | wc -l)" -gt "$RP_WEEKLY" ]; then
-        for OLD_BAK in $(diff <(ls -1 | tail -n "$RP_WEEKLY") <(ls -1) | sed '1d' | awk '{print $2}');
+    if [ "$(ls -1 | wc -l)" -gt "$1" ]; then
+        for OLD_BAK in $(diff <(ls -1 | tail -n "$1") <(ls -1) | sed '1d' | awk '{print $2}');
         do
             [ ! -z "$OLD_BAK" ] && rm -rf "$OLD_BAK" && echo "INFO: Deleted $FOLDER - $APP - $OLD_BAK - `date`"
         done
@@ -63,12 +64,15 @@ copy_backup()
         for APP in $(ls)
         do
             cd "${APP}/daily"
+	    # purge old dailies
+	    delete_old_backups "$RP_DAILY"
+
             # cp last / latest backup into ../[daily|weekly] folder
             LATEST=$(ls -tr1 | tail -n 1)
             echo "INFO: copying $APP - $LATEST to ../${FOLDER} ..."
             cp -f "$LATEST" "../${FOLDER}"
             # purge old backups if weekly run#
-            [[ "$FOLDER" == "weekly" ]] && cd ../weekly && delete_weekly_backups 
+            [[ "$FOLDER" == "weekly" ]] && cd ../weekly && delete_old_backups "$RP_WEEKLY"
             cd "${ZBACKUP_REPOS_BASE}/${REPO_BASE}"
             # for monthly purge, need to implement!
             # clone repo
