@@ -31,12 +31,12 @@ trap cleanup EXIT
 
 # Prepare our remote commands function
 rc () {
-  ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_DB_SERVER} "sudo $@" || { die "ERROR: Failed executing - $@ - on ${REMOTE_DB_SERVER}"; }
+  ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_DB_SERVER} "sudo sh -c '$@'" < /dev/null || { die "ERROR: Failed executing - $@ - on ${REMOTE_DB_SERVER}"; }
 }
 
 # rc without dying
 rcc () {
-  ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_DB_SERVER} "sudo $@"
+  ssh $SSH_OPTIONS ${SSH_USER}@${REMOTE_DB_SERVER} "sudo sh -c '$@'" < /dev/null
 }
 
 
@@ -165,7 +165,7 @@ echo "INFO: Snapshot / COW final size..."
 hcp -l | grep "Changed Blocks"
 
 # Ensure permissions consistent
-rc chown mysql:mysql "${REMOTE_MYSQL_DIR}" -R
+rc chown mysql:mysql "${REMOTE_MYSQL_DIR}/" -R
 
 echo "INFO: Starting mysql..." # do remotely, seperate RD job
 rc service mysql start ## DO REMOTELY ##
