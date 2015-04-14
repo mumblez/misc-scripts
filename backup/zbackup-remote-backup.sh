@@ -127,7 +127,7 @@ do
 	if [ "$TAR_DIR" = "yes" ]
 	then
 		# backup some known directories / files
-		rc "tar c $REMOTE_SOURCE_DIRS | $ZB_BIN --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE &>/dev/null"
+		rc "tar c $REMOTE_SOURCE_DIRS | $ZB_BIN --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE"
 	else
 		# backup latest backup triggered by pre-command(s), ideally all tar'd in one file
 		# $REMOTE_SOURCE_DIRS should be ONE directory
