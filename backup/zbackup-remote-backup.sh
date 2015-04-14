@@ -67,7 +67,7 @@ do
 	if [ "$DEBUG" = "TRUE" ];
 	then
 		SSH_USER="***REMOVED***" # (requires Defaults:***REMOVED*** !requiretty on destination sudoers config)
-		ZB_JOBS="/home/***REMOVED***/test.job"
+		ZB_JOBS="/***REMOVED***/scripts/test.job"
 	fi
 
 	echo "Remote IP: $REMOTE_IP"
@@ -127,7 +127,7 @@ do
 	if [ "$TAR_DIR" = "yes" ]
 	then
 		# backup some known directories / files
-		rc "tar c $REMOTE_SOURCE_DIRS | $ZB_BIN --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE"
+		rc "tar c $REMOTE_SOURCE_DIRS | $ZB_BIN --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE" &>/dev/null
 	else
 		# backup latest backup triggered by pre-command(s), ideally all tar'd in one file
 		# $REMOTE_SOURCE_DIRS should be ONE directory
@@ -142,14 +142,14 @@ do
         fi
 
         # create our backup of the file
-		rc "cat $FILE | $ZB_BIN --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE &>/dev/null"
+		rc "cat $FILE | $ZB_BIN --password-file ${REMOTE_TMPDIR}/zbackup backup $BACKUP_FILE" &>/dev/null
 	fi		
 
 	# rsync new data to main backup server
 	echo "INFO: rsync data up to backup server..."
-	rsync -ar -e "ssh" --rsync-path="sudo rsync" "${SSH_USER}@${REMOTE_SERVER}:${ZB_REPO_TMP}/backups/" "${ZB_REPOS_BASE}/${ZB_REPO_NAME}/backups/${APP}/daily" || die "ERROR: Failed to rsync backup dir"
-	rsync -ar -e "ssh" --rsync-path="sudo rsync" "${SSH_USER}@${REMOTE_SERVER}:${ZB_REPO_TMP}/bundles/" "${ZB_REPOS_BASE}/${ZB_REPO_NAME}/bundles" || die "ERROR: Failed to rsync bundles dir"
-	rsync -ar -e "ssh" --rsync-path="sudo rsync" "${SSH_USER}@${REMOTE_SERVER}:${ZB_REPO_TMP}/index/" "${ZB_REPOS_BASE}/${ZB_REPO_NAME}/index" || die "ERROR: Failed to rsync index dir"
+	rsync -avr -e "ssh" --rsync-path="sudo rsync" "${SSH_USER}@${REMOTE_SERVER}:${ZB_REPO_TMP}/backups/" "${ZB_REPOS_BASE}/${ZB_REPO_NAME}/backups/${APP}/daily" || die "ERROR: Failed to rsync backup dir"
+	rsync -avr -e "ssh" --rsync-path="sudo rsync" "${SSH_USER}@${REMOTE_SERVER}:${ZB_REPO_TMP}/bundles/" "${ZB_REPOS_BASE}/${ZB_REPO_NAME}/bundles" || die "ERROR: Failed to rsync bundles dir"
+	rsync -avr -e "ssh" --rsync-path="sudo rsync" "${SSH_USER}@${REMOTE_SERVER}:${ZB_REPO_TMP}/index/" "${ZB_REPOS_BASE}/${ZB_REPO_NAME}/index" || die "ERROR: Failed to rsync index dir"
 	
 	# post-commands - after zbackup
 	echo "INFO: running post-commands- $POST_COMMANDS..."
