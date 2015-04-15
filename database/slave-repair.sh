@@ -77,6 +77,10 @@ cat > ${EXCLUDE_FILE} <<EOF
 *master.info
 EOF
 
+# TODO: ADD CHECK TO ENSURE REPLICATION USER, HOST EXISTS ON SOURCE / MASTER FOR SLAVE / DESTINATION
+# e.g. show grants for 'slave_user'@'10.179.68.87'; 
+# grep for 'GRANT REPLICATION SLAVE'
+
 # Check data directory location (locally, remote will actually be the snapshot location)
 REMOTE_MYSQL_DIR=$(rc grep ^datadir $REMOTE_MYCNF | grep -oE "/.*"); [ -z "$REMOTE_MYSQL_DIR" ] && die "ERROR: remote mysql datadir could not be located"
 echo "INFO: remote mysql datadir: $REMOTE_MYSQL_DIR"
@@ -187,3 +191,5 @@ rc 'mysql -e "show slave status \G"' | grep 'Running' | tail -n 1 | grep -q 'Yes
 # if mysql version is higher then upgrade
 [ "${MYSQL_VERSION_MASTER:2:1}" -lt "${MYSQL_VERSION_SLAVE:2:1}" ] && rc mysql_upgrade
 
+# add delay (2 days in seconds)
+# rc 'mysql -e "CHANGE MASTER TO MASTER_DELAY = 172800;"'
