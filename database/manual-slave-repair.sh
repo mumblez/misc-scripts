@@ -185,7 +185,7 @@ sleep 5
 rcc 'mysqladmin flush-hosts'
 rcc 'mysql -e "stop slave;"' || echo "WARNING: !!!! could not stop slave replication !!!!!!"
 rcc 'mysql -e "reset slave all;"' || echo "WARNING: !!!! slave info could not be removed !!!!!!"
-rc "mysql -e \"CHANGE MASTER TO MASTER_HOST='${MASTER_IP}', MASTER_USER='${MASTER_USER}', MASTER_PASSWORD='${MASTER_PASS}', MASTER_LOG_FILE='${MASTER_LOG_FILE}', MASTER_LOG_POS=${MASTER_LOG_POS};\""
+rc "mysql -e \"CHANGE MASTER TO MASTER_HOST=\'${MASTER_IP}\', MASTER_USER=\'${MASTER_USER}\', MASTER_PASSWORD=\'${MASTER_PASS}\', MASTER_LOG_FILE=\'${MASTER_LOG_FILE}\', MASTER_LOG_POS=${MASTER_LOG_POS};\""
 
 rc 'mysql -e "start slave;"'
 
