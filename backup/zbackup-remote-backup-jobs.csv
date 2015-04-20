@@ -3,6 +3,6 @@ Remote IP,Remote Source Path,Tar Dir?,Remote App name,Remote zbackup repo path,z
 172.31.0.229,/srv/svn,yes,svn,/srv/temp,files,,
 172.31.0.229,/srv/www /etc/apache2/sites-available /etc/apache2/sites-enabled,yes,bishop_web_apps,/srv/temp,files,,
 ***REMOVED***.52,/var/www/teampass/htdocs/backups/tp_backups*.sql,no,teampass,/tmp/tp,files,bash /***REMOVED***/scripts/teampass-backup.sh;,shred -u /var/www/teampass/htdocs/backups/tp_backups*.sql;
-***REMOVED***.52,/tmp/backup,yes,jira,/tmp/tp,files,bash /***REMOVED***/scripts/jira-backup.sh, shred-u /tmp/backup/jira-db*.sql
+***REMOVED***.52,/tmp/backup /var/atlassian/application-data/jira/data,yes,jira,/tmp/tp,files,bash /***REMOVED***/scripts/jira-backup.sh, shred-u /tmp/backup/jira-db*.sql
 ***REMOVED***.51,/var/lib/apacheds-2.0.0-M15/default,yes,apacheds,/tmp/ads,files,/etc/init.d/apacheds-2.0.0-M15-default stop,/etc/init.d/apacheds-2.0.0-M15-default start;
 ***REMOVED***.53,/mnt/ssd/gitlab-backup/*.tar,no,gitlab,/mnt/ssd/temp,files,bash /***REMOVED***/scripts/gitlab-backup.sh,rm -f /mnt/ssd/gitlab-backup/*.tar
