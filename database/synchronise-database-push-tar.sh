@@ -151,6 +151,10 @@ else
 
   # Flush data to disk before transfer, create snapshot and resume # swap for local (and no need to specifiy host nor ssh)
   echo "INFO: Connecting to source database..."
+
+  # so mysql can find .my.cnf for ***REMOVED*** user using environment variable (when using sudo -E)
+  HOME=/***REMOVED***
+
 mysql << EOF
 STOP SLAVE;
 FLUSH TABLES WITH READ LOCK;
