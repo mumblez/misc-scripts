@@ -127,6 +127,14 @@ echo "INFO: local mysql datadir: $REAL_MYSQL_DIR"
 # Check for mysql lvm partition ($0~v awk escape path slashes) # swap for local
 LVM_MYSQL=$(df -P | awk '$0~v { print $1 }' v=$REAL_MYSQL_DIR); [ -z "$LVM_MYSQL" ] && die "ERROR: local mysql lvm partition could not be located"
 
+# Check there is enough storage space on the destination for the data amount on source
+REAL_MYSQL_DIR_USED_SPACE=$(df -P $REAL_MYSQL_DIR | tail -n1 | awk '{print $3}')
+REMOTE_MYSQL_DIR_CAPACITY=$(rc "df -P $REMOTE_MYSQL_DIR" | tail -n1 | awk '{print $2}')
+#Assumes a dedicated partition for mysql data, we check capacity vs free space as we'll delete the whole directory
+
+[ $REAL_MYSQL_DIR_USED_SPACE -lt $REMOTE_MYSQL_DIR_CAPACITY ] || rc "ERROR: There is not enough space on the destination - source : $(($REAL_MYSQL_DIR_USED_SPACE / 1024 / 1024))GB, destination : $(($REMOTE_MYSQL_DIR_CAPACITY / 1024 / 1024))"
+
+
 if [[ "$USE_BACKUP" == "yes" ]]; then
   # find latest backup and send
   HOT_COPY="/srv/r5/backups/mysql-innobackupex/hotcopy"
@@ -147,10 +155,15 @@ else
 
   # Ensure no snapshot exists # swap for local
   echo "Confirming there are no existing snapshots...."
+  hcp -v
   hcp -l | grep "No Hot Copy sessions" || { die "ERROR: Snapshot already exist, exiting..."; }
 
   # Flush data to disk before transfer, create snapshot and resume # swap for local (and no need to specifiy host nor ssh)
   echo "INFO: Connecting to source database..."
+
+  # so mysql can find .my.cnf for ***REMOVED*** user using environment variable (when using sudo -E)
+  HOME=/***REMOVED*** 
+
 mysql << EOF
 STOP SLAVE;
 FLUSH TABLES WITH READ LOCK;
@@ -171,7 +184,7 @@ fi
 
 
 # Stop mysql remotely
-rc service mysql stop
+rcc service mysql stop
 
 # clear remote mysql datadir
 echo "INFO: Clearing destination $REMOTE_MYSQL_DIR ..."
