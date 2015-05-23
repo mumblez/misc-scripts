@@ -109,7 +109,7 @@ incremental_backup()
 	echo "### Starting incremental: $(date) ###"
 	INCREMENTAL_DATE=$(date +%Y-%m-%d)
 	# create incremental
-    monitor_slave OFF
+    monitor_slave OFF &> /dev/null
 	innobackupex --incremental \
 	--extra-lsndir "$IB_CHECKPOINT" \
 	--safe-slave-backup \
@@ -117,7 +117,8 @@ incremental_backup()
 	--incremental-basedir "$IB_CHECKPOINT" \
 	"$IB_INCREMENTAL_BASE" &> "$INC_APPLY_LOG"
 
-    monitor_slave ON
+    monitor_slave ON &> /dev/null
+
 
 	# check it completed successfully
 	if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
