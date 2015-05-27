@@ -95,9 +95,6 @@ fi
 ### PULL PROD / TEST SETTINGS FROM CONFIG MGT ###
 # or symlink outside releases dir for now
 
-# symlink parameters = change in future to setup via salt / config mgt
-#[ -e "$SYMFONY_PARAMS_FILE" ] || die "ERROR: $SYMFONY_PARAMS_FILE does not exist"
-#[ -e "$SYMFONY_PARAMS_FILE" ] || echo "WARNING: $SYMFONY_PARAMS_FILE does not exist"
 if [[ $(hostname) == "qa-fe" ]]; then
   echo "INFO: ====== APPLIED QA PARAMETERS CONFIG ======="
   ln -snf "$DEPLOY_DIR/app/config/parameters.qa.yml" "$DEPLOY_DIR/app/config/parameters.yml"
@@ -109,16 +106,17 @@ fi
 [ -e "$SYMFONY_PARAMS_FILE" ] || die "ERROR: $SYMFONY_PARAMS_FILE does not exist"
 [ -e "$SYMFONY_PARAMS_FILE" ] || echo "WARNING: $SYMFONY_PARAMS_FILE does not exist"
 
-### If UAT then replace template variables in parameters.yml with passed in values ###
-UAT_FE="@option.uat_frontend@"
-UAT_DB="@option.uat_db@"
+if [ "$APP_ENV" = "uat" ]; then
+  ### If UAT then replace template variables in parameters.yml with passed in values ###
+  UAT_FE="@option.uat_frontend@"
+  UAT_DB="@option.uat_db@"
 
-# set uat front end web server
-sed "s/%%uat-fe%%/uat${UAT_FE}/" -i "$SYMFONY_PARAMS_FILE"
+  # set uat front end web server
+  sed "s/%%uat-fe%%/uat${UAT_FE}/" -i "$SYMFONY_PARAMS_FILE"
 
-# set uat db server
-sed "s/%%uat-db%%/uat-db${UAT_DB}/" -i "$SYMFONY_PARAMS_FILE"
-
+  # set uat db server
+  sed "s/%%uat-db%%/uat-db${UAT_DB}/" -i "$SYMFONY_PARAMS_FILE"
+fi
 
 
 ### REPLACE apache settings from config mgt ###
