@@ -204,13 +204,21 @@ fi
 
 ## Run unit tests ? ###
 if [[ "$S_PROJECT" == "pluginapi" ]]; then
-  cd $DEPLOY_DIR
+  cd "$DEPLOY_DIR"
   ln -snf parameters.$APP_ENV.yml parameters.local.yml
   if [[ "$APP_ENV" != "prod" ]]; then
     phpunit
   fi
 fi
 
+## npm and gulp ##
+if [[ "$S_PROJECT" == 'intranet-v2' && -d "${DEPLOY_DIR}/client-app" ]]; then
+  cd "${DEPLOY_DIR}/client-app"
+  echo "INFO: running 'npm install'..."
+  npm install || echo "WARNING: There was a problem with npm install!"
+  echo "INFO: running 'gulp build'..."
+  gulp build || echo "WARNING: There was a problem with gulp build!"
+fi
 
 # document
 #ln -snf "$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml" "$DEPLOY_DIR/app/config/parameters.yml"
@@ -253,7 +261,7 @@ echo "INFO: Deployment suceeded!"
 echo "INFO: Cleaning up..."
 # Clearing old releases
 CURRENT_RELEASE=$(basename $(readlink $REAL_DIR))
-RECENT_RELEASES=$(ls -tr1 "$DEPLOY_ROOT" | grep -vE "shared|$CURRENT_RELEASE" | tail -n4)
+RECENT_RELEASES=$(ls -tr1 "$DEPLOY_ROOT" | grep -vE "shared|$CURRENT_RELEASE" | tail -n1)
 for OLD_RELEASE in $(ls -tr1 "$DEPLOY_ROOT" | grep -vE "shared|$CURRENT_RELEASE"); do
   if ! echo "$OLD_RELEASE" | grep -q "$RECENT_RELEASES"; then
     echo "INFO: Deleted old release - $OLD_RELEASE"
