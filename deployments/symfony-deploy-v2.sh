@@ -33,7 +33,7 @@ COMPOSER="/usr/local/bin/composer.phar"
 COMPOSER_OPTIONS="--no-progress --no-interaction"
 CONSOLE="$DEPLOY_DIR/app/console"
 CONSOLE_OPTIONS="--env=dev"
-SYMFONY_PARAMS_FILE="$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml"
+SYMFONY_PARAMS_FILE="${DEPLOY_DIR}/app/config/parameters.${APP_ENV}.yml"
 TMP_SCRIPT=$(mktemp /tmp/deploy-XXX.sh)
 chmod +x $TMP_SCRIPT
 chown $SITE_USER:$SITE_GROUP $TMP_SCRIPT
@@ -104,6 +104,21 @@ if [[ $(hostname) == "qa-fe" ]]; then
 else
   ln -snf "$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml" "$DEPLOY_DIR/app/config/parameters.yml"
 fi
+
+# symlink parameters = change in future to setup via salt / config mgt
+[ -e "$SYMFONY_PARAMS_FILE" ] || die "ERROR: $SYMFONY_PARAMS_FILE does not exist"
+[ -e "$SYMFONY_PARAMS_FILE" ] || echo "WARNING: $SYMFONY_PARAMS_FILE does not exist"
+
+### If UAT then replace template variables in parameters.yml with passed in values ###
+UAT_FE="@option.uat_frontend@"
+UAT_DB="@option.uat_db@"
+
+# set uat front end web server
+sed "s/%%uat-fe%%/uat${UAT_FE}/" -i "$SYMFONY_PARAMS_FILE"
+
+# set uat db server
+sed "s/%%uat-db%%/uat-db${UAT_DB}/" -i "$SYMFONY_PARAMS_FILE"
+
 
 
 ### REPLACE apache settings from config mgt ###
