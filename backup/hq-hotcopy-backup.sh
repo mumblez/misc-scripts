@@ -3,6 +3,7 @@
 die() { echo $* 1>&2 ; exit 1 ; }
 
 HOT_COPY_DIRS="/srv/r5/hq/FinanceDBs /srv/r5/hq/fileserver /srv/r5/hq/marketing /srv/r5/hq/***REMOVED***"
+#HOT_COPY_DIRS="/srv/r5/hq/marketing /srv/r5/hq/***REMOVED***"
 ZB_REPO="/srv/r5/backups/zbackup-repos/hq-fileserver"
 ZB_KEY="/***REMOVED***/keys/zbackup"
 

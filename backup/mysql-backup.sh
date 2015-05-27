@@ -81,6 +81,23 @@ ibi_lock_check()
 	[ -e $IBI_LOCK ] && die "ERROR: `date` - Backup job still running, remove $IBI_LOCK if not true."
 }
 
+# turn on and off datadog mysql slave monitoring whilst incremental backup in progress
+monitor_slave ()
+{
+    #dog --api-key `cat /***REMOVED***/keys/datadogapi` --application-key `cat /***REMOVED***/keys/datadogappkey` monitor update 165855 'metric alert' 'min(last_15m):avg:mysql.replication.slave_running{!host:***REMOVED***,mysql-slave} by {host} < 1'
+    # dog --api-key `cat /***REMOVED***/keys/datadogapi` --application-key `cat /***REMOVED***/keys/datadogappkey` monitor update 165855 'metric alert' 'min(last_15m):avg:mysql.replication.slave_running{mysql-slave} by {host} < 1'
+
+    MONITOR_ID=165855
+    if [ "$1" = OFF ]; then
+        # add exception to remove host from monitoring
+        dog --api-key `cat /***REMOVED***/keys/datadogapi` --application-key `cat /***REMOVED***/keys/datadogappkey`  monitor update 165855 'metric alert' 'min(last_15m):avg:mysql.replication.slave_running{!host:***REMOVED***,mysql-slave} by {host} < 1'
+    fi
+    if [ "$1" = ON ]; then
+        # remove exception
+        dog --api-key `cat /***REMOVED***/keys/datadogapi` --application-key `cat /***REMOVED***/keys/datadogappkey` monitor update 165855 'metric alert' 'min(last_15m):avg:mysql.replication.slave_running{mysql-slave} by {host} < 1'
+    fi
+    
+}
 
 incremental_backup()
 {
@@ -92,12 +109,16 @@ incremental_backup()
 	echo "### Starting incremental: $(date) ###"
 	INCREMENTAL_DATE=$(date +%Y-%m-%d)
 	# create incremental
+    monitor_slave OFF &> /dev/null
 	innobackupex --incremental \
 	--extra-lsndir "$IB_CHECKPOINT" \
 	--safe-slave-backup \
 	--slave-info \
 	--incremental-basedir "$IB_CHECKPOINT" \
 	"$IB_INCREMENTAL_BASE" &> "$INC_APPLY_LOG"
+
+    monitor_slave ON &> /dev/null
+
 
 	# check it completed successfully
 	if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
@@ -107,32 +128,6 @@ incremental_backup()
 		die "ERROR: incremental backup failed - `date`"
 	fi
 
-#	# roll into realised directory, always 3rd from last
-#	## save realised checkpoint
-#	REALISED_CHECKPOINT=$(cat "${REALISED_COPY}/xtrabackup_checkpoints" | awk '/^to_lsn/ {print $3}')
-#	## find incremental with matching checkpoint and ensure it's 2nd to last
-#	#INCREMENTAL_TMP=$(ls -1 "$IB_INCREMENTAL_BASE" | tail -n 3 | head -n 1)
-#	INCREMENTAL_TMP=$(ls -1 "$IB_INCREMENTAL_BASE" | tail -n 1)
-#	INCREMENTAL_CURRENT="${IB_INCREMENTAL_BASE}/${INCREMENTAL_TMP}"
-#	INC_CHECKPOINT=$(cat "${INCREMENTAL_CURRENT}/xtrabackup_checkpoints" | awk '/^from_lsn/ {print $3}')
-#
-#	if [ "$INC_CHECKPOINT" -eq "$REALISED_CHECKPOINT" -a "$(ls -1 $IB_INCREMENTAL_BASE | wc -l)" -gt 2 ]; then
-#		innobackupex --apply-log --redo-only \
-#            "$REALISED_COPY" \
-#            --incremental-dir "$INCREMENTAL_CURRENT" \
-#            --use-memory=4GB \
-#            &> "$INC_APPLY_LOG"
-#
-#		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
-#			echo "INFO: applying incremental successful - $INCREMENTAL_CURRENT - `date`"
-#			rm -f "$INC_APPLY_LOG"
-#		else
-#			die "ERROR: applying incremental failed - $INCREMENTAL_CURRENT - `date`"
-#		fi
-#
-#	else
-#		echo "WARN: Checkpoints don't match for $INCREMENTAL_CURRENT, skip rolling in incremental"
-#	fi
 
 	# Keep limited number of incrementals and delete old ones
 	cd "$IB_INCREMENTAL_BASE"
