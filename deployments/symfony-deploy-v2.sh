@@ -33,7 +33,7 @@ COMPOSER="/usr/local/bin/composer.phar"
 COMPOSER_OPTIONS="--no-progress --no-interaction"
 CONSOLE="$DEPLOY_DIR/app/console"
 CONSOLE_OPTIONS="--env=dev"
-SYMFONY_PARAMS_FILE="${DEPLOY_DIR}/app/config/parameters.${APP_ENV}.yml"
+SYMFONY_PARAMS_FILE="$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml"
 TMP_SCRIPT=$(mktemp /tmp/deploy-XXX.sh)
 chmod +x $TMP_SCRIPT
 chown $SITE_USER:$SITE_GROUP $TMP_SCRIPT
@@ -95,9 +95,6 @@ fi
 ### PULL PROD / TEST SETTINGS FROM CONFIG MGT ###
 # or symlink outside releases dir for now
 
-# symlink parameters = change in future to setup via salt / config mgt
-#[ -e "$SYMFONY_PARAMS_FILE" ] || die "ERROR: $SYMFONY_PARAMS_FILE does not exist"
-#[ -e "$SYMFONY_PARAMS_FILE" ] || echo "WARNING: $SYMFONY_PARAMS_FILE does not exist"
 if [[ $(hostname) == "qa-fe" ]]; then
   echo "INFO: ====== APPLIED QA PARAMETERS CONFIG ======="
   ln -snf "$DEPLOY_DIR/app/config/parameters.qa.yml" "$DEPLOY_DIR/app/config/parameters.yml"
@@ -109,17 +106,21 @@ fi
 [ -e "$SYMFONY_PARAMS_FILE" ] || die "ERROR: $SYMFONY_PARAMS_FILE does not exist"
 [ -e "$SYMFONY_PARAMS_FILE" ] || echo "WARNING: $SYMFONY_PARAMS_FILE does not exist"
 
-### If UAT then replace template variables in parameters.yml with passed in values ###
-UAT_FE="@option.uat_frontend@"
-UAT_DB="@option.uat_db@"
+if [ "$APP_ENV" = "uat" ]; then
+  ### If UAT then replace template variables in parameters.yml with passed in values ###
+  UAT_FE="@option.uat_frontend@"
+  UAT_DB="@option.uat_db@"
+  
+  echo "INFO: UAT FE: $UAT_FE"
+  echo "INFO: UAT DB: $UAT_DB"
+  echo "INFO: Applying uat configuration..."
 
-# set uat front end web server
-sed "s/%%uat-fe%%/uat${UAT_FE}/" -i "$SYMFONY_PARAMS_FILE"
+  # set uat front end web server
+  sed "s/%%uat-fe%%/uat${UAT_FE}/" -i "$SYMFONY_PARAMS_FILE"
 
-# set uat db server
-sed "s/%%uat-db%%/uat-db${UAT_DB}/" -i "$SYMFONY_PARAMS_FILE"
-
-
+  # set uat db server
+  sed "s/%%uat-db%%/uat-db${UAT_DB}/" -i "$SYMFONY_PARAMS_FILE"
+fi
 
 ### REPLACE apache settings from config mgt ###
 
@@ -217,14 +218,12 @@ if [[ "$S_PROJECT" != "pluginapi" ]]; then
 fi
 
 
-## Run unit tests ? ###
-if [[ "$S_PROJECT" == "pluginapi" ]]; then
-  cd "$DEPLOY_DIR"
-  ln -snf parameters.$APP_ENV.yml parameters.local.yml
-  if [[ "$APP_ENV" != "prod" ]]; then
-    phpunit
-  fi
+if [[ $(hostname) == "qa-fe" && "$S_PROJECT" == 'intranet-v2' ]]; then
+    cd "${DEPLOY_DIR}
+    echo "INFO: running DB scripts..."
+    sudo -u "$SITE_USER" "$PHP" "$CONSOLE" doctrine:migrations:migrate --no-interaction
 fi
+
 
 ## npm and gulp ##
 if [[ "$S_PROJECT" == 'intranet-v2' && -d "${DEPLOY_DIR}/client-app" ]]; then
@@ -233,6 +232,15 @@ if [[ "$S_PROJECT" == 'intranet-v2' && -d "${DEPLOY_DIR}/client-app" ]]; then
   npm install || echo "WARNING: There was a problem with npm install!"
   echo "INFO: running 'gulp build'..."
   gulp build || echo "WARNING: There was a problem with gulp build!"
+fi
+
+## Run unit tests ? ###
+if [[ "$S_PROJECT" == "pluginapi" ]]; then
+  cd "$DEPLOY_DIR"
+  ln -snf parameters.$APP_ENV.yml parameters.local.yml
+  if [[ "$APP_ENV" != "prod" ]]; then
+    phpunit
+  fi
 fi
 
 # document
