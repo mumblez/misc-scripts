@@ -162,7 +162,7 @@ else
   echo "INFO: Connecting to source database..."
 
   # so mysql can find .my.cnf for ***REMOVED*** user using environment variable (when using sudo -E)
-  HOME=/***REMOVED*** 
+  HOME=/***REMOVED***
 
 mysql << EOF
 STOP SLAVE;

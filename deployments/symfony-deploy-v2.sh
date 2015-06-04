@@ -219,7 +219,7 @@ fi
 
 
 if [[ $(hostname) == "qa-fe" && "$S_PROJECT" == 'intranet-v2' ]]; then
-    cd "${DEPLOY_DIR}
+    cd "${DEPLOY_DIR}"
     echo "INFO: running DB scripts..."
     sudo -u "$SITE_USER" "$PHP" "$CONSOLE" doctrine:migrations:migrate --no-interaction
 fi
