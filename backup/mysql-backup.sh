@@ -109,10 +109,10 @@ incremental_backup()
 	echo "### Starting incremental: $(date) ###"
 	INCREMENTAL_DATE=$(date +%Y-%m-%d)
 	# create incremental
+	# --safe-slave-backup removed - 12th June '15 - incrementals failing
     monitor_slave OFF &> /dev/null
 	innobackupex --incremental \
 	--extra-lsndir "$IB_CHECKPOINT" \
-	--safe-slave-backup \
 	--slave-info \
 	--incremental-basedir "$IB_CHECKPOINT" \
 	"$IB_INCREMENTAL_BASE" &> "$INC_APPLY_LOG"
