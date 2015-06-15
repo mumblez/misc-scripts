@@ -110,14 +110,14 @@ incremental_backup()
 	INCREMENTAL_DATE=$(date +%Y-%m-%d)
 	# create incremental
 	# --safe-slave-backup removed - 12th June '15 - incrementals failing
-    monitor_slave OFF &> /dev/null
+   # monitor_slave OFF &> /dev/null
 	innobackupex --incremental \
 	--extra-lsndir "$IB_CHECKPOINT" \
 	--slave-info \
 	--incremental-basedir "$IB_CHECKPOINT" \
 	"$IB_INCREMENTAL_BASE" &> "$INC_APPLY_LOG"
 
-    monitor_slave ON &> /dev/null
+    # monitor_slave ON &> /dev/null
 
 
 	# check it completed successfully
