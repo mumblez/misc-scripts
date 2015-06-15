@@ -25,7 +25,8 @@ fi
 [ -e "$BACKUP_SCRIPT" ] || { echo "ERROR: could not find backup script - $BACKUP_SCRIPT"; exit 1; }
 
 # create the first backup and checkpoint directory
-innobackupex --safe-slave-backup --slave-info --no-timestamp --extra-lsndir ${DIR}/last-checkpoint ${DIR}/hotcopy
+#innobackupex --safe-slave-backup --slave-info --no-timestamp --extra-lsndir ${DIR}/last-checkpoint ${DIR}/hotcopy
+innobackupex --slave-info --no-timestamp --extra-lsndir ${DIR}/last-checkpoint ${DIR}/hotcopy
 
 # apply log ready for incrementals
 innobackupex --apply-log --redo-only ${DIR}/hotcopy
@@ -46,9 +47,9 @@ cat > $CRON <<_EOF_
 MAILTO=""
 # mysql backup - intranet
 # incremental
-00 5,11,17,23 * * *     ***REMOVED***     dogwrap -n "DB - CL-WEB - incremental backup" -k \$(cat /***REMOVED***/keys/datadogapi) --submit_mode all "/***REMOVED***/scripts/mysql-backup.sh incremental"
+00 5,11,17,23 * * *     ***REMOVED***     dogwrap -n "DB - CL-WEB - incremental backup" -k \$(cat /***REMOVED***/keys/datadogapi) --submit_mode all "/***REMOVED***/scripts/mysql-backup.sh incremental" --notify_error "@***REMOVED***@***REMOVED***.com"
 # full
-25 23 * * *     ***REMOVED***    dogwrap -n "DB - CL-WEB - full backup" -k \$(cat /***REMOVED***/keys/datadogapi) --submit_mode all "/***REMOVED***/scripts/mysql-backup.sh full"
+25 23 * * *     ***REMOVED***    dogwrap -n "DB - CL-WEB - full backup" -k \$(cat /***REMOVED***/keys/datadogapi) --submit_mode all "/***REMOVED***/scripts/mysql-backup.sh full" --notify_error "@***REMOVED***@***REMOVED***.com"
 _EOF_
 
 else
