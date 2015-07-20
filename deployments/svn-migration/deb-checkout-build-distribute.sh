@@ -75,7 +75,7 @@ build_and_dist () {
 }
 
 ### MAIN ###
-set -x
+
 # Refresh sources from git
 for project in $PROJECTS; do git_pull $project; done
 
@@ -86,7 +86,6 @@ for project in $PROJECTS; do git_checkout $project; done
 # Build and publish project to bishop
 for project in $PROJECTS; do build_and_dist "$project"; done
 
-set +x
 ### no more steps
 echo "INFO: Build succeeded"
 exit 0
