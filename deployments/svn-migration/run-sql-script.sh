@@ -32,7 +32,7 @@ execute_sql () {
   sql_file="$2"
 	# assumes we're sudo'ing and running as ***REMOVED***
   HOME="/***REMOVED***"
-	mysql < "${project}-${sql_file}" || die "ERROR: error executing sql commands"
+	mysql --default-character-set=utf8 --show-warnings < "${project}-${sql_file}" || die "ERROR: error executing sql commands"
 }
 
 get_sql_files () {
