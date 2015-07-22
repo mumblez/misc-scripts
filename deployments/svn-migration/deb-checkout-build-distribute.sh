@@ -8,7 +8,8 @@ die() { echo $* 1>&2 ; exit 1 ; }
 ### Settings ###
 #TIMESTAMP=$(date +%Y-%m-%d-%H%M)
 DEPLOY_KEY="/***REMOVED***/keys/cl_deploy"
-PROJECTS_DIR="/var/lib/webistrano/git"
+#PROJECTS_DIR="/var/lib/webistrano/git" # webistrano
+PROJECTS_DIR="/srv/git" # bishop
 GIT_OPTIONS="--force"
 RELEASE="@option.tag@"
 PROJECTS="@option.projects@"
@@ -17,8 +18,8 @@ APP_ENVIRONMENT="@option.environment@"
 GIT_URL="git@***REMOVED***.***REMOVED***.com"
 GIT_NAMESPACE="***REMOVED***"
 #TAG_PREFIX="release-"
-PKG_REPO_URL="rundeck@bishop" # change to new repo when testing
-START_TIME=$(date)
+PKG_REPO_URL="rundeck@bishop" # change to new repo if non prod in future
+START_TIME=$(date +%s)
 
 ### Validation ###
 echo "Validation checks...."
@@ -102,7 +103,9 @@ for project in $PROJECTS; do git_checkout "$project"; done
 for project in $PROJECTS; do build_and_dist "$project"; done
 
 ### no more steps
-echo "INFO: Started - $START_TIME"
-echo "INFO: Ended   - $(date)"
+echo "INFO: Started - $(date -d @$START_TIME)"
+END_TIME=$(date +%s)
+echo "INFO: Ended   - $(date -d @$END_TIME)"
+echo "INFO: Duration - $(date -u -d @$(($END_TIME - $START_TIME)) +%T)"
 echo "INFO: Build succeeded"
 exit 0
