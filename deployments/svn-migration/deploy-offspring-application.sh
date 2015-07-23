@@ -44,29 +44,25 @@ case "$ENVIRONMENT" in
 		HOST_WEB="***REMOVED***.uk.***REMOVED***.com" # replace when DNS project implemented!!!!
 		HOST_DB="335298-db1.uk.***REMOVED***.com"
 		;;
-	prod )
-		HOST_WEB="335296-web1.uk.***REMOVED***.com" # replace when DNS project implemented!!!!
-		HOST_DB="510094-db4.uk.***REMOVED***.com"
-		;;
+	#prod )
+	#	HOST_WEB="335296-web1.uk.***REMOVED***.com" # replace when DNS project implemented!!!!
+	#	HOST_DB="510094-db4.uk.***REMOVED***.com"
+	#	;;
 esac
 
 
-# Build debian packages from source
-for project in $PROJECTS; do
-	run -i "$JOB_BUILD_PKG" -f -- \
+# Build debian packages from source (pass in list of projects)
+run -i "$JOB_BUILD_PKG" -f -- \
 	-environment "$ENVIRONMENT" \
 	-host "$HOST_BUILD" \
 	-projects "$PROJECTS" \
 	-tag "$TAG"
-done
 
-# Update package repository listing
+# Update package repository listing (only need to run once after all packages have been built)
 run -i "$JOB_UPDATE_REPO" -f -- -environment "$ENVIRONMENT" -host "$HOST_REPO"
 
-# Install packages on front ends
-for project in "$PROJECTS"; do
-	run -i "$JOB_INSTALL_PKG" -f -- -host "$HOST_WEB" -projects "$PROJECTS"
-done
+# Install packages on front ends (pass in list of projects)
+run -i "$JOB_INSTALL_PKG" -f -- -host "$HOST_WEB" -projects "$PROJECTS"
 
 # Run sql / db_files for intranet and website
 sql_exec_run() {
