@@ -44,7 +44,8 @@ get_sql_files () {
 
 
   # debug
-  ls -la
+  #ls -la
+  #[ -e "${project}-${DB_FILE}" ] || die "ERROR: Could not find sql file"
 
   #execute_sql "$project" "$DB_FILE"
 }

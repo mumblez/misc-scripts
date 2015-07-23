@@ -18,6 +18,8 @@ TRIGGER_CONFIG="${CL_ROOT}/lib/php5/***REMOVED***/common/prototypes/eventlog/con
 [ -f "$DB_PROPERTIES" ] || die "ERROR: $DB_PROPERTIES not found"
 [ -f "$TRIGGER_CONFIG" ] || die "ERROR: $TRIGGER_CONFIG not found"
 
+echo "INFO: Generating triggers.sql..."
+
  $PHP $EVENTLOGTRIGGERS_SCRIPT \
   --db-config=$DB_PROPERTIES \
   --output=$SQL_OUTPUT_FILE \

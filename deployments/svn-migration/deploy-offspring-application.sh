@@ -59,11 +59,17 @@ run -i "$JOB_BUILD_PKG" -f -- \
 	-projects "$PROJECTS" \
 	-tag "$TAG"
 
+[ "$?" != 0 ] && die "ERROR: Exiting..."
+
 # Update package repository listing (only need to run once after all packages have been built)
 run -i "$JOB_UPDATE_REPO" -f -- -environment "$ENVIRONMENT" -host "$HOST_REPO"
 
+[ "$?" != 0 ] && die "ERROR: Exiting..."
+
 # Install packages on front ends (pass in list of projects)
 run -i "$JOB_INSTALL_PKG" -f -- -host "$HOST_WEB" -projects "$PROJECTS"
+
+[ "$?" != 0 ] && die "ERROR: Exiting..."
 
 # Run sql / db_files for intranet and website
 sql_exec_run() {
@@ -81,6 +87,8 @@ for project in $PROJECTS; do
 	esac
 done
 
+[ "$?" != 0 ] && die "ERROR: Exiting..."
+
 # Execute eventLogTriggers sql
 if [[ "$EVENTLOGTRIGGERS" == "yes" ]]; then
 	run -i "$JOB_EVENTLOGTRIGGER_GEN" -host "$HOST_WEB"
@@ -88,7 +96,7 @@ if [[ "$EVENTLOGTRIGGERS" == "yes" ]]; then
 	run -i "$JOB_EVENTLOGTRIGGER_RUN" -host "$HOST_DB"
 fi
 
-
+[ "$?" != 0 ] && die "ERROR: Exiting..."
 
 # change Intranet version file to sprint tag?
 # echo "Creating VERSION file";
