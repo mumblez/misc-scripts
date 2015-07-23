@@ -19,7 +19,6 @@ GIT_URL="git@***REMOVED***.***REMOVED***.com"
 GIT_NAMESPACE="***REMOVED***"
 #TAG_PREFIX="release-"
 PKG_REPO_URL="rundeck@bishop" # change to new repo if non prod in future
-START_TIME=$(date +%s)
 
 ### Validation ###
 echo "Validation checks...."
@@ -60,13 +59,18 @@ git_checkout () {
     if [[ "$APP_ENVIRONMENT" != "prod" ]]; then
       if [ -z "$RELEASE" ]; then
         SPRINT_BRANCH=$(git branch -r | cut -d'/' -f2 | grep 'sprint' | sort -rV | head -n1)
+        if [ -z "$RELEASE" ]; then
+          SPRINT_BRANCH=$(git branch -r | cut -d'/' -f2 | grep 'release' | sort -rV | head -n1) # temporary hack until migration complete
+        else
+          SPRINT_BRANCH="master"
+        fi
       else
         SPRINT_BRANCH="$RELEASE"
       fi
       echo "INFO: checking out latest sprint branch - $SPRINT_BRANCH for $PROJECT on $APP_ENVIRONMENT..."
       ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git checkout $GIT_OPTIONS $SPRINT_BRANCH &>/dev/null" || die "ERROR: Could not checkout $SPRINT_BRANCH for $PROJECT"
     else
-      echo "INFO: checking out release ${TAG_PREFIX}${RELEASE} for $PROJECT..."
+      echo "INFO: checking out release ${RELEASE} for $PROJECT..."
       ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git checkout $GIT_OPTIONS ${RELEASE} &>/dev/null" || die "ERROR: Could not checkout tag:$RELEASE for $PROJECT"
     fi  
   fi
@@ -103,9 +107,6 @@ for project in $PROJECTS; do git_checkout "$project"; done
 for project in $PROJECTS; do build_and_dist "$project"; done
 
 ### no more steps
-echo "INFO: Started - $(date -d @$START_TIME)"
-END_TIME=$(date +%s)
-echo "INFO: Ended   - $(date -d @$END_TIME)"
-echo "INFO: Duration - $(date -u -d @$(($END_TIME - $START_TIME)) +%T)"
+
 echo "INFO: Build succeeded"
 exit 0
