@@ -10,13 +10,14 @@ WEB_SERVER="@option.web_frontend@" # can use $(hostname)
 DB_SERVER="@option.db_backend@" # have to map to correct hostname of db server
 #EXEC_JOB_ID="bb2c2b76-4901-46f0-9719-6a17184a058b" # https://***REMOVED***.***REMOVED***.com/project/Everything/jobs/snippets/misc/deployments/phase1 (6-eventLogTriggers-run)
 TRIGGERS_FILE="/tmp/triggers.sql"
+RUNDECK_USER="rundeck"
 
 # Pull from web server
-scp "${WEB_SERVER}:${TRIGGERS_FILE}" /tmp
+scp "${RUNDECK_USER}@${WEB_SERVER}:${TRIGGERS_FILE}" /tmp
 
 
 # Push to db server
-scp /tmp/triggers.sql "${DB_SERVER}:${TRIGGERS_FILE}"
+scp /tmp/triggers.sql "${RUNDECK_USER}@${DB_SERVER}:${TRIGGERS_FILE}"
 
 rm -f "$TRIGGERS_FILE"
 

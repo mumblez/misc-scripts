@@ -90,10 +90,11 @@ done
 [ "$?" != 0 ] && die "ERROR: Exiting..."
 
 # Execute eventLogTriggers sql
+
 if [[ "$EVENTLOGTRIGGERS" == "yes" ]]; then
-	run -i "$JOB_EVENTLOGTRIGGER_GEN" -host "$HOST_WEB"
-	run -i "$JOB_EVENTLOGTRIGGER_XFER" -web_frontend "$HOST_WEB" -db_backend "$HOST_DB"
-	run -i "$JOB_EVENTLOGTRIGGER_RUN" -host "$HOST_DB"
+	run -i "$JOB_EVENTLOGTRIGGER_GEN" -f -- -host "$HOST_WEB"
+	run -i "$JOB_EVENTLOGTRIGGER_XFER" -f -- -web_frontend "$HOST_WEB" -db_backend "$HOST_DB"
+	run -i "$JOB_EVENTLOGTRIGGER_RUN" -f -- -host "$HOST_DB"
 fi
 
 [ "$?" != 0 ] && die "ERROR: Exiting..."
