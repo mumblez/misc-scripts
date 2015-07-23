@@ -83,7 +83,7 @@ build_and_dist () {
   PACKAGE=$(grep Package control | awk {'print $2'})
   echo "INFO: building and distributing ${PROJECT}..."
   "$BUILDSCRIPT" "$APP_ENVIRONMENT" &>/dev/null || die "ERROR: failed to build $PROJECT"
-  echo "INFO: distributing to $i package repo..."
+  echo "INFO: distributing to $1 package repo..."
 
   ################### CHANGE 'dists-poc' to 'dists' after testing!!!!!  ############
 

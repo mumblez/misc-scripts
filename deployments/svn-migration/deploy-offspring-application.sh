@@ -52,6 +52,7 @@ esac
 
 
 # Build debian packages from source (pass in list of projects)
+# if no tag passed in then it builds 
 run -i "$JOB_BUILD_PKG" -f -- \
 	-environment "$ENVIRONMENT" \
 	-host "$HOST_BUILD" \
