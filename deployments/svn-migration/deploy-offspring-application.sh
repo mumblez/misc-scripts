@@ -69,6 +69,10 @@ run -i "$JOB_UPDATE_REPO" -f -- -environment "$ENVIRONMENT" -host "$HOST_REPO"
 # Install packages on front ends (pass in list of projects)
 run -i "$JOB_INSTALL_PKG" -f -- -host "$HOST_WEB" -projects "$PROJECTS"
 
+# Set permissions on /***REMOVED*** - hack until can figure out where offspring logs gets its permissions from
+ssh rundeck@${HOST_WEB} sudo chown www-data:www-data /***REMOVED*** -R
+
+
 [ "$?" != 0 ] && die "ERROR: Exiting..."
 
 # Run sql / db_files for intranet and website
