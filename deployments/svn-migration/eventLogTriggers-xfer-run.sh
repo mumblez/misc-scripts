@@ -15,11 +15,11 @@ RUNDECK_USER="rundeck"
 # Pull from web server
 scp "${RUNDECK_USER}@${WEB_SERVER}:${TRIGGERS_FILE}" /tmp
 
-
 # Push to db server
-scp /tmp/triggers.sql "${RUNDECK_USER}@${DB_SERVER}:${TRIGGERS_FILE}"
+scp "${TRIGGERS_FILE}" "${RUNDECK_USER}@${DB_SERVER}:/tmp"
 
 rm -f "$TRIGGERS_FILE"
+
 
 # Execute script on db server
 # call another RD job, which itself set's HOME=/***REMOVED*** and runs the triggers.sql file
