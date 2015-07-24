@@ -5,9 +5,7 @@ die() { echo $* 1>&2 ; exit 1 ; }
 TEMP_AREA=/tmp
 WORK_DIR=$(mktemp -d $TEMP_AREA/sql_deploy.XXX)
 PROJECT="@option.project@" # SINGLE PROJECT
-RELEASE="@option.tag@"
-RELEASE_PREFIX="release-"
-GIT_TAG="${RELEASE_PREFIX}${RELEASE}"
+GIT_TAG="@option.tag@"
 DB_FILE="@option.db_file@"
 GITLAB_BASE="***REMOVED***.***REMOVED***.com"
 NAMESPACE="***REMOVED***"
@@ -37,7 +35,7 @@ git_query () {
   esac
 
   ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && \
-  git ls-remote $C_TYPE git@${GITLAB_BASE}:${NAMESPACE}/${project}.git" | grep -v '\^{}'
+  git ls-remote $C_TYPE git@${GITLAB_BASE}:${NAMESPACE}/${PROJECT}.git" | grep -v '\^{}'
 }
 
 
@@ -49,15 +47,15 @@ configure_checkout_type () {
     if [[ "$ENVIRONMENT" == "prod" ]]; then
       # checkout tag
       # Grab latest sprint TAG
-      GIT_CHECKOUT=$(git_query tag | cut -d'/' -f3 | grep 'sprint' | sort -rV | head -n1)
-      [ -z "$GIT_CHECKOUT" ] && GIT_CHECKOUT=$(git_query tag | cut -d'/' -f3 | grep 'release' | sort -rV | head -n1) # temporary hack until migration complete
-      [ -z "$GIT_CHECKOUT" ] && die "ERROR: could not find latest sprint or release tag!"
+      GIT_CHECKOUT=$(git_query tag | cut -d'/' -f3 | grep 'sprint-[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}.*' | sort -rV | head -n1)
+      [ -z "$GIT_CHECKOUT" ] && GIT_CHECKOUT=$(git_query tag | cut -d'/' -f3 | grep 'release-[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}.*' | sort -rV | head -n1) # temporary hack until migration complete
+      [ -z "$GIT_CHECKOUT" ] && die "ERROR: could not find valid latest sprint or release tag!"
     else
       # checkout branch
       # Failing all above, we try to checkout the latest BRANCH else fallback to master
       FINAL_CHECKOUT_TYPE="branch"
-      GIT_CHECKOUT=$(git_query branch | cut -d'/' -f3 | grep 'sprint' | sort -rV | head -n1)
-      [ -z "$GIT_CHECKOUT" ] && GIT_CHECKOUT=$(git_query branch | cut -d'/' -f3 | grep 'release' | sort -rV | head -n1)
+      GIT_CHECKOUT=$(git_query branch | cut -d'/' -f3 | grep 'sprint-[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}.*' | sort -rV | head -n1)
+      [ -z "$GIT_CHECKOUT" ] && GIT_CHECKOUT=$(git_query branch | cut -d'/' -f3 | grep 'release-[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}.*' | sort -rV | head -n1)
       [ -z "$GIT_CHECKOUT" ] && GIT_CHECKOUT="master"
     fi
   else
@@ -71,7 +69,9 @@ execute_sql () {
   sql_file="$2"
 	# assumes we're sudo'ing and running as ***REMOVED***
   HOME="/***REMOVED***"
+  echo "INFO: Executing sql file ${project}-${sql_file}..."
 	mysql --default-character-set=utf8 --show-warnings < "${project}-${sql_file}" 2>&1 || die "ERROR: error executing sql commands"
+  echo "INFO: finished executing sql file ${project}-${sql_file}"
 }
 
 get_sql_files () {
