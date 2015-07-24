@@ -59,15 +59,12 @@ git_checkout () {
     if [[ "$APP_ENVIRONMENT" != "prod" ]]; then
       if [ -z "$RELEASE" ]; then
         SPRINT_BRANCH=$(git branch -r | cut -d'/' -f2 | grep 'sprint' | sort -rV | head -n1)
-        if [ -z "$RELEASE" ]; then
-          SPRINT_BRANCH=$(git branch -r | cut -d'/' -f2 | grep 'release' | sort -rV | head -n1) # temporary hack until migration complete
-        else
-          SPRINT_BRANCH="master"
-        fi
+        [ -z "$SPRINT_BRANCH" ] && SPRINT_BRANCH=$(git branch -r | cut -d'/' -f2 | grep 'release' | sort -rV | head -n1) # temporary hack until migration complete
+        [ -z "$SPRINT_BRANCH" ] && SPRINT_BRANCH="master"
       else
         SPRINT_BRANCH="$RELEASE"
       fi
-      echo "INFO: checking out latest sprint branch - $SPRINT_BRANCH for $PROJECT on $APP_ENVIRONMENT..."
+      echo "INFO: checking out latest sprint/release/master branch - $SPRINT_BRANCH for $PROJECT on $APP_ENVIRONMENT..."
       ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git checkout $GIT_OPTIONS $SPRINT_BRANCH &>/dev/null" || die "ERROR: Could not checkout $SPRINT_BRANCH for $PROJECT"
     else
       echo "INFO: checking out release ${RELEASE} for $PROJECT..."
@@ -81,7 +78,7 @@ build_and_dist () {
   PROJECT="$1"
   cd "${PROJECTS_DIR}/${PROJECT}/build" || die "ERROR: project build directory does not exist @ ${PROJECTS_DIR}/${PROJECT}"
   PACKAGE=$(grep Package control | awk {'print $2'})
-  echo "INFO: building and distributing ${PROJECT}..."
+  echo "INFO: building ${PROJECT}..."
   "$BUILDSCRIPT" "$APP_ENVIRONMENT" &>/dev/null || die "ERROR: failed to build $PROJECT"
   echo "INFO: distributing $1 to package repo..."
 

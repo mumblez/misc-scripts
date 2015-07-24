@@ -81,6 +81,7 @@ sql_exec_run() {
 	-host "$HOST_DB" \
 	-db_file "$2" \
 	-project "$1" \
+	-environment "$ENVIRONMENT" \
 	-tag "$TAG"
 }
 
