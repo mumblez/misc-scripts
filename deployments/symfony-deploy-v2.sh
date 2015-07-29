@@ -259,6 +259,9 @@ ln -snf "$REAL_DIR/web" "$WEBROOT" && echo "INFO: Symlinked deployment release w
 # Set permission to web***REMOVED*** (incase apache only follows symlinks with same owner)
 chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
 
+# Set convenience 'current' directory to release
+ln -snf "$DEPLOY_DIR" "${DEPLOY_ROOT}/current"
+
 # Expose symfony log files to /***REMOVED***/logs/<project>/symfony
 if [ ! -d "${DEPLOY_DIR}/var" ]; then
   ln -snf "${REAL_DIR}/app/logs" "/***REMOVED***/log/${S_PROJECT}/symfony"
