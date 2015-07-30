@@ -44,6 +44,10 @@ case "$ENVIRONMENT" in
 		HOST_WEB="***REMOVED***.uk.***REMOVED***.com" # replace when DNS project implemented!!!!
 		HOST_DB="335298-db1.uk.***REMOVED***.com"
 		;;
+	training )
+		HOST_WEB="intranet-training-web1-uk-cl" # replace when DNS project implemented!!!!
+		HOST_DB="intranet-training-db-uk-cl"
+		;;
 	#prod )
 	#	HOST_WEB="335296-web1.uk.***REMOVED***.com" # replace when DNS project implemented!!!!
 	#	HOST_DB="510094-db4.uk.***REMOVED***.com"

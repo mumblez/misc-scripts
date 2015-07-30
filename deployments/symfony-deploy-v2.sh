@@ -40,7 +40,7 @@ chown $SITE_USER:$SITE_GROUP $TMP_SCRIPT
 
 
 # add production specific settings
-if [[ "$APP_ENV" == "prod" ]]; then
+if [[ "$APP_ENV" == "prod" || "$APP_ENV" == "training" ]]; then
     export SYMFONY_ENV=prod
   COMPOSER_OPTIONS="$COMPOSER_OPTIONS --no-dev --optimize-autoloader"
   CONSOLE_OPTIONS="--env=prod --no-debug"
@@ -109,17 +109,17 @@ fi
 if [ "$APP_ENV" = "uat" ]; then
   ### If UAT then replace template variables in parameters.yml with passed in values ###
   UAT_FE="@option.uat_frontend@"
-  UAT_DB="@option.uat_db@"
+  #UAT_DB="@option.uat_db@"
   
   echo "INFO: UAT FE: $UAT_FE"
-  echo "INFO: UAT DB: $UAT_DB"
+  #echo "INFO: UAT DB: $UAT_DB"
   echo "INFO: Applying uat configuration..."
 
   # set uat front end web server
   sed "s/%%uat-fe%%/uat${UAT_FE}/" -i "$SYMFONY_PARAMS_FILE"
 
   # set uat db server
-  sed "s/%%uat-db%%/uat-db${UAT_DB}/" -i "$SYMFONY_PARAMS_FILE"
+  #sed "s/%%uat-db%%/uat-db${UAT_DB}/" -i "$SYMFONY_PARAMS_FILE"
 fi
 
 ### REPLACE apache settings from config mgt ###
@@ -218,8 +218,16 @@ if [[ "$S_PROJECT" != "pluginapi" ]]; then
 fi
 
 
-if [[ $(hostname) == "qa-fe" && "$S_PROJECT" == 'intranet-v2' ]]; then
+# Employee images / db migration steps
+#if [[ $(hostname) == "qa-fe" || $(hostname) == "***REMOVED***.uk.***REMOVED***.com" && "$S_PROJECT" == 'intranet-v2' ]]; then
+if [[ "$S_PROJECT" == 'intranet-v2' ]]; then
     cd "${DEPLOY_DIR}"
+    
+    # symlink employee images
+    [ ! -d "${SHARED_ROOT}/employee-images"  ] && mkdir -p "${SHARED_ROOT}/employee-images"
+    ln -snf "${SHARED_ROOT}/employee-images" "${DEPLOY_DIR}/web/assets/images/employees"
+    
+    # DB Migration steps
     echo "INFO: running DB scripts..."
     sudo -u "$SITE_USER" "$PHP" "$CONSOLE" doctrine:migrations:migrate --no-interaction
 fi
