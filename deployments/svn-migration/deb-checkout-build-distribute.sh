@@ -87,7 +87,8 @@ build_and_dist () {
   # deploy / webistrano
   #rsync -e "ssh" --rsync-path="sudo rsync" $PACK*.deb "${PKG_REPO_URL}:/srv/deb_repository/dists-poc/${APP_ENVIRONMENT}/main/binary-amd64" &>/dev/null || die "ERROR: failed to distribute $PROJECT"
   # app1 / bishop
-  rsync -e $PACK*.deb "/srv/deb_repository/dists-poc/${APP_ENVIRONMENT}/main/binary-amd64" &>/dev/null || die "ERROR: failed to distribute $PROJECT"
+  #rsync -e $PACKAGE*.deb "/srv/deb_repository/dists-poc/${APP_ENVIRONMENT}/main/binary-amd64" &>/dev/null || die "ERROR: failed to distribute $PROJECT"
+  rsync -v $PACKAGE*.deb "/srv/deb_repository/dists/${APP_ENVIRONMENT}/main/binary-amd64" &>/dev/null || die "ERROR: failed to distribute $PROJECT"
 
   rm -rf "$PROJECTS_DIR/$PROJECT/build/debian" || echo "WARN: failed to delete debian folder from build directory!"
 }
