@@ -85,7 +85,7 @@ ssh-agent bash -c "ssh-add $DEPLOY_KEY >/dev/null 2>&1 && git clone $GIT_REPO $D
 
 
 cd $DEPLOY_DIR
-if [[ "$APP_ENV" == "prod" ]]; then
+if [[ "$APP_ENV" == "prod" || "$APP_ENV" == "training" ]]; then
   git checkout "$GIT_TAG"
 else
   git checkout "$GIT_BRANCH" # (just leave on master?)
