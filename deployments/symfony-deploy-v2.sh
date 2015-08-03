@@ -237,7 +237,7 @@ fi
 if [[ "$S_PROJECT" == 'intranet-v2' && -d "${DEPLOY_DIR}/client-app" ]]; then
   cd "${DEPLOY_DIR}/client-app"
   echo "INFO: running 'npm install'..."
-  npm install || echo "WARNING: There was a problem with npm install!"
+  npm install --unsafe-perm || echo "WARNING: There was a problem with npm install!"
   echo "INFO: running 'gulp build'..."
   gulp build || echo "WARNING: There was a problem with gulp build!"
 fi
