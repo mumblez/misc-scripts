@@ -54,6 +54,7 @@ case "$ENVIRONMENT" in
 	#	;;
 esac
 
+echo "INFO: Deploying for environment $ENVIRONMENT"
 
 # Build debian packages from source (pass in list of projects)
 # if no tag passed in then it builds 
@@ -63,21 +64,25 @@ run -i "$JOB_BUILD_PKG" -f -- \
 	-projects "$PROJECTS" \
 	-tag "$TAG"
 
-[ "$?" != 0 ] && die "ERROR: Exiting..."
+[ "$?" != 0 ] && die "ERROR: Error building packages!"
+echo "INFO: Successfully built packages"
 
 # Update package repository listing (only need to run once after all packages have been built)
 run -i "$JOB_UPDATE_REPO" -f -- -environment "$ENVIRONMENT" -host "$HOST_REPO"
 
-[ "$?" != 0 ] && die "ERROR: Exiting..."
+[ "$?" != 0 ] && die "ERROR: Error updating debian package repository"
+echo "INFO: Successfully updated debian package repository"
 
 # Install packages on front ends (pass in list of projects)
 run -i "$JOB_INSTALL_PKG" -f -- -host "$HOST_WEB" -projects "$PROJECTS"
 
+[ "$?" != 0 ] && die "ERROR: Error installing debian package(s)"
+echo "INFO: Succesfully installed debian package(s)"
+
 # Set permissions on /***REMOVED*** - hack until can figure out where offspring logs gets its permissions from
 ssh rundeck@${HOST_WEB} sudo chown www-data:www-data /***REMOVED*** -R
-
-
-[ "$?" != 0 ] && die "ERROR: Exiting..."
+[ "$?" != 0 ] && die "ERROR: resetting /***REMOVED*** directory permissions"
+echo "INFO: Succesfully reset /***REMOVED*** directory permissions"
 
 # Run sql / db_files for intranet and website
 sql_exec_run() {
@@ -87,6 +92,8 @@ sql_exec_run() {
 	-project "$1" \
 	-environment "$ENVIRONMENT" \
 	-tag "$TAG"
+
+	[ "$?" != 0 ] && die "ERROR: Error running sql file for $1"
 }
 
 for project in $PROJECTS; do
@@ -96,7 +103,7 @@ for project in $PROJECTS; do
 	esac
 done
 
-[ "$?" != 0 ] && die "ERROR: Exiting..."
+echo "INFO: Successfully run sql file for intranet / website project(s)"
 
 # Execute eventLogTriggers sql
 
@@ -106,7 +113,8 @@ if [[ "$EVENTLOGTRIGGERS" == "yes" ]]; then
 	run -i "$JOB_EVENTLOGTRIGGER_RUN" -f -- -host "$HOST_DB"
 fi
 
-[ "$?" != 0 ] && die "ERROR: Exiting..."
+[ "$?" != 0 ] && die "ERROR: Error running eventlogtriggers"
+echo "INFO: Successfully run eventlogtriggers"
 
 # change Intranet version file to sprint tag?
 # echo "Creating VERSION file";
