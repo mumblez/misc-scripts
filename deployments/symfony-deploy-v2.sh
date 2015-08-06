@@ -41,6 +41,7 @@ chown $SITE_USER:$SITE_GROUP $TMP_SCRIPT
 
 # add production specific settings
 if [[ "$APP_ENV" == "prod" || "$APP_ENV" == "training" ]]; then
+#if [[ "$APP_ENV" == "prod" ]]; then
     export SYMFONY_ENV=prod
   COMPOSER_OPTIONS="$COMPOSER_OPTIONS --no-dev --optimize-autoloader"
   CONSOLE_OPTIONS="--env=prod --no-debug"
@@ -86,6 +87,7 @@ ssh-agent bash -c "ssh-add $DEPLOY_KEY >/dev/null 2>&1 && git clone $GIT_REPO $D
 
 cd $DEPLOY_DIR
 if [[ "$APP_ENV" == "prod" || "$APP_ENV" == "training" ]]; then
+#if [[ "$APP_ENV" == "prod" ]]; then
   git checkout "$GIT_TAG"
 else
   git checkout "$GIT_BRANCH" # (just leave on master?)
@@ -184,8 +186,8 @@ echo "INFO: CONSOLE_OPTIONS: $CONSOLE_OPTIONS"
 
 cat > ${TMP_SCRIPT} <<EOF
 #!/bin/bash
-if [[ "$APP_ENV" == "prod" ]]; then
-  export SYMFONY_ENV=$APP_ENV
+if [[ "$APP_ENV" == "prod" || "$APP_ENV" == "training" ]]; then
+  export SYMFONY_ENV=prod
 fi
 eval \$(ssh-agent -s)
 ssh-add $DEPLOY_KEY
