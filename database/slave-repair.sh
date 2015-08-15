@@ -177,6 +177,7 @@ sleep 5 ## DO REMOTELY ##
 
 # Restart again to catch remaining errors
 rc service mysql restart # do remotely, seperate RD job ## DO REMOTELY ##
+sleep 5
 
 rcc 'mysqladmin flush-hosts'
 rcc 'mysql -e "stop slave;"' || echo "WARNING: !!!! could not stop slave replication !!!!!!"
