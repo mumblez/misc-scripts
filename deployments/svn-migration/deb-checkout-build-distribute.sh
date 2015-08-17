@@ -93,7 +93,7 @@ build_and_dist () {
   #rsync -v $PACKAGE*.deb "/srv/deb_repository/dists-poc/${APP_ENVIRONMENT}/main/binary-amd64" &>/dev/null || die "ERROR: failed to distribute $PROJECT"
   rsync -v $PACKAGE*.deb "/srv/deb_repository/dists/${APP_ENVIRONMENT}/main/binary-amd64" &>/dev/null || die "ERROR: failed to distribute $PROJECT"
 
-  chown package:www-data "/srv/deb_repository/dists/${APP_ENVIRONMENT}/main/binary-amd64"
+  chown package:www-data "/srv/deb_repository/dists/${APP_ENVIRONMENT}/main/binary-amd64" -R
   rm -f $PACKAGE*.deb
 
   rm -rf "$PROJECTS_DIR/$PROJECT/build/debian" || echo "WARN: failed to delete debian folder from build directory!"
