@@ -142,6 +142,7 @@ $PROJECTS_BASE/website/src/library/dist/css /***REMOVED***/www/website/css/v2
 $PROJECTS_BASE/website/src/library/dist/images /***REMOVED***/www/website/img/v2
 $PROJECTS_BASE/website/src/library/dist/fonts /***REMOVED***/www/website/fonts/v2
 $PROJECTS_BASE/website/src/static/ /***REMOVED***/www/website/static
+$PROJECTS_BASE/website/src/static/ /***REMOVED***/www/***REMOVED***/static
 /***REMOVED***/lib/php5/***REMOVED***/v1_deprecated /***REMOVED***/lib/php5/Cognolink
 /***REMOVED***/lib/php5/***REMOVED***/v1_deprecated/eventLog /***REMOVED***/lib/php5/***REMOVED***/v1_deprecated/EventLog
 /***REMOVED***/lib/php5/***REMOVED***/v1_deprecated/invoice /***REMOVED***/lib/php5/***REMOVED***/v1_deprecated/Invoice
