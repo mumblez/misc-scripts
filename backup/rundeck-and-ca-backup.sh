@@ -4,8 +4,9 @@
 DIR=$(cd "$(dirname "$0")" && pwd)
 SSH_USER="rundeck"
 SSH_OPTIONS="-o StrictHostKeyChecking=no"
-SSH_KEY="/var/lib/rundeck/.ssh/id_rsa"
-REMOTE_SERVER="***REMOVED***.209"
+SSH_KEY="/var/lib/rundeck/.ssh/id_rsa"#
+#REMOTE_SERVER="***REMOVED***.209"
+REMOTE_SERVER="***REMOVED***"
 ZB_REPOS_BASE_REMOTE="/srv/r5/backups/zbackup-repos"
 ZB_REPO_REMOTE="${ZB_REPOS_BASE_REMOTE}/files"
 ZB_KEY_REMOTE="/***REMOVED***/keys/zbackup"

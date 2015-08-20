@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DIR=$(cd "$(dirname "$0")" && pwd)
-REMOTE_DB_SERVER="@option.remote_db_server@" # in future generalise in rundeck
+REMOTE_DB_SERVER="@option.remote_db_server@" # in future generalise in rundeck - # CHANGE TO USE DNS NAME
 SSH_USER="rundeck" # using ssh-agent feature in RD 2.4.0+
 SSH_OPTIONS="-T -c arcfour -o StrictHostKeyChecking=no -o Compression=no -x"
 EXCLUDE_FILE="$DIR/excludeFiles.txt" # converted for tar --exclude-from feature

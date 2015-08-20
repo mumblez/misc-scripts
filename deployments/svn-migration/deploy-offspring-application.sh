@@ -30,27 +30,53 @@ JOB_EVENTLOGTRIGGER_RUN="bb2c2b76-4901-46f0-9719-6a17184a058b"
 
 
 
+## Mappings - front (web) and back (db) ends
+#case "$ENVIRONMENT" in
+#	qa )
+#		HOST_WEB="qa-fe.dev.***REMOVED***.com"
+#		HOST_DB="qa-db.dev.***REMOVED***.com"
+#		;;
+#	uat )
+#		HOST_WEB="uat-fe${UAT_FE}.dev.***REMOVED***.com"
+#		HOST_DB="uat-db1.dev.***REMOVED***.com"  # hard coded for now, but later generalise as 'uat-db' and change reference in hosts file
+#		;;
+#	test )
+#		HOST_WEB="***REMOVED***.uk.***REMOVED***.com" # replace when DNS project implemented!!!!
+#		HOST_DB="335298-db1.uk.***REMOVED***.com"
+#		;;
+#	training )
+#		HOST_WEB="intranet-training-web1-uk-cl" # replace when DNS project implemented!!!!
+#		HOST_DB="intranet-training-db-uk-cl"
+#		;;
+#	#prod )
+#	#	HOST_WEB="335296-web1.uk.***REMOVED***.com" # #replace when DNS project implemented!!!!
+#	#	HOST_DB="510094-db4.uk.***REMOVED***.com"
+#	#	;;
+#esac
+
 # Mappings - front (web) and back (db) ends
 case "$ENVIRONMENT" in
 	qa )
-		HOST_WEB="qa-fe.dev.***REMOVED***.com"
-		HOST_DB="qa-db.dev.***REMOVED***.com"
+		HOST_WEB="qweb1-lnov"
+		HOST_DB="qdb1-lnov"
 		;;
 	uat )
-		HOST_WEB="uat-fe${UAT_FE}.dev.***REMOVED***.com"
-		HOST_DB="uat-db1.dev.***REMOVED***.com"  # hard coded for now, but later generalise as 'uat-db' and change reference in hosts file
+		HOST_WEB="uweb${UAT_FE}-lnov"
+		HOST_DB="udb1-lnov"  # hard coded for now, but later generalise as 'uat-db' and change reference in hosts file
 		;;
 	test )
-		HOST_WEB="***REMOVED***.uk.***REMOVED***.com" # replace when DNS project implemented!!!!
-		HOST_DB="335298-db1.uk.***REMOVED***.com"
+		HOST_WEB="web2-lndp"
+		HOST_DB="db1-lndp"
 		;;
 	training )
-		HOST_WEB="intranet-training-web1-uk-cl" # replace when DNS project implemented!!!!
-		HOST_DB="intranet-training-db-uk-cl"
+		HOST_WEB="tintranet-web1-lncv"
+		HOST_DB="tintranet-db1-lncv"
 		;;
 	#prod )
 	#	HOST_WEB="335296-web1.uk.***REMOVED***.com" # replace when DNS project implemented!!!!
 	#	HOST_DB="510094-db4.uk.***REMOVED***.com"
+		HOST_WEB="web1-lndp"
+		HOST_DB="db4-lndp"
 	#	;;
 esac
 
