@@ -47,9 +47,9 @@ cat > $CRON <<_EOF_
 MAILTO=""
 # mysql backup - intranet
 # incremental
-00 5,11,17,23 * * *     ***REMOVED***     dogwrap -n "DB - CL-WEB - incremental backup" -k \$(cat /***REMOVED***/keys/datadogapi) --submit_mode all "/***REMOVED***/scripts/mysql-backup.sh incremental" --notify_error "@***REMOVED***@***REMOVED***.com"
+00 5,11,17,23 * * *     ***REMOVED***     dogwrap -n "DB - CL-WEB - incremental backup" -k \$(cat /***REMOVED***/keys/datadogapi) --priority=normal --submit_mode all "/***REMOVED***/scripts/mysql-backup.sh incremental" --notify_error "@***REMOVED***@***REMOVED***.com"
 # full
-25 23 * * *     ***REMOVED***    dogwrap -n "DB - CL-WEB - full backup" -k \$(cat /***REMOVED***/keys/datadogapi) --submit_mode all "/***REMOVED***/scripts/mysql-backup.sh full" --notify_error "@***REMOVED***@***REMOVED***.com"
+25 23 * * *     ***REMOVED***    dogwrap -n "DB - CL-WEB - full backup" -k \$(cat /***REMOVED***/keys/datadogapi) --priority=normal --submit_mode all "/***REMOVED***/scripts/mysql-backup.sh full" --notify_error "@***REMOVED***@***REMOVED***.com"
 _EOF_
 
 else
