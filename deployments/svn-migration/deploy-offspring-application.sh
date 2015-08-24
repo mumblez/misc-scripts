@@ -75,8 +75,8 @@ case "$ENVIRONMENT" in
 	#prod )
 	#	HOST_WEB="335296-web1.uk.***REMOVED***.com" # replace when DNS project implemented!!!!
 	#	HOST_DB="510094-db4.uk.***REMOVED***.com"
-		HOST_WEB="web1-lndp"
-		HOST_DB="db4-lndp"
+	#	HOST_WEB="web1-lndp"
+	#	HOST_DB="db4-lndp"
 	#	;;
 esac
 
@@ -106,7 +106,7 @@ run -i "$JOB_INSTALL_PKG" -f -- -host "$HOST_WEB" -projects "$PROJECTS"
 echo "INFO: Succesfully installed debian package(s)"
 
 # Set permissions on /***REMOVED*** - hack until can figure out where offspring logs gets its permissions from
-ssh rundeck@${HOST_WEB} sudo chown www-data:www-data /***REMOVED*** -R
+ssh -o StrictHostKeyChecking=no rundeck@${HOST_WEB} sudo chown www-data:www-data /***REMOVED*** -R
 [ "$?" != 0 ] && die "ERROR: resetting /***REMOVED*** directory permissions"
 echo "INFO: Succesfully reset /***REMOVED*** directory permissions"
 

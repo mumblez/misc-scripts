@@ -13,10 +13,10 @@ TRIGGERS_FILE="/tmp/triggers.sql"
 RUNDECK_USER="rundeck"
 
 # Pull from web server
-scp "${RUNDECK_USER}@${WEB_SERVER}:${TRIGGERS_FILE}" /tmp
+scp -o StrictHostKeyChecking=no "${RUNDECK_USER}@${WEB_SERVER}:${TRIGGERS_FILE}" /tmp
 
 # Push to db server
-scp "${TRIGGERS_FILE}" "${RUNDECK_USER}@${DB_SERVER}:/tmp"
+scp -o StrictHostKeyChecking=no "${TRIGGERS_FILE}" "${RUNDECK_USER}@${DB_SERVER}:/tmp"
 
 rm -f "$TRIGGERS_FILE"
 
