@@ -97,12 +97,21 @@ fi
 ### PULL PROD / TEST SETTINGS FROM CONFIG MGT ###
 # or symlink outside releases dir for now
 
-if [[ $(hostname) == "qa-fe" ]]; then
+#if [[ $(hostname) == "qa-fe" || "$S_PROJECT" != "pluginapi" ]]; then
+#  echo "INFO: ====== APPLIED QA PARAMETERS CONFIG ======="
+#  ln -snf "$DEPLOY_DIR/app/config/parameters.qa.yml" "$DEPLOY_DIR/app/config/parameters.yml"
+#else
+#  ln -snf "$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml" "$DEPLOY_DIR/app/config/parameters.yml"
+#fi
+
+if [[ "$S_PROJECT" != "pluginapi" ]]; then
   echo "INFO: ====== APPLIED QA PARAMETERS CONFIG ======="
-  ln -snf "$DEPLOY_DIR/app/config/parameters.qa.yml" "$DEPLOY_DIR/app/config/parameters.yml"
-else
   ln -snf "$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml" "$DEPLOY_DIR/app/config/parameters.yml"
+else
+  echo "INFO: applying config for pluginapi..."
+  ln -snf "$DEPLOY_DIR/parameters.$APP_ENV.yml" "$DEPLOY_DIR/parameters.local.yml"
 fi
+
 
 # symlink parameters = change in future to setup via salt / config mgt
 [ -e "$SYMFONY_PARAMS_FILE" ] || die "ERROR: $SYMFONY_PARAMS_FILE does not exist"
