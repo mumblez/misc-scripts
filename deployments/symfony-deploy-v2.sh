@@ -105,15 +105,17 @@ fi
 #fi
 
 if [[ "$S_PROJECT" != "pluginapi" ]]; then
-  echo "INFO: ====== APPLIED QA PARAMETERS CONFIG ======="
+  echo "INFO: ====== APPLIED NORMAL symfony parameters config ======="
   ln -snf "$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml" "$DEPLOY_DIR/app/config/parameters.yml"
 else
   echo "INFO: applying config for pluginapi..."
   ln -snf "$DEPLOY_DIR/parameters.$APP_ENV.yml" "$DEPLOY_DIR/parameters.local.yml"
+  SYMFONY_PARAMS_FILE="$DEPLOY_DIR/parameters.$APP_ENV.yml"
 fi
 
 
-# symlink parameters = change in future to setup via salt / config mgt
+
+  # symlink parameters = change in future to setup via salt / config mgt
 [ -e "$SYMFONY_PARAMS_FILE" ] || die "ERROR: $SYMFONY_PARAMS_FILE does not exist"
 [ -e "$SYMFONY_PARAMS_FILE" ] || echo "WARNING: $SYMFONY_PARAMS_FILE does not exist"
 
@@ -256,7 +258,7 @@ fi
 ## Run unit tests ? ###
 if [[ "$S_PROJECT" == "pluginapi" ]]; then
   cd "$DEPLOY_DIR"
-  ln -snf parameters.$APP_ENV.yml parameters.local.yml
+  #ln -snf parameters.$APP_ENV.yml parameters.local.yml
   if [[ "$APP_ENV" != "prod" ]]; then
     phpunit
   fi
