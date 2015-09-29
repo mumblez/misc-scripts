@@ -57,7 +57,7 @@ git_checkout () {
     ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git checkout $GIT_OPTIONS master &>/dev/null" || die "ERROR: Could not checkout master branch for $PROJECT"
     ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git pull &>/dev/null" || die "ERROR: Could not update branch for $PROJECT"
   else
-    if [[ "$APP_ENVIRONMENT" != "prod" ]]; then
+    if [[ "$APP_ENVIRONMENT" != "prod" && "$APP_ENVIRONMENT" != "test" ]]; then
       if [ -z "$RELEASE" ]; then
         SPRINT_BRANCH=$(git branch -r | cut -d'/' -f2 | grep 'sprint' | sort -rV | head -n1)
         [ -z "$SPRINT_BRANCH" ] && SPRINT_BRANCH=$(git branch -r | cut -d'/' -f2 | grep 'release' | sort -rV | head -n1) # temporary hack until migration complete
@@ -67,11 +67,11 @@ git_checkout () {
       fi
       echo "INFO: checking out latest sprint/release/master branch - $SPRINT_BRANCH for $PROJECT on $APP_ENVIRONMENT..."
       ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git checkout $GIT_OPTIONS $SPRINT_BRANCH &>/dev/null" || die "ERROR: Could not checkout $SPRINT_BRANCH for $PROJECT"
-      ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git pull &>/dev/null" || die "ERROR: Could not update $SPRINT_BRANCH for $PROJECT"
+      #ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git pull &>/dev/null" || die "ERROR: Could not update $SPRINT_BRANCH for $PROJECT"
     else
       echo "INFO: checking out release ${RELEASE} for $PROJECT..."
       ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git checkout $GIT_OPTIONS ${RELEASE} &>/dev/null" || die "ERROR: Could not checkout tag:$RELEASE for $PROJECT"
-      ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git pull &>/dev/null" || die "ERROR: Could not checkout tag:$RELEASE for $PROJECT"
+      #ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git pull &>/dev/null" || die "ERROR: Could not checkout tag:$RELEASE for $PROJECT"
     fi  
   fi
   # If there are issues, as an alternative, blow away folder and do a new pull / clone
@@ -91,9 +91,15 @@ build_and_dist () {
   #rsync -e "ssh" --rsync-path="sudo rsync" $PACK*.deb "${PKG_REPO_URL}:/srv/deb_repository/dists-poc/${APP_ENVIRONMENT}/main/binary-amd64" &>/dev/null || die "ERROR: failed to distribute $PROJECT"
   # app1 / bishop
   #rsync -v $PACKAGE*.deb "/srv/deb_repository/dists-poc/${APP_ENVIRONMENT}/main/binary-amd64" &>/dev/null || die "ERROR: failed to distribute $PROJECT"
-  rsync -v $PACKAGE*.deb "/srv/deb_repository/dists/${APP_ENVIRONMENT}/main/binary-amd64" &>/dev/null || die "ERROR: failed to distribute $PROJECT"
+  if [[ "$APP_ENVIRONMENT" == "prod" || "$APP_ENVIRONMENT" == "test" ]]; then 
+    REPO_PATH="/srv/deb_repository/dists/prod/main/binary-amd64"
+  else
+    REPO_PATH="/srv/deb_repository/dists/${APP_ENVIRONMENT}/main/binary-amd64"
+  fi
 
-  chown package:www-data "/srv/deb_repository/dists/${APP_ENVIRONMENT}/main/binary-amd64" -R
+  rsync -v $PACKAGE*.deb "$REPO_PATH" &>/dev/null || die "ERROR: failed to distribute $PROJECT"
+  chown package:www-data "$REPO_PATH" -R
+  #chown package:www-data "/srv/deb_repository/dists/${APP_ENVIRONMENT}/main/binary-amd64" -R
   rm -f $PACKAGE*.deb
 
   rm -rf "$PROJECTS_DIR/$PROJECT/build/debian" || echo "WARN: failed to delete debian folder from build directory!"

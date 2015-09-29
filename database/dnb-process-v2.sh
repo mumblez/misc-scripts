@@ -45,14 +45,15 @@ EXT_DIR=""
 TB_STRUCTURES_DIR="$DIR/dnb_table_structures"
 ## File / DB mappings ##
 DB="dnb"
-COMPANY_FILE="Cognolink.csv"
+COMPANY_FILE="MonthlyActive.csv"
 COMPANY_TABLE="company"
 COMPANY_TABLE_COLUMNS="(DunsNumber,Name,TradingStyle,StreetAddress1,StreetAddress2,City,State,Postcode,Country,SicCode,EmployeesTotal,AnnualSales,ImmediateParentDunsNumber,ImmediateParentName,ImmediateParentCountry,GlobalParentDunsNumber,GlobalParentName,GlobalParentCountry,MarketabilityIndicator,LocationIndicator)"
-TICKER_FILE="Cognolink_TickerFile.csv"
+TICKER_FILE="Ticker.csv"
 TICKER_TABLE="ticker"
-TICKER_TABLE_COLUMNS="(SourceID,Ticker,StockExchange)"
-URL_FILE="URLFile.txt"
+TICKER_TABLE_COLUMNS="(DunsNumber,Ticker,StockExchange,Primary)"
+URL_FILE="URLOutput.csv"
 URL_TABLE="url"
+URL_TABLE_COLUMNS="(DunsNumber,Domain_1,Domain_2,Domain_3,Domain_4,TotalURLs)"
 # No columns, the file uses string positioning - https://docs.google.com/a/***REMOVED***.com/spreadsheet/ccc?key=***REMOVED***#gid=0
 # Table crafted within the datatype lengths so when load file data gets put in the right place (Brittle)
 
@@ -108,15 +109,15 @@ extract_new_files () {
 	  # 7za e Cognolink_20_May_2014.zip [-o<output dir>]
       #unzip "$i" -d "$EXT_DIR" || die "ERROR: Failed to unzip $i"
 	  7za e "$i" -o"$EXT_DIR"
-    elif [ "$EXTENSION" = "rar" ]; then
-      echo "unraring $i" || die "ERROR: Failed to unrar $i"
-      unrar x "$i" "$EXT_DIR";
+    # elif [ "$EXTENSION" = "rar" ]; then
+    #   echo "unraring $i" || die "ERROR: Failed to unrar $i"
+    #   unrar x "$i" "$EXT_DIR";
     else
       echo "$i is not an archive";
-      if [[ "$EXTENSION" == "csv" ]] && [[ "$i" == "$TICKER_FILE" || "$i" == *icker* ]]; then
-        ln -s "${DESTINATION}${SOURCE}/$i" "${EXT_DIR}/${TICKER_FILE}"
-            echo "symlinked TickerFile to $EXT_DIR/$TICKER_FILE"
-      fi
+      # if [[ "$EXTENSION" == "csv" ]] && [[ "$i" == "$TICKER_FILE" || "$i" == *icker* ]]; then
+      #   ln -s "${DESTINATION}${SOURCE}/$i" "${EXT_DIR}/${TICKER_FILE}"
+      #       echo "symlinked TickerFile to $EXT_DIR/$TICKER_FILE"
+      # fi
     fi;
   done < "$NEW_FILES_CLEAN"
   chmod +rx "$EXT_DIR" -R
