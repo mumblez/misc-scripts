@@ -47,7 +47,7 @@ TB_STRUCTURES_DIR="$DIR/dnb_table_structures"
 DB="dnb"
 COMPANY_FILE="MonthlyActive.csv"
 COMPANY_TABLE="company"
-COMPANY_TABLE_COLUMNS="(DunsNumber,Name,TradingStyle,StreetAddress1,StreetAddress2,City,State,Postcode,Country,SicCode,EmployeesTotal,AnnualSales,ImmediateParentDunsNumber,ImmediateParentName,ImmediateParentCountry,GlobalParentDunsNumber,GlobalParentName,GlobalParentCountry,MarketabilityIndicator,LocationIndicator)"
+COMPANY_TABLE_COLUMNS="(DunsNumber,Name,TradingStyle,StreetAddress1,StreetAddress2,City,State,Postcode,Country,SicCode,@EmployeesTotal,@AnnualSales,@ImmediateParentDunsNumber,ImmediateParentName,ImmediateParentCountry,GlobalParentDunsNumber,GlobalParentName,GlobalParentCountry,MarketabilityIndicator,LocationIndicator)"
 TICKER_FILE="Ticker.csv"
 TICKER_TABLE="ticker"
 TICKER_TABLE_COLUMNS="(DunsNumber,Ticker,StockExchange,Primary)"
@@ -56,6 +56,7 @@ URL_TABLE="url"
 URL_TABLE_COLUMNS="(DunsNumber,Domain_1,Domain_2,Domain_3,Domain_4,TotalURLs)"
 # No columns, the file uses string positioning - https://docs.google.com/a/***REMOVED***.com/spreadsheet/ccc?key=***REMOVED***#gid=0
 # Table crafted within the datatype lengths so when load file data gets put in the right place (Brittle)
+FIRST_RUN="yes"
 
 ### Settings End ###
 ####################
@@ -81,8 +82,13 @@ table_shuffle () {
         echo "${dtable}_temp table creation complete!"
         ;;
       "shuffle")
-            echo "${dtable} shuffle start.....!"
+        echo "${dtable} shuffle start.....!"
         mysql -e "use ${DB}; RENAME TABLE ${dtable} to ${dtable}_del; RENAME TABLE ${dtable}_temp TO ${dtable}; DROP TABLE ${dtable}_del;" || die "ERROR: Failed flipping tables with new data"
+        echo "${dtable} shuffle complete!"
+        ;;
+      "init")
+        echo "${dtable} initialise start.....!"
+        mysql -e "use ${DB}; RENAME TABLE ${dtable}_temp to ${dtable};" || die "ERROR: Failed initialising new table"
         echo "${dtable} shuffle complete!"
         ;;
     esac
@@ -105,19 +111,9 @@ extract_new_files () {
     EXTENSION=$(echo $i | rev | cut -d'.' -f 1 | rev)
     if [ "$EXTENSION" = "zip" ]; then
       echo "unzipping $i"
-      #unzip "$i" -d "$EXT_DIR" || die "ERROR: Failed to unzip $i"
-	  # 7za e Cognolink_20_May_2014.zip [-o<output dir>]
-      #unzip "$i" -d "$EXT_DIR" || die "ERROR: Failed to unzip $i"
-	  7za e "$i" -o"$EXT_DIR"
-    # elif [ "$EXTENSION" = "rar" ]; then
-    #   echo "unraring $i" || die "ERROR: Failed to unrar $i"
-    #   unrar x "$i" "$EXT_DIR";
+	   7za e "$i" -o"$EXT_DIR"
     else
       echo "$i is not an archive";
-      # if [[ "$EXTENSION" == "csv" ]] && [[ "$i" == "$TICKER_FILE" || "$i" == *icker* ]]; then
-      #   ln -s "${DESTINATION}${SOURCE}/$i" "${EXT_DIR}/${TICKER_FILE}"
-      #       echo "symlinked TickerFile to $EXT_DIR/$TICKER_FILE"
-      # fi
     fi;
   done < "$NEW_FILES_CLEAN"
   chmod +rx "$EXT_DIR" -R
@@ -136,32 +132,56 @@ db_loadup () {
       *${COMPANY_FILE}*)
         # add logic to rename file name
         mv *${COMPANY_FILE}* ${COMPANY_FILE}
-        table_shuffle "${COMPANY_TABLE}" create
-        echo "Loading in 'company' table...."
-        # Ignore header / 1st line of csv
-        mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${COMPANY_FILE}' INTO TABLE ${COMPANY_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${COMPANY_TABLE_COLUMNS};" || die "ERROR: Failed to load data into database - ${COMPANY_TABLE}"
-        table_shuffle "${COMPANY_TABLE}" shuffle
+        TABLE_NAME="company"
+        # table_shuffle "${COMPANY_TABLE}" create
+        # echo "Loading in 'company' table...."
+        # # Ignore header / 1st line of csv
+        # mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${COMPANY_FILE}' INTO TABLE ${COMPANY_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${COMPANY_TABLE_COLUMNS};" || die "ERROR: Failed to load data into database - ${COMPANY_TABLE}"
+        # table_shuffle "${COMPANY_TABLE}" shuffle
         ;;
       *{$URL_FILE}*)
         mv *{$URL_FILE}* {$URL_FILE}
-        table_shuffle "${URL_TABLE}" create
-        echo "Loading in 'url' table..."
-        mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${URL_FILE}' INTO TABLE ${URL_TABLE}_temp FIELDS TERMINATED BY '' LINES TERMINATED BY '\\r\\n';" || die "ERROR: Failed to load data into database - ${URL_TABLE}"
-        # Clean up whitespace for domain names
-        for i in $(seq 1 5); do
-          mysql -e "UPDATE ${DB}.${URL_TABLE}_temp SET domain_${i} = RTRIM(domain_${i});" || die "ERROR: Failed to clean up whitespace for domains"
-        done
-        table_shuffle "${URL_TABLE}" shuffle
+        TABLE_NAME="url"
+        # table_shuffle "${URL_TABLE}" create
+        # echo "Loading in 'url' table..."
+        # mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${URL_FILE}' INTO TABLE ${URL_TABLE}_temp FIELDS TERMINATED BY '' LINES TERMINATED BY '\\r\\n';" || die "ERROR: Failed to load data into database - ${URL_TABLE}"
+        # # Clean up whitespace for domain names
+        # for i in $(seq 1 5); do
+        #   mysql -e "UPDATE ${DB}.${URL_TABLE}_temp SET domain_${i} = RTRIM(domain_${i});" || die "ERROR: Failed to clean up whitespace for domains"
+        # done
+        # table_shuffle "${URL_TABLE}" shuffle
         ;;
       *${TICKER_FILE}*)
         mv *${TICKER_FILE}* ${TICKER_FILE}
-        table_shuffle "${TICKER_TABLE}" create
-        echo "Loading in 'ticker' table..."
-        mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${TICKER_FILE}' INTO TABLE ${TICKER_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${TICKER_TABLE_COLUMNS};" || die "ERROR: Failed to load data into database - ${URL_TABLE}"
-        table_shuffle "${TICKER_TABLE}" shuffle
+        TABLE_NAME="ticker"
+        # table_shuffle "${TICKER_TABLE}" create
+        # echo "Loading in 'ticker' table..."
+        # mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${TICKER_FILE}' INTO TABLE ${TICKER_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${TICKER_TABLE_COLUMNS};" || die "ERROR: Failed to load data into database - ${URL_TABLE}"
+        # table_shuffle "${TICKER_TABLE}" shuffle
         ;;
     esac
-        echo "deleting $dnb_file"
+    
+    TABLE_COLUMNS="${TABLE_NAME^^}_TABLE_COLUMNS"
+
+    table_shuffle "${COMPANY_TABLE}" create
+    echo "Loading in 'company' table...."
+    # Ignore header / 1st line of csv
+
+    [[ "$FIRST_RUN" == "yes" ]] && table_shuffle "${COMPANY_TABLE}" init
+
+    [[ "$FIRST_RUN" != "yes" ]] && TABLE_NAME="${TABLE_NAME}_temp"
+
+    if [[ "$TABLE_NAME" == "company" ]]; then
+      mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${dnb_file}' INTO TABLE ${TABLE_NAME} FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${!TABLE_COLUMNS} \
+      SET AnnualSales = IF(@AnnualSales='',NULL,@AnnualSales), ImmediateParentDunsNumber = IF(@ImmediateParentDunsNumber='',NULL,@ImmediateParentDunsNumber), EmployeesTotal = IF(@EmployeesTotal='',NULL,@EmployeesTotal);" || die "ERROR: Failed to load data into database - ${TABLE_NAME}"
+    else
+      mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${dnb_file}' INTO TABLE ${TABLE_NAME} FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${!TABLE_COLUMNS};" || die "ERROR: Failed to load data into database - ${TABLE_NAME}"
+    fi
+    
+
+    [[ "$FIRST_RUN" != "yes" ]] && table_shuffle "${COMPANY_TABLE}" shuffle
+
+    echo "deleting $dnb_file"
     rm -f "$dnb_file"
   done
 }
