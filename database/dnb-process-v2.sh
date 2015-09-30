@@ -50,7 +50,7 @@ COMPANY_TABLE="company"
 COMPANY_TABLE_COLUMNS="(DunsNumber,Name,TradingStyle,StreetAddress1,StreetAddress2,City,State,Postcode,Country,SicCode,@EmployeesTotal,@AnnualSales,@ImmediateParentDunsNumber,ImmediateParentName,ImmediateParentCountry,GlobalParentDunsNumber,GlobalParentName,GlobalParentCountry,MarketabilityIndicator,LocationIndicator)"
 TICKER_FILE="Ticker.csv"
 TICKER_TABLE="ticker"
-TICKER_TABLE_COLUMNS="(DunsNumber,Ticker,StockExchange,Primary)"
+TICKER_TABLE_COLUMNS="(DunsNumber,Ticker,StockExchange,PrimarySE)"
 URL_FILE="URLOutput.csv"
 URL_TABLE="url"
 URL_TABLE_COLUMNS="(DunsNumber,Domain_1,Domain_2,Domain_3,Domain_4,TotalURLs)"
@@ -79,7 +79,7 @@ table_shuffle () {
         # #file pattern dnb_<table>_table_structure.sql
         # table structure files have table names with "_temp" suffix, e.g. url_temp
         mysql < "$TB_STRUCTURES_DIR/dnb_${dtable}_table_structure.sql" || die "ERROR: Failed importing dnb_${dtable}_table_structure.sql"
-        echo "${dtable}_temp table creation complete!"
+        echo "${dtable} table creation complete!"
         ;;
       "shuffle")
         echo "${dtable} shuffle start.....!"
@@ -89,7 +89,7 @@ table_shuffle () {
       "init")
         echo "${dtable} initialise start.....!"
         mysql -e "use ${DB}; RENAME TABLE ${dtable}_temp to ${dtable};" || die "ERROR: Failed initialising new table"
-        echo "${dtable} shuffle complete!"
+        echo "${dtable} initialise complete!"
         ;;
     esac
 }
@@ -133,45 +133,28 @@ db_loadup () {
         # add logic to rename file name
         mv *${COMPANY_FILE}* ${COMPANY_FILE}
         TABLE_NAME="company"
-        # table_shuffle "${COMPANY_TABLE}" create
-        # echo "Loading in 'company' table...."
-        # # Ignore header / 1st line of csv
-        # mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${COMPANY_FILE}' INTO TABLE ${COMPANY_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${COMPANY_TABLE_COLUMNS};" || die "ERROR: Failed to load data into database - ${COMPANY_TABLE}"
-        # table_shuffle "${COMPANY_TABLE}" shuffle
         ;;
-      *{$URL_FILE}*)
-        mv *{$URL_FILE}* {$URL_FILE}
+      *${URL_FILE}*)
+        mv *${URL_FILE}* ${URL_FILE}
         TABLE_NAME="url"
-        # table_shuffle "${URL_TABLE}" create
-        # echo "Loading in 'url' table..."
-        # mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${URL_FILE}' INTO TABLE ${URL_TABLE}_temp FIELDS TERMINATED BY '' LINES TERMINATED BY '\\r\\n';" || die "ERROR: Failed to load data into database - ${URL_TABLE}"
-        # # Clean up whitespace for domain names
-        # for i in $(seq 1 5); do
-        #   mysql -e "UPDATE ${DB}.${URL_TABLE}_temp SET domain_${i} = RTRIM(domain_${i});" || die "ERROR: Failed to clean up whitespace for domains"
-        # done
-        # table_shuffle "${URL_TABLE}" shuffle
         ;;
       *${TICKER_FILE}*)
         mv *${TICKER_FILE}* ${TICKER_FILE}
         TABLE_NAME="ticker"
-        # table_shuffle "${TICKER_TABLE}" create
-        # echo "Loading in 'ticker' table..."
-        # mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${TICKER_FILE}' INTO TABLE ${TICKER_TABLE}_temp FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${TICKER_TABLE_COLUMNS};" || die "ERROR: Failed to load data into database - ${URL_TABLE}"
-        # table_shuffle "${TICKER_TABLE}" shuffle
         ;;
     esac
     
     TABLE_COLUMNS="${TABLE_NAME^^}_TABLE_COLUMNS"
 
-    table_shuffle "${COMPANY_TABLE}" create
-    echo "Loading in 'company' table...."
+    table_shuffle "${TABLE_NAME}" create
+    echo "Loading in ${TABLE_NAME} table...."
     # Ignore header / 1st line of csv
 
-    [[ "$FIRST_RUN" == "yes" ]] && table_shuffle "${COMPANY_TABLE}" init
+    [[ "$FIRST_RUN" == "yes" ]] && table_shuffle "${TABLE_NAME}" init
 
     [[ "$FIRST_RUN" != "yes" ]] && TABLE_NAME="${TABLE_NAME}_temp"
 
-    if [[ "$TABLE_NAME" == "company" ]]; then
+    if [[ "$TABLE_NAME" =~ "$COMPANY_TABLE" ]]; then
       mysql -e "USE $DB; LOAD DATA INFILE '${EXT_DIR}/${dnb_file}' INTO TABLE ${TABLE_NAME} FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES ${!TABLE_COLUMNS} \
       SET AnnualSales = IF(@AnnualSales='',NULL,@AnnualSales), ImmediateParentDunsNumber = IF(@ImmediateParentDunsNumber='',NULL,@ImmediateParentDunsNumber), EmployeesTotal = IF(@EmployeesTotal='',NULL,@EmployeesTotal);" || die "ERROR: Failed to load data into database - ${TABLE_NAME}"
     else
@@ -179,7 +162,7 @@ db_loadup () {
     fi
     
 
-    [[ "$FIRST_RUN" != "yes" ]] && table_shuffle "${COMPANY_TABLE}" shuffle
+    [[ "$FIRST_RUN" != "yes" ]] && table_shuffle "${TABLE_NAME}" shuffle
 
     echo "deleting $dnb_file"
     rm -f "$dnb_file"
