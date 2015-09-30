@@ -56,7 +56,71 @@ URL_TABLE="url"
 URL_TABLE_COLUMNS="(DunsNumber,Domain_1,Domain_2,Domain_3,Domain_4,TotalURLs)"
 # No columns, the file uses string positioning - https://docs.google.com/a/***REMOVED***.com/spreadsheet/ccc?key=***REMOVED***#gid=0
 # Table crafted within the datatype lengths so when load file data gets put in the right place (Brittle)
-FIRST_RUN="yes"
+FIRST_RUN="no"
+
+### Table schema sql ############
+
+# company
+cat > "$TB_STRUCTURES_DIR/dnb_company_table_structure.sql" <<"EOF"
+USE dnb;
+CREATE TABLE IF NOT EXISTS `company_temp` (
+  `ID` bigint(11) NOT NULL AUTO_INCREMENT,
+  `DunsNumber` bigint(11) ZEROFILL NOT NULL,
+  `Name` varchar(255) NOT NULL,
+  `TradingStyle` tinytext,
+  `StreetAddress1`,
+  `StreetAddress2`,
+  `City` tinytext,
+  `State` tinytext,
+  `Postcode` varchar(20),
+  `Country` tinytext,
+  `SicCode` tinytext,
+  `EmployeesTotal` int(11),
+  `AnnualSales` bigint(11),
+  `ImmediateParentDunsNumber` bigint(11),
+  `ImmediateParentName` tinytext,
+  `ImmediateParentCountry` tinytext,
+  `GlobalParentDunsNumber` tinytext,
+  `GlobalParentName` tinytext,
+  `GlobalParentCountry` tinytext,
+  `MarketabilityIndicator` varchar(50),
+  `LocationIndicator` varchar(50),
+  `LastUpdateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`ID`),
+  KEY `duns_number` (`DunsNumber`,`Name`),
+  KEY `updated_at` (`LastUpdateDate`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1152 ROW_FORMAT=COMPRESSED;
+EOF
+
+# ticker
+cat > "$TB_STRUCTURES_DIR/dnb_ticker_table_structure.sql" <<"EOF"
+CREATE TABLE IF NOT EXISTS `ticker_temp` (
+  `ID` bigint(11) NOT NULL AUTO_INCREMENT,
+  `DunsNumber` bigint(11) ZEROFILL NOT NULL,
+  `Ticker` varchar(20) NOT NULL,
+  `StockExchange` varchar(100) NOT NULL,
+  `PrimarySE` varchar(10),
+  `CreationDate` timestamp NULL DEFAULT NULL,
+  `LastUpdateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`ID`),
+  KEY `tickerduns` (`DunsNumber`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ROW_FORMAT=COMPRESSED ;
+EOF
+
+# url
+cat > "$TB_STRUCTURES_DIR/dnb_url_table_structure.sql" <<"EOF"
+CREATE TABLE IF NOT EXISTS `url_temp`(
+ `DunsNumber` BIGINT(11) ZEROFILL NOT NULL,
+ `Domain_1` VARCHAR(104),
+ `Domain_2` VARCHAR(104),
+ `Domain_3` VARCHAR(104),                                                                                                
+ `Domain_4` VARCHAR(104),
+ `TotalURLs` INT(5),
+ KEY `urlduns` (`DunsNumber`) 
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ROW_FORMAT=COMPRESSED;
+EOF
+
+##################################
 
 ### Settings End ###
 ####################
