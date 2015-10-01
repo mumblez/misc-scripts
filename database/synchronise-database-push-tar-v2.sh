@@ -248,8 +248,8 @@ hcp -l | grep "Changed Blocks"
 rc chown mysql:mysql "${REMOTE_MYSQL_DIR}/" -R
 
 echo "INFO: Starting mysql..." # do remotely, seperate RD job
-rc service mysql start ## DO REMOTELY ##
-sleep 5 ## DO REMOTELY ##
+rcc service mysql start ## DO REMOTELY ##
+sleep 120 ## DO REMOTELY ##
 
 if [ "$SLAVE_SETUP" = "no" ]; then
   # Restore our qa tables, if doesn't work will have to go down the discard route
