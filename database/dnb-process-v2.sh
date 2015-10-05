@@ -245,8 +245,8 @@ search_reindex () {
 #rm -rf /***REMOVED***/var/run/sphinxv2.pid
 
 # Ensure we can write new indexes to directory
-chown sphinx:sphinx /srv/ssd/sphinx_index -R
-chmod 775 /srv/ssd/sphinx_index
+chown sphinx:sphinx /srv/ssd/sphinx_index/ -R
+chmod 775 /srv/ssd/sphinx_index/
 find /srv/ssd/sphinx_index -type f -exec chmod 664 {} \;
 
 # Create new indexes
