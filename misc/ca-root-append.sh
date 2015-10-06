@@ -43,7 +43,7 @@ elif [ -e /etc/debian_version ]; then
 	if [ ! -e "$CA_FULL_PATH" ]; then
 		# download and add the cert
 		wget -O "$CA_FULL_PATH" "$CA_CRT_URL"
-		update-ca-certicates
+		update-ca-certificates
 	else
 		echo "Cert already exists @ $CA_FULL_PATH, skipping!"
 		exit 0
@@ -52,3 +52,5 @@ else
 	echo "Unsupported OS, no actions taken!"
 	exit 1
 fi
+
+exit 0
