@@ -69,8 +69,8 @@ case "$ENVIRONMENT" in
 		HOST_DB="db1-lndp"
 		;;
 	training )
-		HOST_WEB="tintranet-web1-lncv"
-		HOST_DB="tintranet-db1-lncv"
+		HOST_WEB="trintranet-web1-lncv"
+		HOST_DB="trintranet-db1-lncv"
 		;;
 	#prod )
 	#	HOST_WEB="335296-web1.uk.***REMOVED***.com" # replace when DNS project implemented!!!!
