@@ -130,6 +130,7 @@ if [ "$APP_ENV" = "uat" ]; then
 
   # set uat front end web server
   sed "s/%%uat-fe%%/uat${UAT_FE}/" -i "$SYMFONY_PARAMS_FILE"
+  sed "s/%%uat-db%%/uat-db/" -i "$SYMFONY_PARAMS_FILE"
 
   # set uat db server
   #sed "s/%%uat-db%%/uat-db${UAT_DB}/" -i "$SYMFONY_PARAMS_FILE"
@@ -194,6 +195,10 @@ echo "INFO: ### BEGIN COMPOSER INSTALL ###"
 echo "INFO: SYMFONY_ENV: $SYMFONY_ENV"
 echo "INFO: COMPOSER_OPTIONS: $COMPOSER_OPTIONS"
 echo "INFO: CONSOLE_OPTIONS: $CONSOLE_OPTIONS"
+
+# ensure $SITE_USER can write to their home composer dir
+SITE_USER_HOME=$(eval echo ~"$SITE_USER")
+chown "$SITE_USER":"$SITE_GROUP" "${SITE_USER_HOME}/.composer" -R
 
 cat > ${TMP_SCRIPT} <<EOF
 #!/bin/bash
