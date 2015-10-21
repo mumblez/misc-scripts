@@ -25,7 +25,7 @@ echo "INFO: Generating triggers.sql..."
   --output=$SQL_OUTPUT_FILE \
   --trigger-config=$TRIGGER_CONFIG \
   --recreate-procedure \
-  --drop-triggers-for-database=***REMOVED***,cognoweb \
+  --drop-triggers-for-database=***REMOVED***,cognoweb,conference_call_management \
   --create-triggers &>/dev/null && echo "$SQL_OUTPUT_FILE successfully produced" || die "ERROR: Failed to produce $SQL_OUTPUT_FILE"
 
 
