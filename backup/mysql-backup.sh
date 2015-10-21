@@ -203,7 +203,7 @@ full_backup()
   		    echo "### Finished rolling the days incrementals into hotcopy - $IB_HOTCOPY - $(date) ###"
         	else
 			rm -rf "$IB_HOTCOPY"
-            	innobackupex --no-timestamp --extra-lsndir "$IB_CHECKPOINT" "$IB_HOTCOPY" &> "$INC_APPLY_LOG"
+            	innobackupex --no-timestamp --slave-info --extra-lsndir "$IB_CHECKPOINT" "$IB_HOTCOPY" &> "$INC_APPLY_LOG"
         		# check it completed successfully
         		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
         			echo "INFO: FULL backup successful - `date`"
