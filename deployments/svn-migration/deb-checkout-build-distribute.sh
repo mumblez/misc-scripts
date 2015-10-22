@@ -41,9 +41,11 @@ git_pull () {
     echo "INFO: Refreshing ${PROJECT}..."
     #echo "INFO: origin URLs:"
     #git remote -v
-    ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git fetch" || die "ERROR: Git fetch from $GIT_REPO failed"
-    ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git fetch --tags" || die "ERROR: Git fetch from $GIT_REPO failed"
+    #ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git fetch" || die "ERROR: Git fetch from $GIT_REPO failed"
+    #ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git fetch --tags" || die "ERROR: Git fetch from $GIT_REPO failed"
+    ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git reset --hard" || die "ERROR: Git reset hard on $GIT_REPO failed"
     ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git fetch --all" || die "ERROR: Git fetch from $GIT_REPO failed"
+    #ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git pull" || die "ERROR: Git reset hard on $GIT_REPO failed"
   fi
 }
 
@@ -67,7 +69,7 @@ git_checkout () {
       fi
       echo "INFO: checking out latest sprint/release/master branch - $SPRINT_BRANCH for $PROJECT on $APP_ENVIRONMENT..."
       ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git checkout $GIT_OPTIONS $SPRINT_BRANCH &>/dev/null" || die "ERROR: Could not checkout $SPRINT_BRANCH for $PROJECT"
-      #ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git pull &>/dev/null" || die "ERROR: Could not update $SPRINT_BRANCH for $PROJECT"
+      ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git pull &>/dev/null" || die "ERROR: Could not update $SPRINT_BRANCH for $PROJECT"
     else
       echo "INFO: checking out release ${RELEASE} for $PROJECT..."
       ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git checkout $GIT_OPTIONS ${RELEASE} &>/dev/null" || die "ERROR: Could not checkout tag:$RELEASE for $PROJECT"
