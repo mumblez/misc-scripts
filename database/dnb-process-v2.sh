@@ -68,23 +68,23 @@ CREATE TABLE IF NOT EXISTS `company_temp` (
   `DunsNumber` bigint(11) ZEROFILL NOT NULL,
   `Name` varchar(255) NOT NULL,
   `TradingStyle` tinytext,
-  `StreetAddress1`,
-  `StreetAddress2`,
+  `StreetAddress1` tinytext,
+  `StreetAddress2` tinytext,
   `City` tinytext,
   `State` tinytext,
-  `Postcode` varchar(20),
+  `Postcode` varchar(20) DEFAULT NULL,
   `Country` tinytext,
   `SicCode` tinytext,
-  `EmployeesTotal` int(11),
-  `AnnualSales` bigint(11),
-  `ImmediateParentDunsNumber` bigint(11),
+  `EmployeesTotal` int(11) DEFAULT NULL,
+  `AnnualSales` bigint(11) DEFAULT NULL,
+  `ImmediateParentDunsNumber` bigint(11) DEFAULT NULL,
   `ImmediateParentName` tinytext,
   `ImmediateParentCountry` tinytext,
   `GlobalParentDunsNumber` tinytext,
   `GlobalParentName` tinytext,
   `GlobalParentCountry` tinytext,
-  `MarketabilityIndicator` varchar(50),
-  `LocationIndicator` varchar(50),
+  `MarketabilityIndicator` varchar(50) DEFAULT NULL,
+  `LocationIndicator` varchar(50) DEFAULT NULL,
   `LastUpdateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`ID`),
   KEY `duns_number` (`DunsNumber`,`Name`),
@@ -214,6 +214,8 @@ db_loadup () {
     echo "Loading in ${TABLE_NAME} table...."
     # Ignore header / 1st line of csv
 
+    TABLE_NAME_ORIG="$TABLE_NAME"
+
     [[ "$FIRST_RUN" == "yes" ]] && table_shuffle "${TABLE_NAME}" init
 
     [[ "$FIRST_RUN" != "yes" ]] && TABLE_NAME="${TABLE_NAME}_temp"
@@ -226,7 +228,7 @@ db_loadup () {
     fi
     
 
-    [[ "$FIRST_RUN" != "yes" ]] && table_shuffle "${TABLE_NAME}" shuffle
+    [[ "$FIRST_RUN" != "yes" ]] && table_shuffle "${TABLE_NAME_ORIG}" shuffle
 
     echo "deleting $dnb_file"
     rm -f "$dnb_file"
