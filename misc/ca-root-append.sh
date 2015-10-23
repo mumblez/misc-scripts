@@ -8,10 +8,11 @@ die() { echo $* 1>&2 ; exit 1 ; }
 
 # Detect OS
 
-CA_PKG="ca-certificates"
-CA_CRT_URL="http://***REMOVED***.52/cl***REMOVED***ca.pem"
-CA_CRT_DEST_NAME="cl***REMOVED***ca.crt"
-which wget || die "Please install wget and try again"
+#CA_PKG="ca-certificates"
+#CA_CRT_URL="http://***REMOVED***.52/cl***REMOVED***ca.pem"
+#CA_CRT_DEST_NAME="cl***REMOVED***ca.crt"
+CA_CRT_DEST_NAME="$1"
+#which wget || die "Please install wget and try again"
 
 # if centos / redhat
 if [ -e /etc/redhat-release ]; then
@@ -24,7 +25,7 @@ if [ -e /etc/redhat-release ]; then
 	CA_FULL_PATH="${CA_PATH}/${CA_CRT_DEST_NAME}"
 	if [ ! -e "$CA_FULL_PATH" ]; then
 		# download and add the cert
-		wget -O "$CA_FULL_PATH" "$CA_CRT_URL"
+		# wget -O "$CA_FULL_PATH" "$CA_CRT_URL" # place file using file.managed - salt
 		update-ca-trust enable
 		update-ca-trust extract
 	else
@@ -42,7 +43,7 @@ elif [ -e /etc/debian_version ]; then
 	CA_FULL_PATH="${CA_PATH}/${CA_CRT_DEST_NAME}"
 	if [ ! -e "$CA_FULL_PATH" ]; then
 		# download and add the cert
-		wget -O "$CA_FULL_PATH" "$CA_CRT_URL"
+		# wget -O "$CA_FULL_PATH" "$CA_CRT_URL" # place file using file.managed - salt
 		update-ca-certificates
 	else
 		echo "Cert already exists @ $CA_FULL_PATH, skipping!"
