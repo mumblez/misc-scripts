@@ -160,6 +160,7 @@ do
 	echo "INFO: deleting backup and bundles on source..."
 	rc "rm -f $BACKUP_FILE"
 	rc "rm -rf ${ZB_REPO_TMP}/bundles/*"
+	rc "rm -rf ${ZB_REPO_TMP}/index/*"
 
 	# shred keys (redundant to do if multiple jobs exist on same server but very small price for safety)
 	echo "INFO: shredding sensitive files..."
