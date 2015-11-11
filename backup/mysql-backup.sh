@@ -121,7 +121,7 @@ incremental_backup()
 
 
 	# check it completed successfully
-	if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
+	if tail -n 1 "$INC_APPLY_LOG" | grep -q 'completed OK!'; then 
 		echo "INFO: incremental backup successful - `date`"
 		rm -f "$INC_APPLY_LOG"
 	else
@@ -186,7 +186,7 @@ full_backup()
                 --use-memory=4GB \
                 &> "$INC_APPLY_LOG"
 			# validate completed successfully
-			if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
+			if tail -n 1 "$INC_APPLY_LOG" | grep -q 'completed OK!'; then 
 				echo "INFO: FULL - applying incremental - $INC_COUNTER successful - $INCREMENTAL_DIR - `date`"
 			else
 				echo "ERROR: FULL - applying incremental - $INC_COUNTER failed - $INCREMENTAL_DIR - `date`"
@@ -205,7 +205,7 @@ full_backup()
 			rm -rf "$IB_HOTCOPY"
             	innobackupex --no-timestamp --slave-info --extra-lsndir "$IB_CHECKPOINT" "$IB_HOTCOPY" &> "$INC_APPLY_LOG"
         		# check it completed successfully
-        		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
+        		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'completed OK!'; then 
         			echo "INFO: FULL backup successful - `date`"
         			rm -f "$INC_APPLY_LOG"
         		else
@@ -214,7 +214,7 @@ full_backup()
 
             	innobackupex --apply-log --redo-only "$IB_HOTCOPY" &> "$INC_APPLY_LOG"
         		# check it completed successfully
-        		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'innobackupex: completed OK!'; then 
+        		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'completed OK!'; then 
         			echo "INFO: FULL apply log successful - `date`"
         			rm -f "$INC_APPLY_LOG"
         		else
