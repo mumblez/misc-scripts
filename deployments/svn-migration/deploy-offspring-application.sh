@@ -114,16 +114,18 @@ run -i "$JOB_INSTALL_PKG" -f -- -host "$HOST_WEB" -projects "$PROJECTS"
 [ "$?" != 0 ] && die "ERROR: Error installing debian package(s)"
 echo "INFO: Succesfully installed debian package(s)"
 
+# Set permissions on /***REMOVED*** - hack until can figure out where offspring logs gets its permissions from
+ssh -o StrictHostKeyChecking=no rundeck@${HOST_WEB} sudo chown www-data:www-data /***REMOVED*** -R
+[ "$?" != 0 ] && die "ERROR: resetting /***REMOVED*** directory permissions"
+echo "INFO: Succesfully reset /***REMOVED*** directory permissions"
+
 run -i "$JOB_SERVICE_RESTART" -f -- -host "$HOST_WEB" -service "php52-fpm"
 [ "$?" != 0 ] && die "ERROR: restarting php52-fpm service"
 run -i "$JOB_SERVICE_RESTART" -f -- -host "$HOST_WEB" -service "apache2"
 [ "$?" != 0 ] && die "ERROR: restarting apache2 service"
 echo "INFO: Successfully restarted apache and php-fpm services."
 
-# Set permissions on /***REMOVED*** - hack until can figure out where offspring logs gets its permissions from
-ssh -o StrictHostKeyChecking=no rundeck@${HOST_WEB} sudo chown www-data:www-data /***REMOVED*** -R
-[ "$?" != 0 ] && die "ERROR: resetting /***REMOVED*** directory permissions"
-echo "INFO: Succesfully reset /***REMOVED*** directory permissions"
+
 
 # Run sql / db_files for intranet and website
 sql_exec_run() {
