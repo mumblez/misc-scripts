@@ -45,6 +45,7 @@ git_pull () {
     #ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git fetch --tags" || die "ERROR: Git fetch from $GIT_REPO failed"
     ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git reset --hard" || die "ERROR: Git reset hard on $GIT_REPO failed"
     ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git fetch --all" || die "ERROR: Git fetch from $GIT_REPO failed"
+    ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git fetch --tags" || die "ERROR: Git fetch new tags from $GIT_REPO failed"
     #ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git pull" || die "ERROR: Git reset hard on $GIT_REPO failed"
   fi
 }
@@ -59,7 +60,7 @@ git_checkout () {
     ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git checkout $GIT_OPTIONS master &>/dev/null" || die "ERROR: Could not checkout master branch for $PROJECT"
     ssh-agent bash -c "ssh-add $DEPLOY_KEY &>/dev/null && git pull &>/dev/null" || die "ERROR: Could not update branch for $PROJECT"
   else
-    if [[ "$APP_ENVIRONMENT" != "prod" && "$APP_ENVIRONMENT" != "test" ]]; then
+    if [[ "$APP_ENVIRONMENT" != "prod" && "$APP_ENVIRONMENT" != "test" && "$APP_ENVIRONMENT" != "training" ]]; then
       if [ -z "$RELEASE" ]; then
         SPRINT_BRANCH=$(git branch -r | cut -d'/' -f2 | grep 'sprint' | sort -rV | head -n1)
         [ -z "$SPRINT_BRANCH" ] && SPRINT_BRANCH=$(git branch -r | cut -d'/' -f2 | grep 'release' | sort -rV | head -n1) # temporary hack until migration complete
