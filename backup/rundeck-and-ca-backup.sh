@@ -4,7 +4,7 @@
 DIR=$(cd "$(dirname "$0")" && pwd)
 SSH_USER="rundeck"
 SSH_OPTIONS="-o StrictHostKeyChecking=no"
-SSH_KEY="/var/lib/rundeck/.ssh/id_rsa"#
+SSH_KEY="/var/lib/rundeck/.ssh/id_rsa"
 #REMOTE_SERVER="***REMOVED***.209"
 REMOTE_SERVER="***REMOVED***"
 ZB_REPOS_BASE_REMOTE="/srv/r5/backups/zbackup-repos"
@@ -32,8 +32,8 @@ tar --append --file="$ARCHIVE" "$CA_DIR"
 
 # pull zbackup key and info from backup
 echo "INFO: pull zbackup keys"
-rsync -ar -e "ssh -i $SSH_KEY" --rsync-path="sudo rsync" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_INFO_REMOTE}" "$ZB_INFO"
-rsync -ar -e "ssh -i $SSH_KEY" --rsync-path="sudo rsync" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_KEY_REMOTE}" "$ZB_KEY"
+rsync -ar -e "ssh -i $SSH_KEY $SSH_OPTIONS" --rsync-path="sudo rsync" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_INFO_REMOTE}" "$ZB_INFO"
+rsync -ar -e "ssh -i $SSH_KEY $SSH_OPTIONS" --rsync-path="sudo rsync" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_KEY_REMOTE}" "$ZB_KEY"
 
 # init repo if not exist else run zbackup backup
 [ -d "$ZB_REPO" ] || "$ZB_BIN" --password-file "$ZB_KEY" init "$ZB_REPO"
@@ -43,7 +43,7 @@ ln -snf "$ZB_INFO" "${ZB_REPO}/"
 
 # rsync index from backup
 echo "INFO: sync remote zbackup index..."
-rsync -ar -e "ssh -i $SSH_KEY" --rsync-path="sudo rsync" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/index" "${ZB_REPO}/"
+rsync -ar -e "ssh -i $SSH_KEY $SSH_OPTIONS" --rsync-path="sudo rsync" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/index" "${ZB_REPO}/"
 
 # run backup through zbackup
 echo "INFO: creating zbackup backup..."
@@ -51,9 +51,9 @@ cat "$ARCHIVE" | "$ZB_BIN" --password-file "$ZB_KEY" backup "${ZB_REPO}/backups/
 
 # rsync backup, bundles, index to backup
 echo "INFO: uploading zbackup data"
-rsync -ar -e "ssh -i $SSH_KEY" --rsync-path="sudo rsync" "${ZB_REPO}/backups/" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/backups/${ZB_APP_NAME}/daily"
-rsync -ar -e "ssh -i $SSH_KEY" --rsync-path="sudo rsync" "${ZB_REPO}/bundles/" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/bundles"
-rsync -ar -e "ssh -i $SSH_KEY" --rsync-path="sudo rsync" "${ZB_REPO}/index/" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/index"
+rsync -ar -e "ssh -i $SSH_KEY $SSH_OPTIONS" --rsync-path="sudo rsync" "${ZB_REPO}/backups/" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/backups/${ZB_APP_NAME}/daily"
+rsync -ar -e "ssh -i $SSH_KEY $SSH_OPTIONS" --rsync-path="sudo rsync" "${ZB_REPO}/bundles/" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/bundles"
+rsync -ar -e "ssh -i $SSH_KEY $SSH_OPTIONS" --rsync-path="sudo rsync" "${ZB_REPO}/index/" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/index"
 
 # delete backup files, bundles and index 
 echo "INFO: cleaning up..."
