@@ -25,7 +25,7 @@ EXCLUDE_FILE="$DIR/excludeFiles.txt" # converted for tar --exclude-from feature
 SNAPSHOT_FREESPACE="@option.snapshot_freespace@" # at least 1-2GB to be safe
 EXCLUDE_LIST="services service_configuration scheduled_task mailqueue" # turn into RD multi-valued list from high
 USE_BACKUP="@option.use_backup@" # don't use to repair slave, always errors, but fine for non-slaves
-MYSQL_VERSION_MASTER=$(mysqladmin version | grep 'Server version' | grep -oE "5.[56]")
+MYSQL_VERSION_MASTER=$(HOME=/***REMOVED*** mysqladmin version | grep 'Server version' | grep -oE "5.[56]")
 SLAVE_SETUP="@option.slave_setup@" # Add RD option for slave setup
 MASTER_LOG="/tmp/master.log"
 
