@@ -7,3 +7,4 @@ jira-web1-lnov,/var/www/teampass/htdocs/backups/tp_backups*.sql,no,teampass,/tmp
 jira-web1-lnov,/tmp/backup /var/atlassian/application-data/jira/data,yes,jira,/tmp/tp,files,bash /***REMOVED***/scripts/jira-backup.sh,shred -u /tmp/backup/jira-db*.sql
 ads-app1-lnov,/var/lib/apacheds-2.0.0-M15/default,yes,apacheds,/tmp/ads,files,/etc/init.d/apacheds-2.0.0-M15-default stop,/etc/init.d/apacheds-2.0.0-M15-default start;
 fil1-lnov,/mnt/ssd/gitlab-backup/*.tar,no,gitlab,/mnt/ssd/temp,files,bash /***REMOVED***/scripts/gitlab-backup.sh,rm -f /mnt/ssd/gitlab-backup/*.tar
+pwww-web1-lncv,/srv/web_apps/www-languages /srv/web_apps/www-uploads,yes,www_data,/srv/temp,files,,
