@@ -39,6 +39,11 @@ for TOOL in $TOOLS; do
         which $TOOL >/dev/null 2>&1 || die "ERROR: $TOOL is not installed"
 done
 
+# add username to salt grains for easy use afterwards
+if grep -q '3b_env: dev' /etc/salt/grains;
+then
+  echo "3b_developer: $USERNAME" >> /etc/salt/grains
+fi
 
 # create new user and set password
 #adduser --ingroup dev --force-badname $USERNAME
@@ -83,8 +88,8 @@ sudo -u "$USERNAME" echo "Clone your repositories here!" > "${DEV_BASE}/git_repo
 # svn pull - account needs to exist on svn to pull automatically
 sudo -u "$USERNAME" mkdir -p "$INFRASTRUCTURE_BASE"
 sudo -u "$USERNAME" mkdir -p "$PROJECTS_BASE"
-sudo -u "$USERNAME" svn checkout --depth empty "${SVN_URL}/projects" "$PROJECTS_BASE" --username "$USERNAME" --password "$PASSWORD"
-sudo -u "$USERNAME" svn checkout --depth empty "${SVN_URL}/infrastructure" "$INFRASTRUCTURE_BASE"
+sudo -u "$USERNAME" svn checkout --trust-server-cert  --non-interactive --depth empty "${SVN_URL}/projects" "$PROJECTS_BASE" --username "$USERNAME" --password "$PASSWORD"
+sudo -u "$USERNAME" svn checkout --trust-server-cert --non-interactive --depth empty "${SVN_URL}/infrastructure" "$INFRASTRUCTURE_BASE"
 cd "$PROJECTS_BASE"
 echo "INFO: Pulling projects down....."
 sudo -u "$USERNAME" svn up intranet website common zaibatsu restserver &>/dev/null
@@ -171,8 +176,7 @@ EOF
 
 [ -h /***REMOVED***/lib/php5/***REMOVED***/projects/intranet/phplib ] && echo "WARNING: Found dodgy link" 
 
-# Initialise rabbitmq exchange / queue
-php /***REMOVED***/bin/intranet/amqpExchangeAndQueueSetup.php -e***REMOVED*** -qsymfony --run
+
 
 while read line; do
         #echo "INFO: Creating symlinks...."
@@ -181,6 +185,8 @@ while read line; do
         #[ -h /***REMOVED***/lib/php5/***REMOVED***/projects/intranet/phplib ] && echo "WARNING: Found dodgy link" 
 done < "${SYMLINKS_FILE}"
 
+# Initialise rabbitmq exchange / queue
+php /***REMOVED***/bin/intranet/amqpExchangeAndQueueSetup.php -e***REMOVED*** -qsymfony --run
 # directories to make after symlinking
 mkdir -p /***REMOVED***/lib/php5/dwoo/compiled
 mkdir -p /***REMOVED***/log/zaibatsu
