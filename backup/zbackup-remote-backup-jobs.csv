@@ -1,4 +1,5 @@
 Remote IP,Remote Source Path,Tar Dir?,Remote App name,Remote zbackup repo path,zbackup repo,pre-command,post-command
+pwww-web1-lncv,/srv/web_apps/www/application/themes/***REMOVED***site/elements /srv/web_apps/www-languages /srv/web_apps/www-uploads,yes,www_data,/srv/temp,files,,
 app1-lndp,/srv/deb_repository,yes,deb_repo,/srv/temp,files,,
 app1-lndp,/srv/svn,yes,svn,/srv/temp,files,,
 app1-lndp,/srv/www /etc/apache2/sites-available /etc/apache2/sites-enabled,yes,bishop_web_apps,/srv/temp,files,,
@@ -7,4 +8,3 @@ jira-web1-lnov,/var/www/teampass/htdocs/backups/tp_backups*.sql,no,teampass,/tmp
 jira-web1-lnov,/tmp/backup /var/atlassian/application-data/jira/data,yes,jira,/tmp/tp,files,bash /***REMOVED***/scripts/jira-backup.sh,shred -u /tmp/backup/jira-db*.sql
 ads-app1-lnov,/var/lib/apacheds-2.0.0-M15/default,yes,apacheds,/tmp/ads,files,/etc/init.d/apacheds-2.0.0-M15-default stop,/etc/init.d/apacheds-2.0.0-M15-default start;
 fil1-lnov,/mnt/ssd/gitlab-backup/*.tar,no,gitlab,/mnt/ssd/temp,files,bash /***REMOVED***/scripts/gitlab-backup.sh,rm -f /mnt/ssd/gitlab-backup/*.tar
-pwww-web1-lncv,/srv/web_apps/www-languages /srv/web_apps/www-uploads,yes,www_data,/srv/temp,files,,
