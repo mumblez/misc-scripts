@@ -6,6 +6,6 @@ app1-lndp,/srv/www /etc/apache2/sites-available /etc/apache2/sites-enabled,yes,b
 app2-lndp,/var/consul,yes,consul,/srv/temp,files,,
 jira-web1-lnov,/var/www/teampass/htdocs/backups/tp_backups*.sql,no,teampass,/tmp/tp,files,bash /***REMOVED***/scripts/teampass-backup.sh;,shred -u /var/www/teampass/htdocs/backups/tp_backups*.sql;
 jira-web1-lnov,/tmp/backup /var/atlassian/application-data/jira/data,yes,jira,/tmp/tp,files,bash /***REMOVED***/scripts/jira-backup.sh,shred -u /tmp/backup/jira-db*.sql
-pconfluence-web1-lncv,/srv/confluence-backup /var/atlassian/application-data/confluence,yes,confluence,/srv/temp,files,bash /***REMOVED***/scripts/confluence-backup.sh,rm -rf /srv/confluence-backup/confluence-db-*.sql
+pconfluence-web1-lncv,/srv/confluence-backup /var/atlassian/application-data/confluence/attachments /var/atlassian/application-data/confluence/confluence.cfg.xml /var/atlassian/application-data/confluence/index,yes,confluence,/srv/temp,files,bash /***REMOVED***/scripts/confluence-backup.sh,rm -rf /srv/confluence-backup/confluence-db-*.sql
 ads-app1-lnov,/var/lib/apacheds-2.0.0-M15/default,yes,apacheds,/tmp/ads,files,/etc/init.d/apacheds-2.0.0-M15-default stop,/etc/init.d/apacheds-2.0.0-M15-default start;
 fil1-lnov,/mnt/ssd/gitlab-backup/*.tar,no,gitlab,/mnt/ssd/temp,files,bash /***REMOVED***/scripts/gitlab-backup.sh,rm -f /mnt/ssd/gitlab-backup/*.tar
