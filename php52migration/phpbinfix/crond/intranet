@@ -1,0 +1,15 @@
+#0 23 * * 5     www-data        php /***REMOVED***/bin/intranet/change_external_password.php  >> /***REMOVED***/log/intranet/change_external_password.log 2&>1
+*/5 * * * *     www-data        /usr/local/php52/bin/php /***REMOVED***/bin/intranet/index_cv.php >> /dev/null 2>/***REMOVED***/log/intranet/index_cv_errors.log
+5 0 * * *       www-data        /usr/local/php52/bin/php /***REMOVED***/bin/intranet/sync_oanda_currency.php >> /***REMOVED***/log/intranet/sync_oanda_currency.log 2&>1
+1 * * * *       www-data        /usr/local/php52/bin/php /***REMOVED***/bin/intranet/contribution_checker.php >> /***REMOVED***/log/intranet/contribution_dashboard_check.log 2&>1
+## cleaning cache of offspring serialized objects
+2 0 * * *       www-data        find /***REMOVED***/var/cache/offspring/session/* -mmin +60 -type d -exec rm -rf {} \; 2>/dev/null
+## mass mailer
+#* * * * *       www-data        /usr/bin/php5 /***REMOVED***/bin/intranet/MassMailerScript.php 2>/dev/null
+#* * * * *       www-data        /usr/bin/php5 /***REMOVED***/bin/intranet/MassMailerCoordinator.php 2>/dev/null
+#* * * * *       www-data        /bin/sh /***REMOVED***/bin/intranet/mailer.sh 2>/dev/null
+## companies
+0 23 * * 5      www-data  /***REMOVED***/bin/intranet/synchroHooversCompanies.php >> /***REMOVED***/log/intranet/hooversSynchro.log 2&>1 
+
+## Scheduler
+* * * * *       ***REMOVED***         /usr/local/php52/bin/php /***REMOVED***/bin/intranet/schedulerTick.php 2>&1 /dev/null

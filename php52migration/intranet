@@ -1,0 +1,122 @@
+<VirtualHost ***REMOVED***.20:443>
+        SetEnv APPLICATION_ENVIRONMENT production
+        ServerName intranet.***REMOVED***.com
+        ServerAdmin webmaster@***REMOVED***.com
+        DocumentRoot /***REMOVED***/www/intranet
+
+	Use php52 intranet
+#	Include fast***REMOVED***i2fpm.conf
+        <Directory "/***REMOVED***/www/intranet/">
+            Options Indexes FollowSymLinks MultiViews
+            AllowOverride All
+	    Order allow,deny
+	    Allow from all
+	    #Require all granted
+            DirectoryIndex index.php index.html
+        </Directory>
+                <Directory "/***REMOVED***/www/intranet/config">
+                        Deny from all
+                </Directory>
+
+        <Directory "/***REMOVED***/www/intranet/emailer">
+                RewriteEngine On
+                RewriteCond %{REQUEST_FILENAME} !main.php
+                RewriteRule (.*) main.php [QSA]
+        </Directory>
+
+        <Directory "/***REMOVED***/www/intranet/sms">
+            RewriteEngine On
+            RewriteCond %{REQUEST_FILENAME} !main.php
+            RewriteRule (.*) main.php [QSA]
+        </Directory>
+
+         <Directory "/***REMOVED***/www/intranet/umg">
+                RewriteEngine On
+                RewriteCond %{REQUEST_FILENAME} !main.php
+                RewriteRule (.*) main.php [QSA]
+        </Directory>
+
+        <Directory "/***REMOVED***/www/intranet/massmailer">
+                RewriteEngine On
+                RewriteCond %{REQUEST_FILENAME} !main.php
+                RewriteRule (.*) main.php [QSA]
+        </Directory>
+
+        <Directory "/***REMOVED***/www/intranet/mailqueue">
+                RewriteEngine On
+                RewriteCond %{REQUEST_FILENAME} !main.php
+                RewriteRule (.*) main.php [QSA]
+        </Directory>
+
+        <Directory "/***REMOVED***/www/intranet/fieldset_handler">
+                RewriteEngine On
+                RewriteCond %{REQUEST_FILENAME} !main.php
+                RewriteRule (.*) main.php [QSA]
+        </Directory>
+
+        <Directory "/***REMOVED***/www/intranet/project">
+		RewriteEngine On
+		RewriteCond %{REQUEST_FILENAME} !main.php
+		RewriteRule (.*) main.php [QSA]
+        </Directory>
+
+        <Directory "/***REMOVED***/www/intranet/company_finder">
+                RewriteEngine On
+                RewriteCond %{REQUEST_FILENAME} !main.php
+                RewriteRule (.*) main.php [QSA]
+        </Directory>
+
+        <Directory "/***REMOVED***/www/intranet/offspring">
+                RewriteEngine On
+                RewriteCond %{REQUEST_FILENAME} !main.php
+                RewriteRule (.*) main.php [QSA]
+        </Directory>  
+
+	<IfModule mod_ssl.c>
+	        SSLEngine On
+	        SSLProtocol -ALL +SSLv3 +TLSv1
+	        SSLCipherSuite ALL:!aNULL:!ADH:!eNULL:!LOW:!EXP:RC4+RSA:+HIGH:!MEDIUM
+			#SSLCertificateFile /***REMOVED***/secure/certificates/intranet_***REMOVED***_com.crt
+			#SSLCertificateKeyFile /***REMOVED***/secure/certificates/intranet_***REMOVED***_com.key
+			#SSLCertificateChainFile /***REMOVED***/secure/certificates/intranet_***REMOVED***_com.ca-bundle
+			SSLCertificateFile /***REMOVED***/secure/certificates/wildcard-***REMOVED***.pem
+			SSLCertificateKeyFile /***REMOVED***/secure/certificates/wildcard-***REMOVED***.key
+			SSLCertificateChainFile /***REMOVED***/secure/certificates/wildcard-***REMOVED***-ca-bundle.crt
+
+                <Files ~ "\.(***REMOVED***i|shtml|phtml|php?)$">
+                        SSLOptions +StdEnvVars
+                </Files>
+                <Directory "/usr/lib/***REMOVED***i-bin">
+                        SSLOptions +StdEnvVars
+                </Directory>
+                SetEnvIf User-Agent ".*MSIE.*" \
+                        nokeepalive ssl-unclean-shutdown \
+                        downgrade-1.0 force-response-1.0
+	</IfModule>
+
+	<IfModule mod_gnutls.c>
+		GnuTLSEnable On
+		GnuTLSSessionTickets On
+		GnuTLSExportCertificates on
+		GnuTLSPriorities SECURE
+		#GnuTLSCertificateFile /***REMOVED***/secure/certificates/intranet_***REMOVED***_com.crt
+		#GnuTLSKeyFile /***REMOVED***/secure/certificates/intranet_***REMOVED***_com.key
+		#GnuTLSClientCAFile /***REMOVED***/secure/certificates/secure_***REMOVED***_com.ca-bundle
+		GnuTLSCertificateFile /***REMOVED***/secure/certificates/wildcard-***REMOVED***.pem
+		GnuTLSKeyFile /***REMOVED***/secure/certificates/wildcard-***REMOVED***.key
+		GnuTLSClientCAFile /***REMOVED***/secure/certificates/wildcard-***REMOVED***-ca-bundle.crt
+	</IfModule>
+
+        ErrorLog /***REMOVED***/log/intranet/error_log
+        TransferLog /***REMOVED***/log/intranet/access_log
+</VirtualHost>
+
+<VirtualHost *:80>
+        ServerAdmin webmaster@***REMOVED***.com
+        ServerName intranet.***REMOVED***.com
+        DocumentRoot /***REMOVED***/www/intranet/
+
+        RewriteEngine On
+        RewriteCond %{SERVER_PORT} !443
+        RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R,L]
+</VirtualHost>

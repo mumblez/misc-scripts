@@ -1,0 +1,65 @@
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+	ServerName www.***REMOVED***.com
+	ServerAlias ***REMOVED***.com
+    <IfModule !mod_php5.c>
+        Use php52 ***REMOVED***
+    </IfModule>
+
+	ServerAlias 3rdbridge.com
+	ServerAlias ***REMOVED***primaryresearch.com
+    ServerAlias ***REMOVED***reports.com
+    ServerAlias ***REMOVED***trackers.com
+    ServerAlias ***REMOVED***research.com
+    ServerAlias ***REMOVED***analytics.com
+    ServerAlias ***REMOVED***consulting.com
+    ServerAlias ***REMOVED***intelligence.com
+
+	ServerAlias www.3rdbridge.com
+    ServerAlias www.***REMOVED***primaryresearch.com
+    ServerAlias www.***REMOVED***reports.com
+    ServerAlias www.***REMOVED***trackers.com
+    ServerAlias www.***REMOVED***research.com
+    ServerAlias www.***REMOVED***analytics.com
+    ServerAlias www.***REMOVED***consulting.com
+    ServerAlias www.***REMOVED***intelligence.com
+
+
+	DocumentRoot /***REMOVED***/www/***REMOVED***
+	<Directory /***REMOVED***/www/***REMOVED***/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order deny,allow
+		Deny from all
+        Allow from all
+	</Directory>
+
+    <Directory /***REMOVED***/lib/shared>
+            Options FollowSymLinks
+            Order allow,deny
+            Allow from all
+    </Directory>
+
+	ErrorLog /***REMOVED***/log/website/***REMOVED***-error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog /***REMOVED***/log/website/***REMOVED***-access.log combined
+
+	Options +FollowSymLinks
+
+	RewriteEngine on
+    RewriteCond %{HTTP_HOST} !^www\.***REMOVED***\.com [NC]
+    RewriteRule /(.*) http://www.***REMOVED***.com/$1 [L,R=301]
+
+    <Directory "/***REMOVED***/www/***REMOVED***">
+        RewriteEngine On
+        RewriteCond %{REQUEST_URI} !^/static
+        RewriteCond %{REQUEST_FILENAME} !main.php
+        RewriteRule (.*) main.php [QSA]
+    </Directory>
+
+
+</VirtualHost>

@@ -1,0 +1,41 @@
+<VirtualHost *:80>
+        ServerName umg.qa.***REMOVED***.com
+        <IfModule !mod_php5>
+            Use php52 umg
+        </IfModule>
+        ServerAdmin webmaster@***REMOVED***.com
+
+        DocumentRoot /***REMOVED***/www/intranet/umg
+
+	<Directory "/***REMOVED***/www/intranet/config">
+	    Deny from all
+	</Directory>
+
+        <Directory "/***REMOVED***/www/intranet/umg">
+                Order deny,allow
+                Deny from all
+
+                Allow from 127
+                Allow from 188.165.127.128/26
+                Allow from 10                
+
+                # Cognolink office
+                Allow from 93.97.44.249
+                Allow from 77.107.84.74
+                Allow from 77.107.84.75
+                Allow from 77.107.84.76
+                Allow from 77.107.84.77
+                Allow from 77.107.84.78
+
+		# IntelliSMS
+    		Allow from 94.236.49.202
+
+    	    RewriteEngine On
+	    RewriteCond %{REQUEST_FILENAME} !main.php
+	    RewriteRule (.*) main.php [QSA]
+        </Directory>
+        
+
+        ErrorLog /***REMOVED***/log/intranet/error_log
+        TransferLog /***REMOVED***/log/intranet/access_log
+</VirtualHost>

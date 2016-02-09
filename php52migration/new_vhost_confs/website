@@ -1,0 +1,377 @@
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+	ServerName www.***REMOVED***.com
+	
+    <IfModule !mod_php5.c>
+        Use php52 website
+    </IfModule>
+
+	DocumentRoot /***REMOVED***/www/website/
+	<Directory /***REMOVED***/www/website/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order deny,allow
+		Deny from all
+        Allow from all
+	</Directory>
+
+	ErrorLog /***REMOVED***/log/website/error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog /***REMOVED***/log/website/access.log combined
+
+	Options +FollowSymLinks
+	RewriteEngine on
+
+    <Directory "/***REMOVED***/www/website/v2">
+		RewriteEngine On
+		RewriteCond %{REQUEST_FILENAME} !main.php
+		RewriteRule (.*) main.php [QSA]
+    </Directory>  	
+
+    <Directory "/***REMOVED***/www/website/extranet">
+        RewriteEngine On
+        RewriteCond %{REQUEST_FILENAME} !main.php
+        RewriteRule (.*) main.php [QSA]
+    </Directory>
+
+    <Directory "/***REMOVED***/www/website/site">
+        RewriteEngine On
+        RewriteCond %{REQUEST_FILENAME} !main.php
+        RewriteRule (.*) main.php [QSA]
+    </Directory>
+
+    ## new static website switch
+    ## Uncomment to switch:
+
+	RewriteCond %{REQUEST_URI} ^/$
+	RewriteRule .* /home [L,R=301]
+
+	RewriteCond %{REQUEST_URI} ^/v2/home$ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/home/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/terms-and-conditions$ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/terms-and-conditions/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/privacy-policy$ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/privacy-policy/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/about$ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/about/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/ethics-and-compliance$ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/ethics-and-compliance/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/experience$ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/experience/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/join-us$ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/join-us/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/contact-us$ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/contact-us/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/press$ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/press/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/services$ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/services/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/downloads$ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/downloads/
+	RewriteRule /v2/(.*) /$1 [R=301,L]
+
+	RewriteCond %{REQUEST_URI} ^/home$ [OR]
+	RewriteCond %{REQUEST_URI} ^/home/ [OR]
+	RewriteCond %{REQUEST_URI} ^/terms-and-conditions$ [OR]
+	RewriteCond %{REQUEST_URI} ^/terms-and-conditions/ [OR]
+	RewriteCond %{REQUEST_URI} ^/privacy-policy$ [OR]
+	RewriteCond %{REQUEST_URI} ^/privacy-policy/ [OR]
+	RewriteCond %{REQUEST_URI} ^/about$ [OR]
+	RewriteCond %{REQUEST_URI} ^/about/ [OR]
+	RewriteCond %{REQUEST_URI} ^/ethics-and-compliance$ [OR]
+	RewriteCond %{REQUEST_URI} ^/ethics-and-compliance/ [OR]
+	RewriteCond %{REQUEST_URI} ^/experience$ [OR]
+	RewriteCond %{REQUEST_URI} ^/experience/ [OR]
+	RewriteCond %{REQUEST_URI} ^/join-us$ [OR]
+	RewriteCond %{REQUEST_URI} ^/join-us/ [OR]
+	RewriteCond %{REQUEST_URI} ^/contact-us$ [OR]
+	RewriteCond %{REQUEST_URI} ^/contact-us/ [OR]
+	RewriteCond %{REQUEST_URI} ^/press$ [OR]
+	RewriteCond %{REQUEST_URI} ^/press/ [OR]
+	RewriteCond %{REQUEST_URI} ^/services$ [OR]
+	RewriteCond %{REQUEST_URI} ^/services/ [OR]
+	RewriteCond %{REQUEST_URI} ^/downloads$ [OR]
+	RewriteCond %{REQUEST_URI} ^/downloads/
+	RewriteRule /(.*) /site/$1 [L]
+
+	RewriteCond %{REQUEST_URI} ^/extranet/client/ [OR]
+	RewriteCond %{REQUEST_URI} ^/extranet/client$
+	RewriteRule /extranet/(.*) /$1 [R=301,L]
+
+	RewriteCond %{REQUEST_URI} ^/v2/client/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/client$
+	RewriteRule /v2/(.*) /$1 [R=301,L]
+
+	RewriteCond %{REQUEST_URI} ^/client/ [OR]
+	RewriteCond %{REQUEST_URI} ^/client$
+	RewriteRule /(.*) /extranet/$1 [L]
+
+    RewriteRule /about_csr	/about [L,R=301]
+    RewriteRule /about_csr_emergency_appeals	/about [L,R=301]
+    RewriteRule /about_csr_fundraising_2010	/about [L,R=301]
+    RewriteRule /about_csr_fundraising_2011	/about [L,R=301]
+    RewriteRule /about_news 	/about [L,R=301]
+    RewriteRule /about_overview 	/about [L,R=301]
+    RewriteRule /about_team	/about/team [L,R=301]
+    RewriteRule /careers_culture 	/join-us [L,R=301]
+    RewriteRule /careers_faqs	/join-us [L,R=301]
+    RewriteRule /careers_overview 	/join-us [L,R=301]
+    RewriteRule /careers_vacancies	/join-us/experienced-hires [L,R=301]
+    RewriteRule /clients_consultations	/services/private-consultations [L,R=301]
+    RewriteRule /clients_how 	/services [L,R=301]
+    RewriteRule /clients_info	/services [L,R=301]
+    RewriteRule /clients_overview 	/services [L,R=301]
+    RewriteRule /clients_request	/services [L,R=301]
+    RewriteRule /clients_value	/services [L,R=301]
+    RewriteRule /compliance$ 	/ethics-and-compliance [L,R=301]
+    RewriteRule /compliance_antibribery_policy	/ethics-and-compliance/anti-bribery-and-corruption [L,R=301]
+    RewriteRule /compliance_clients	/ethics-and-compliance [L,R=301]
+    RewriteRule /compliance_specialistnote	/ethics-and-compliance/compliance-briefing [L,R=301]
+    RewriteRule /compliance_specialists	/ethics-and-compliance [L,R=301]
+    RewriteRule /compliance_terms	/ethics-and-compliance/terms-and-conditions [L,R=301]
+    RewriteRule /contact_hongkong	/contact-us [L,R=301]
+    RewriteRule /contact_london 	/contact-us [L,R=301]
+    RewriteRule /contact_newdelhi‎	/contact-us [L,R=301]
+    RewriteRule /contact_newyork	/contact-us [L,R=301]
+    RewriteRule /contact_shanghai‎	/contact-us [L,R=301]
+    RewriteRule /coverage_case	/experience [L,R=301]
+    RewriteRule /coverage_global 	/experience [L,R=301]
+    RewriteRule /coverage_industries	/experience [L,R=301]
+    RewriteRule /privacy_policy 	/privacy-policy [L,R=301]
+    RewriteRule /specialists_become	/services/register-as-specialist [L,R=301]
+    RewriteRule /specialists_benefits	/services/register-as-specialist [L,R=301]
+    RewriteRule /specialists_consultations	/services/private-consultations [L,R=301]
+    RewriteRule /specialists_faqs 	/services [L,R=301]
+    RewriteRule /specialists_how	/services [L,R=301]
+    RewriteRule /specialists_overview 	/services [L,R=301]
+
+
+	## new static website end
+
+
+
+	RewriteCond %{HTTP_HOST} ^www\.***REMOVED***\.com\.$
+	RewriteRule ^/(.*) http://www.***REMOVED***.com/$1 [R=301,L]	
+	
+	RewriteRule ^/register_identity https://secure.***REMOVED***.com/register [L,R]
+	
+	# rewrites URLs containing the 'page' parameter to a non-query-string-based one
+	RewriteRule ^/intranet http://intranet.***REMOVED***.com/%{REQUEST_URI}?%{QUERY_STRING} [R,L]
+	
+	RewriteCond %{QUERY_STRING} (.*?)page=(.+?)(&.+)?$
+	RewriteRule ^.+$	/%2?%1%3 [R=permanent,L]
+
+	RewriteCond %{REQUEST_URI} !^/site
+	RewriteCond %{REQUEST_URI} !^/extranet
+	RewriteCond %{REQUEST_URI} !^/v2		
+	RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} !-f
+    <IfModule !mod_php5.c>
+	  RewriteCond %{REQUEST_URI} !^/php52-website.fast***REMOVED***i(.*)
+    </IfModule>
+	RewriteRule ^(.+)$ /index.php
+
+        RewriteCond %{REQUEST_URI} ^/experts_login
+        RewriteRule ^(.*)$ https://secure.***REMOVED***.com%{REQUEST_URI} [R,L]
+
+#	RewriteLog /***REMOVED***/log/website/rewrite.log
+#	RewriteLogLevel 9 
+
+</VirtualHost>
+
+<VirtualHost *:80>
+        ServerAdmin webmaster@***REMOVED***.com
+        ServerName ***REMOVED***.com
+	ServerAlias ***REMOVED***.* www.***REMOVED***.*
+        DocumentRoot /***REMOVED***/www/website/
+
+        RewriteEngine On
+        RewriteRule ^(.*)$ http://www.***REMOVED***.com%{REQUEST_URI} [R=301,L]
+</VirtualHost>
+
+<VirtualHost *:80>
+        ServerAdmin webmaster@***REMOVED***.com
+        ServerName secure.***REMOVED***.com
+        DocumentRoot /***REMOVED***/www/website/
+
+        RewriteEngine On
+        RewriteCond %{SERVER_PORT} !443
+        RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+</VirtualHost>
+
+<VirtualHost ***REMOVED***:443>
+	SetEnv APPLICATION_ENVIRONMENT production
+	ServerName secure.***REMOVED***.com
+	ServerAdmin webmaster@***REMOVED***.com
+    <IfModule !mod_php5.c>
+	    Use php52 secure-website
+    </IfModule>
+
+	DocumentRoot /***REMOVED***/www/website
+	<Directory /***REMOVED***/www/website/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order deny,allow
+		Deny from all
+		Allow from all
+	</Directory>
+	ErrorLog /***REMOVED***/log/website/error_log
+	TransferLog /***REMOVED***/log/website/access_log
+   
+	AddHandler server-parsed .shtml
+	AddType text/html .shtml
+
+	Options +FollowSymLinks
+	RewriteEngine on
+	
+    <Directory "/***REMOVED***/www/website/v2">
+		RewriteEngine On
+		RewriteCond %{REQUEST_FILENAME} !main.php
+		RewriteRule (.*) main.php [QSA]
+    </Directory>
+
+    <Directory "/***REMOVED***/www/website/extranet">
+        RewriteEngine On
+        RewriteCond %{REQUEST_FILENAME} !main.php
+        RewriteRule (.*) main.php [QSA]
+    </Directory>
+
+    <Directory "/***REMOVED***/www/website/site">
+        RewriteEngine On
+        RewriteCond %{REQUEST_FILENAME} !main.php
+        RewriteRule (.*) main.php [QSA]
+    </Directory>
+
+    ## new static website switch
+    ## Uncomment to switch:
+
+	RewriteCond %{REQUEST_URI} ^/$
+	RewriteRule .* /home [L,R=301]
+
+    RewriteCond %{REQUEST_URI} ^/v2/home$ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/home/ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/terms-and-conditions$ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/terms-and-conditions/ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/privacy-policy$ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/privacy-policy/ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/about$ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/about/ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/ethics-and-compliance$ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/ethics-and-compliance/ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/experience$ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/experience/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/contact-us$ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/contact-us/ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/join-us$ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/join-us/ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/press$ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/press/ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/services$ [OR]
+    RewriteCond %{REQUEST_URI} ^/v2/services/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/downloads$ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/downloads/
+    RewriteRule /v2/(.*) /$1 [R=301,L]
+
+    RewriteCond %{REQUEST_URI} ^/home$ [OR]
+    RewriteCond %{REQUEST_URI} ^/home/ [OR]
+    RewriteCond %{REQUEST_URI} ^/terms-and-conditions$ [OR]
+    RewriteCond %{REQUEST_URI} ^/terms-and-conditions/ [OR]
+    RewriteCond %{REQUEST_URI} ^/privacy-policy$ [OR]
+    RewriteCond %{REQUEST_URI} ^/privacy-policy/ [OR]
+    RewriteCond %{REQUEST_URI} ^/about$ [OR]
+    RewriteCond %{REQUEST_URI} ^/about/ [OR]
+    RewriteCond %{REQUEST_URI} ^/ethics-and-compliance$ [OR]
+    RewriteCond %{REQUEST_URI} ^/ethics-and-compliance/ [OR]
+    RewriteCond %{REQUEST_URI} ^/experience$ [OR]
+    RewriteCond %{REQUEST_URI} ^/experience/ [OR]
+	RewriteCond %{REQUEST_URI} ^/contact-us$ [OR]
+	RewriteCond %{REQUEST_URI} ^/contact-us/ [OR]
+    RewriteCond %{REQUEST_URI} ^/join-us$ [OR]
+    RewriteCond %{REQUEST_URI} ^/join-us/ [OR]
+    RewriteCond %{REQUEST_URI} ^/press$ [OR]
+    RewriteCond %{REQUEST_URI} ^/press/ [OR]
+    RewriteCond %{REQUEST_URI} ^/services$ [OR]
+    RewriteCond %{REQUEST_URI} ^/services/ [OR]
+	RewriteCond %{REQUEST_URI} ^/downloads$ [OR]
+	RewriteCond %{REQUEST_URI} ^/downloads/
+    RewriteRule /(.*) /site/$1 [L]
+
+	RewriteCond %{REQUEST_URI} ^/extranet/client/ [OR]
+	RewriteCond %{REQUEST_URI} ^/extranet/client$
+	RewriteRule /extranet/(.*) /$1 [R=301,L]
+
+	RewriteCond %{REQUEST_URI} ^/v2/client/ [OR]
+	RewriteCond %{REQUEST_URI} ^/v2/client$
+	RewriteRule /v2/(.*) /$1 [R=301,L]
+
+	RewriteCond %{REQUEST_URI} ^/client/ [OR]
+	RewriteCond %{REQUEST_URI} ^/client$
+	RewriteRule /(.*) /extranet/$1 [L]
+
+
+    ## new static website end
+
+	RewriteCond %{HTTP_HOST} ^secure\.***REMOVED***\.com\.$
+	RewriteRule ^/(.*) https://secure.***REMOVED***.com/$1 [R=301,L]	
+
+        RewriteCond %{QUERY_STRING} (.*?)page=(.+?)(&.+)?$
+        RewriteRule ^.+$ /%2?%1%3 [R=permanent,L]
+
+	# rewrites URLs containing the 'page' parameter to a non-query-string-based one
+	RewriteRule ^/intranet http://intranet.***REMOVED***.com/%{REQUEST_URI}?%{QUERY_STRING} [R,L]
+   
+	RewriteRule ^/resource\.php(.*)$ /resource$1 [R=301,L]
+	RewriteCond %{REQUEST_URI} !^/resource\.php
+	RewriteCond %{REQUEST_URI} ^/resource
+	RewriteRule ^(.*)$ /resource.php?%{QUERY_STRING} [PT]
+
+	RewriteCond %{REQUEST_URI} !^/site
+	RewriteCond %{REQUEST_URI} !^/extranet
+    RewriteCond %{REQUEST_URI} !^/v2		
+	RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} !-f
+    <IfModule !mod_php5.c>
+	  RewriteCond %{REQUEST_URI} !^/php52-secure-website.fast***REMOVED***i(.*)
+    </IfModule>
+	RewriteRule ^(.+)$ /index.php
+
+#	RewriteLog /***REMOVED***/log/website/rewrite.log
+#	RewriteLogLevel 9
+   
+	<IfModule mod_ssl.c>
+		# Current live cert
+		SSLEngine On
+		SSLProtocol -ALL +SSLv3 +TLSv1
+		SSLCipherSuite ALL:!aNULL:!ADH:!eNULL:!LOW:!EXP:RC4+RSA:+HIGH:!MEDIUM
+		SSLCertificateFile /***REMOVED***/secure/certificates/***REMOVED***_secure.pem
+		SSLCertificateKeyFile /***REMOVED***/secure/certificates/***REMOVED***_secure.key
+		SSLCertificateChainFile /***REMOVED***/secure/certificates/***REMOVED***_secure-ca-bundle.crt
+
+		<Files ~ "\.(***REMOVED***i|shtml|phtml|php?)$">
+			SSLOptions +StdEnvVars
+		</Files>
+		<Directory "/usr/lib/***REMOVED***i-bin">
+			SSLOptions +StdEnvVars
+		</Directory>
+		SetEnvIf User-Agent ".*MSIE.*" \
+			nokeepalive ssl-unclean-shutdown \
+			downgrade-1.0 force-response-1.0
+	</IfModule>
+
+	<IfModule mod_gnutls.c>
+		GnuTLSEnable On
+		GnuTLSSessionTickets On
+		GnuTLSExportCertificates on
+		GnuTLSPriorities SECURE
+		GnuTLSCertificateFile /***REMOVED***/secure/certificates/***REMOVED***_secure.pem
+		GnuTLSKeyFile /***REMOVED***/secure/certificates/***REMOVED***_secure.key
+		GnuTLSClientCAFile /***REMOVED***/secure/certificates/***REMOVED***_secure-ca-bundle.crt
+	</IfModule>
+   
+        #PCI Compliance fix
+        RewriteCond %{REQUEST_METHOD} ^TRACE
+        RewriteRule .* - [F]
+</VirtualHost>
+

@@ -1,0 +1,50 @@
+<VirtualHost *:80>
+        ServerAdmin webmaster@localhost
+        ServerName specialist.qa.***REMOVED***.com
+
+	RewriteEngine On
+        RewriteRule .* - [E=APPLICATION_ENV:DEV]
+
+        DocumentRoot /***REMOVED***/lib/php5/Symfony2/web
+
+        <Directory /***REMOVED***/lib/php5/Symfony2/web>
+                Options Indexes FollowSymLinks MultiViews
+                AllowOverride All
+                Order allow,deny
+                allow from all
+        </Directory>
+
+        Alias /php5.f***REMOVED***i /tmp/php5.f***REMOVED***i
+        # Assign the 'fake' f***REMOVED***i to call to an 'external' FastCGI Server
+        FastCGIExternalServer /tmp/php5.f***REMOVED***i -flush -host 127.0.0.1:8999
+
+        # Create the handler mappings to associate PHP files with a call to '/php5.f***REMOVED***i'
+        AddType application/x-httpd-fastphp5 .php
+        Action application/x-httpd-fastphp5 /php5.f***REMOVED***i
+
+        <Directory "/usr/lib/***REMOVED***i-bin">
+            AllowOverride None
+            Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+            Order allow,deny
+            Allow from all
+        </Directory>
+
+        ErrorLog /***REMOVED***/log/error-symfony2.log
+
+        # Possible values include: debug, info, notice, warn, error, crit,
+        # alert, emerg.
+        LogLevel warn
+
+        CustomLog /***REMOVED***/log/access-symfony2.log combined
+
+    Alias /doc/ "/usr/share/doc/"
+    <Directory "/usr/share/doc/">
+        Options Indexes MultiViews FollowSymLinks
+        AllowOverride None
+        Order deny,allow
+        Deny from all
+        Allow from 127.0.0.0/255.0.0.0 ::1/128
+    </Directory>
+
+</VirtualHost>
+

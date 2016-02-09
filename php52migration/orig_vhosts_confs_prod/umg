@@ -1,0 +1,60 @@
+<VirtualHost *:80>
+        SetEnv APPLICATION_ENVIRONMENT production
+        ServerName umg.***REMOVED***.com
+		ServerAlias umg.test.***REMOVED***.com
+        <IfModule !mod_php5.c>
+            Use php52 umg
+        </IfModule>
+        ServerAdmin webmaster@***REMOVED***.com
+
+        DocumentRoot /***REMOVED***/www/intranet/umg
+
+	<Directory "/***REMOVED***/www/intranet/config">
+	    Deny from all
+	</Directory>
+
+        <Directory "/***REMOVED***/www/intranet/umg">
+                Order deny,allow
+                Deny from all
+
+                Allow from 127.0.0.1
+
+                # Live
+                Allow from ***REMOVED*** ***REMOVED*** 92.52.113.224 92.52.113.225
+
+                # Test
+                Allow from ***REMOVED*** ***REMOVED*** 92.52.113.226 92.52.113.231
+
+		# Monitoring
+		Allow from 172.31.0.229 92.52.113.229
+
+                # Cognolink office
+                Allow from 93.97.44.249
+                Allow from 77.107.84.74
+                Allow from 77.107.84.75
+                Allow from 77.107.84.76
+                Allow from 77.107.84.77
+                Allow from 77.107.84.78
+
+		# IntelliSMS
+    		Allow from 94.236.49.202
+    		Allow from 69.16.208.119
+    		Allow from 69.16.208.120
+    		Allow from 94.236.50.16
+    		Allow from 94.236.50.17
+    		Allow from 94.236.50.18
+    		Allow from 94.236.50.19
+    		Allow from 94.236.50.20
+    		Allow from 94.236.49.203
+    		Allow from 94.236.49.204
+    		
+
+    	    RewriteEngine On
+	    RewriteCond %{REQUEST_FILENAME} !main.php
+	    RewriteRule (.*) main.php [QSA]
+        </Directory>
+        
+
+        ErrorLog /***REMOVED***/log/intranet/error_log
+        TransferLog /***REMOVED***/log/intranet/access_log
+</VirtualHost>
