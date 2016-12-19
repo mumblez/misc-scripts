@@ -2,7 +2,7 @@
 
 # RD job to deploy legacy offspring / php 5.2 applications
 # UUID: 9c3be6ff-f5f5-4aaa-b34e-e4bf6df389cf
-# Path: https://***REMOVED***.***REMOVED***.com/project/Everything/jobs/snippets/misc/deployments/phase1
+# Path: https://rundeck.dev.cognolink.com/project/Everything/jobs/snippets/misc/deployments/phase1
 # Job name: Deploy Offspring Application - POC
 
 
@@ -35,24 +35,24 @@ JOB_SERVICE_RESTART="abdc55a5-5c66-487b-b9f2-6286d50490bd"
 ## Mappings - front (web) and back (db) ends
 #case "$ENVIRONMENT" in
 #	qa )
-#		HOST_WEB="qa-fe.dev.***REMOVED***.com"
-#		HOST_DB="qa-db.dev.***REMOVED***.com"
+#		HOST_WEB="qa-fe.dev.cognolink.com"
+#		HOST_DB="qa-db.dev.cognolink.com"
 #		;;
 #	uat )
-#		HOST_WEB="uat-fe${UAT_FE}.dev.***REMOVED***.com"
-#		HOST_DB="uat-db1.dev.***REMOVED***.com"  # hard coded for now, but later generalise as 'uat-db' and change reference in hosts file
+#		HOST_WEB="uat-fe${UAT_FE}.dev.cognolink.com"
+#		HOST_DB="uat-db1.dev.cognolink.com"  # hard coded for now, but later generalise as 'uat-db' and change reference in hosts file
 #		;;
 #	test )
-#		HOST_WEB="***REMOVED***.uk.***REMOVED***.com" # replace when DNS project implemented!!!!
-#		HOST_DB="335298-db1.uk.***REMOVED***.com"
+#		HOST_WEB="335297-web2.uk.cognolink.com" # replace when DNS project implemented!!!!
+#		HOST_DB="335298-db1.uk.cognolink.com"
 #		;;
 #	training )
 #		HOST_WEB="intranet-training-web1-uk-cl" # replace when DNS project implemented!!!!
 #		HOST_DB="intranet-training-db-uk-cl"
 #		;;
 #	#prod )
-#	#	HOST_WEB="335296-web1.uk.***REMOVED***.com" # #replace when DNS project implemented!!!!
-#	#	HOST_DB="510094-db4.uk.***REMOVED***.com"
+#	#	HOST_WEB="335296-web1.uk.cognolink.com" # #replace when DNS project implemented!!!!
+#	#	HOST_DB="510094-db4.uk.cognolink.com"
 #	#	;;
 #esac
 
@@ -75,8 +75,8 @@ case "$ENVIRONMENT" in
 		HOST_DB="trintranet-db1-lncv"
 		;;
 	#prod )
-	#	HOST_WEB="335296-web1.uk.***REMOVED***.com" # replace when DNS project implemented!!!!
-	#	HOST_DB="510094-db4.uk.***REMOVED***.com"
+	#	HOST_WEB="335296-web1.uk.cognolink.com" # replace when DNS project implemented!!!!
+	#	HOST_DB="510094-db4.uk.cognolink.com"
 	#	HOST_WEB="web1-lndp"
 	#	HOST_DB="db4-lndp"
 	#	;;
@@ -114,10 +114,10 @@ run -i "$JOB_INSTALL_PKG" -f -- -host "$HOST_WEB" -projects "$PROJECTS"
 [ "$?" != 0 ] && die "ERROR: Error installing debian package(s)"
 echo "INFO: Succesfully installed debian package(s)"
 
-# Set permissions on /***REMOVED*** - hack until can figure out where offspring logs gets its permissions from
-ssh -o StrictHostKeyChecking=no rundeck@${HOST_WEB} sudo chown www-data:www-data /***REMOVED*** -R
-[ "$?" != 0 ] && die "ERROR: resetting /***REMOVED*** directory permissions"
-echo "INFO: Succesfully reset /***REMOVED*** directory permissions"
+# Set permissions on /cognolink - hack until can figure out where offspring logs gets its permissions from
+ssh -o StrictHostKeyChecking=no rundeck@${HOST_WEB} sudo chown www-data:www-data /cognolink -R
+[ "$?" != 0 ] && die "ERROR: resetting /cognolink directory permissions"
+echo "INFO: Succesfully reset /cognolink directory permissions"
 
 run -i "$JOB_SERVICE_RESTART" -f -- -host "$HOST_WEB" -service "php52-fpm"
 [ "$?" != 0 ] && die "ERROR: restarting php52-fpm service"
@@ -162,7 +162,7 @@ echo "INFO: Successfully run eventlogtriggers"
 # change Intranet version file to sprint tag?
 # echo "Creating VERSION file";
 # REVISION=`svn info /opt/jenkins/jobs/intranet/workspace/ 2>/dev/null | grep ^Revision | awk '{print $2}'`;
-# ssh ***REMOVED***@qa-fe "echo 'BUILD=$REVISION' > /***REMOVED***/config/intranet/version"
+# ssh root@qa-fe "echo 'BUILD=$REVISION' > /cognolink/config/intranet/version"
 
 
 echo "INFO: Started - $(date -d @$START_TIME)"

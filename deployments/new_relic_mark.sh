@@ -9,13 +9,13 @@ APP=$(echo $1 | tr '[:upper:]' '[:lower:]')
 REVISION=$(cat "$2")
 
 case $APP in
-  "intranet") APP_ID="***REMOVED***" ;;
-  "website") APP_ID="***REMOVED***" ;;
-  "zaibatsu") APP_ID="***REMOVED***" ;;
+  "intranet") APP_ID="4175976" ;;
+  "website") APP_ID="4223664" ;;
+  "zaibatsu") APP_ID="4223655" ;;
 esac
 
 new_relic_mark_deploy () {
-  curl -H "x-api-key:***REMOVED***" -d "deployment[application_id]=$APP_ID" -d                 "deployment[description]=$APP" -d "deployment[revision]=$REVISION" -d "deployment[changelog]=..." -d                             "deployment[user]=Webistrano Deployment" https://api.newrelic.com/deployments.xml
+  curl -H "x-api-key:someapikey" -d "deployment[application_id]=$APP_ID" -d                 "deployment[description]=$APP" -d "deployment[revision]=$REVISION" -d "deployment[changelog]=..." -d                             "deployment[user]=Webistrano Deployment" https://api.newrelic.com/deployments.xml
 }
 
 echo "INFO: Sending deployment marker to new relic..."

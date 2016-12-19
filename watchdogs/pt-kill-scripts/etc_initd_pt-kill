@@ -16,8 +16,8 @@ RETVAL=0
 
 KILLLOG="/var/log/mysql-kill.log"
 KILLLOGARCHIVE="/var/log/mysql-kill-archive.log"
-#EMAILS="***REMOVED*** it-monitoring@***REMOVED***.com it-team@***REMOVED***.com"
-EMAILS="***REMOVED***@***REMOVED***.com"
+#EMAILS="ufFeBCh4HRBtmnVywr5269F1pQ2jtQ@api.pushover.net it-monitoring@cognolink.com it-team@cognolink.com"
+EMAILS="yusuf.tran@cognolink.com"
 
 
 ptk_start () {
@@ -28,11 +28,11 @@ ptk_start () {
       --busy-time 600s \
       --wait-after-kill 15s \
       --ignore-info '(?i-smx:^insert|^update|^delete|^load|mailqueue)' \
-      --ignore-user '(?i-xsm:***REMOVED***)' \
+      --ignore-user '(?i-xsm:root)' \
       --match-user '(?i-xsm:sqluser)' \
       --match-info '(?i-xsm:select)' \
       --log "$KILLLOG" \
-      --execute-command '/***REMOVED***/scripts/pt-kill-exec.sh' \
+      --execute-command '/root/scripts/pt-kill-exec.sh' \
       --print \
       --kill-query
 }

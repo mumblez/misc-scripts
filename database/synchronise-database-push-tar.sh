@@ -63,17 +63,17 @@ env_tables () {
   for TABLE in $EXCLUDE_LIST; do
     if [ "$1" == "backup" ]; then
       # see if file exists first
-      if rcc test -f "$DIR/***REMOVED***.$TABLE.sql"; then
+      if rcc test -f "$DIR/somedb.$TABLE.sql"; then
         echo "INFO: $TABLE backup already exists, skipping..."
       else
-        echo "INFO: Backing up ***REMOVED***.$TABLE...$(date)"
-        rcc "mysqldump -B ***REMOVED*** --tables $TABLE --create-options > $DIR/***REMOVED***.$TABLE.sql"  || die "ERROR: backup of env tables failed"
+        echo "INFO: Backing up somedb.$TABLE...$(date)"
+        rcc "mysqldump -B somedb --tables $TABLE --create-options > $DIR/somedb.$TABLE.sql"  || die "ERROR: backup of env tables failed"
       fi
     elif [ "$1" == "restore" ]; then
-      echo "INFO: Restoring ***REMOVED***.$TABLE...$(date)"
-      rcc "mysql -B ***REMOVED*** < $DIR/***REMOVED***.$TABLE.sql" || die "ERROR: restore of env tables failed"
+      echo "INFO: Restoring somedb.$TABLE...$(date)"
+      rcc "mysql -B somedb < $DIR/somedb.$TABLE.sql" || die "ERROR: restore of env tables failed"
       # cleanup / delete sql file after successful restore
-      rcc "rm -f $DIR/***REMOVED***.$TABLE.sql"
+      rcc "rm -f $DIR/somedb.$TABLE.sql"
     fi
   done
 }
@@ -161,8 +161,8 @@ else
   # Flush data to disk before transfer, create snapshot and resume # swap for local (and no need to specifiy host nor ssh)
   echo "INFO: Connecting to source database..."
 
-  # so mysql can find .my.cnf for ***REMOVED*** user using environment variable (when using sudo -E)
-  HOME=/***REMOVED***
+  # so mysql can find .my.cnf for root user using environment variable (when using sudo -E)
+  HOME=/root
 
 mysql << EOF
 STOP SLAVE;

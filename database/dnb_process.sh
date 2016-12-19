@@ -7,7 +7,7 @@
 #
 # Changes:
 # 19/11/2013
-# - Tweaked to use lftp one liners, will simply list and compare directories vs md5sum after download, this will be alot more efficient 
+# - Tweaked to use lftp one liners, will simply list and compare directories vs md5sum after download, this will be alot more efficient
 # 02/01/2014
 # - Correct display / echo statements to show new found files
 # 03/01/2014
@@ -19,7 +19,7 @@
 # Make more compatible with rundeck, purposely die on error so can trigger correct alerts / workflow
 # 06/05/2014
 # Updated with new server in France - OVH
-# 21/05/2014 
+# 21/05/2014
 # Use 7z (p7zip) instead, normal unzip is unable to decompress sometimes complaining zip is corrupt
 # 25/09/2015
 # Amend to use new naming format and format of data
@@ -30,12 +30,12 @@
 die() { echo $* 1>&2 ; exit 1 ; }
 ################
 # DNB FTP #
-[ -e /***REMOVED***/scripts/dnb/.dnbftp ] || die "ERROR: dnb ftp credentials file not found"
-. /***REMOVED***/scripts/dnb/.dnbftp
+[ -e /root/scripts/dnb/.dnbftp ] || die "ERROR: dnb ftp credentials file not found"
+. /root/scripts/dnb/.dnbftp
 ###########
 #DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Need the same current_files.txt to persist between runs!
-DIR=/***REMOVED***/scripts/dnb
+DIR=/root/scripts/dnb
 DESTINATION="/dnb_files" # Somewhere that's accessible for mysql to load the file
 SOURCE="/gets" # on dnb ftp server
 CURRENT_FILES="$DIR/current_files.txt"
@@ -45,15 +45,15 @@ EXT_DIR=""
 TB_STRUCTURES_DIR="$DIR/dnb_table_structures"
 ## File / DB mappings ##
 DB="dnb"
-COMPANY_FILE="Cognolink.csv"
+COMPANY_FILE="some.csv"
 COMPANY_TABLE="company"
 COMPANY_TABLE_COLUMNS="(DunsNumber,Name,TradingStyle,StreetAddress1,StreetAddress2,City,State,Postcode,Country,SicCode,EmployeesTotal,AnnualSales,ImmediateParentDunsNumber,ImmediateParentName,ImmediateParentCountry,GlobalParentDunsNumber,GlobalParentName,GlobalParentCountry,MarketabilityIndicator,LocationIndicator)"
-TICKER_FILE="Cognolink_TickerFile.csv"
+TICKER_FILE="some_TickerFile.csv"
 TICKER_TABLE="ticker"
 TICKER_TABLE_COLUMNS="(SourceID,Ticker,StockExchange)"
 URL_FILE="URLFile.txt"
 URL_TABLE="url"
-# No columns, the file uses string positioning - https://docs.google.com/a/***REMOVED***.com/spreadsheet/ccc?key=***REMOVED***#gid=0
+# No columns, the file uses string positioning - https://docs.google.com/a/some.com/spreadsheet/ccc?key=0Ag6KaevjpAvMdFhyUUFjNTFXczBEMHJ3TzY5VDdBemc#gid=0
 # Table crafted within the datatype lengths so when load file data gets put in the right place (Brittle)
 
 ### Settings End ###
@@ -70,7 +70,7 @@ which 7za || die "ERROR: 7za not found"
 table_shuffle () {
     dtable="$1"
     doption="$2"
-    
+
     case $doption in
       "create")
         # Load into temporary table, rename old one, rename new one, drop old one!
@@ -105,7 +105,7 @@ extract_new_files () {
     if [ "$EXTENSION" = "zip" ]; then
       echo "unzipping $i"
       #unzip "$i" -d "$EXT_DIR" || die "ERROR: Failed to unzip $i"
-	  # 7za e Cognolink_20_May_2014.zip [-o<output dir>]
+	  # 7za e some_20_May_2014.zip [-o<output dir>]
       #unzip "$i" -d "$EXT_DIR" || die "ERROR: Failed to unzip $i"
 	  7za e "$i" -o"$EXT_DIR"
     elif [ "$EXTENSION" = "rar" ]; then
@@ -125,7 +125,7 @@ extract_new_files () {
 }
 
 db_loadup () {
-  ### Upload to databases 
+  ### Upload to databases
   ## File names for url and ticket files may possibly be the same each period,
   ## relying on the fact that they remove the files, we will use this to detect changes
   cd "$EXT_DIR"
@@ -167,14 +167,14 @@ db_loadup () {
 
 search_reindex () {
 #--after running full index, be sure to stop and start the service again:
-#su sphinxsearch -c "/usr/bin/indexer --config /***REMOVED***/var/sphinx.conf --all" # do index
-#sudo -u sphinxsearch /usr/bin/searchd --config /***REMOVED***/var/sphinx.conf # start searchd
-#/usr/bin/searchd --config /***REMOVED***/var/sphinx.conf --stop # stop searchd
+#su sphinxsearch -c "/usr/bin/indexer --config /some/var/sphinx.conf --all" # do index
+#sudo -u sphinxsearch /usr/bin/searchd --config /some/var/sphinx.conf # start searchd
+#/usr/bin/searchd --config /some/var/sphinx.conf --stop # stop searchd
 
 # stop sphinx searchd daemon
-#/usr/bin/searchd --config /***REMOVED***/var/sphinx.conf --stop
+#/usr/bin/searchd --config /some/var/sphinx.conf --stop
 # remove pid file incase
-#rm -rf /***REMOVED***/var/run/sphinxv2.pid
+#rm -rf /some/var/run/sphinxv2.pid
 
 # Ensure we can write new indexes to directory
 chown sphinx:sphinx /srv/ssd/sphinx_index -R
@@ -182,9 +182,9 @@ chmod 775 /srv/ssd/sphinx_index
 find /srv/ssd/sphinx_index -type f -exec chmod 664 {} \;
 
 # Create new indexes
-#su sphinxsearch -c "/usr/bin/indexer --config /***REMOVED***/var/sphinx.conf --all" || die "ERROR: Sphinx search re-index failed."
+#su sphinxsearch -c "/usr/bin/indexer --config /some/var/sphinx.conf --all" || die "ERROR: Sphinx search re-index failed."
 sudo -u sphinx /usr/bin/indexer --config /etc/sphinx/sphinx.conf --rotate --all || die "ERROR: Sphinx search re-index failed."
-#sudo -u sphinxsearch /usr/bin/searchd --config /***REMOVED***/var/sphinx.conf || die "ERROR: Sphinx searchd daemon failed to start."
+#sudo -u sphinxsearch /usr/bin/searchd --config /some/var/sphinx.conf || die "ERROR: Sphinx searchd daemon failed to start."
 
 }
 

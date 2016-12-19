@@ -5,12 +5,12 @@
 die() { echo $* 1>&2 ; exit 1 ; }
 ### Settings ###
 #TIMESTAMP=$(date +%Y-%m-%d-%H%M)
-DEPLOY_KEY="/***REMOVED***/keys/cl_deploy"
+DEPLOY_KEY="/root/keys/cl_deploy"
 PROJECTS_DIR="/var/lib/webistrano/git"
 GIT_OPTIONS="--force"
 RELEASE="@option.tag@"
 PROJECTS="@option.projects@"
-BUILDSCRIPT="/***REMOVED***/bin/packdist-v2"
+BUILDSCRIPT="/somelocation/bin/packdist-v2"
 APP_ENVIRONMENT="@option.environment@"
 TAG_PREFIX="release-"
 

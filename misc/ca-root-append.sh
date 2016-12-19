@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# intended to add self signed Cognolink CA public cert
+# intended to add self signed somecomp CA public cert
 # to server.
 die() { echo $* 1>&2 ; exit 1 ; }
 
-[ $USER != "***REMOVED***" ] && die "You must be ***REMOVED***!, good bye"
+[ $USER != "root" ] && die "You must be root!, good bye"
 
 # Detect OS
 
 #CA_PKG="ca-certificates"
-#CA_CRT_URL="http://***REMOVED***.52/cl***REMOVED***ca.pem"
-#CA_CRT_DEST_NAME="cl***REMOVED***ca.crt"
+#CA_CRT_URL="http://someip/clrootca.pem"
+#CA_CRT_DEST_NAME="clrootca.crt"
 CA_CRT_DEST_NAME="$1"
 #which wget || die "Please install wget and try again"
 

@@ -14,20 +14,20 @@ USERNAME="${FIRSTNAME}.${LASTNAME}"
 HOSTNAME="dev-${FIRSTNAME:0:1}${LASTNAME}"
 # check it also doesn't exist (and maybe setup SVN)
 PASSWORD="@option.password@"   # passed from rundeck
-OWNIP=$(curl -s -L http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/@option.parent_exec_id@/ip | jq -r '.node.value')
+OWNIP=$(curl -s -L http://someip:4001/v2/keys/rundeck/jobqueue/@option.parent_exec_id@/ip | jq -r '.node.value')
 WORKSTATION_IP="@option.workstation_ip@"        # pass in via RD - too much hassle to pull automatically
 TOOLS="chpasswd svn git adduser"
 WORKING_DIR=$(mktemp -d /tmp/new_user_setup_XXX)
 NEW_DIRS=$(mktemp $WORKING_DIR/new_dirs_XXX.txt)
 SYMLINKS_FILE=$(mktemp $WORKING_DIR/symlinks_file_XXX.txt)
-SVN_URL="https://***REMOVED***.***REMOVED***.com/svn/trunk"
+SVN_URL="https://someserver/svn/trunk"
 DEV_BASE="/home/$USERNAME/dev"
 PROJECTS_BASE="$DEV_BASE/projects"
 INFRASTRUCTURE_BASE="$DEV_BASE/infrastructure"
 GIT_CONFIG="/home/$USERNAME/.gitconfig"
-GIT_DEPLOY_KEY="/***REMOVED***/keys/cl_deploy"
-GITLAB_API="***REMOVED***"
-GITLAB_URL="https://***REMOVED***.***REMOVED***.com"
+GIT_DEPLOY_KEY="/root/keys/cl_deploy"
+GITLAB_API="someapi"
+GITLAB_URL="https://someserver"
 # RD_JOB_EXECID
 # etcd URL
 # etcd add / read execid, IP, hostname / username
@@ -56,24 +56,24 @@ echo "$USERNAME:$PASSWORD" | chpasswd
 
 # new directories
 cat > "${NEW_DIRS}" <<EOF
-/***REMOVED***/lib/shared
-/***REMOVED***/lib/php5/offspring
-/***REMOVED***/config/common
-/***REMOVED***/config/website
-/***REMOVED***/config/intranet
-/***REMOVED***/config/offspring
-/***REMOVED***/secure/website
-/***REMOVED***/var/web/data/files.registration
-/***REMOVED***/var/web/data/files.hrcv
-/***REMOVED***/var/web/data/files.production
-/***REMOVED***/var/web/data/files.attachment
-/***REMOVED***/var/cache/dwoo/offspring
-/***REMOVED***/lib/php5/offspring
-/***REMOVED***/lib/js
-/***REMOVED***/lib/templates
-/***REMOVED***/log/intranet
-/***REMOVED***/log/website
-/***REMOVED***/www/***REMOVED***
+/somecomp/lib/shared
+/somecomp/lib/php5/offspring
+/somecomp/config/common
+/somecomp/config/website
+/somecomp/config/intranet
+/somecomp/config/offspring
+/somecomp/secure/website
+/somecomp/var/web/data/files.registration
+/somecomp/var/web/data/files.hrcv
+/somecomp/var/web/data/files.production
+/somecomp/var/web/data/files.attachment
+/somecomp/var/cache/dwoo/offspring
+/somecomp/lib/php5/offspring
+/somecomp/lib/js
+/somecomp/lib/templates
+/somecomp/log/intranet
+/somecomp/log/website
+/somecomp/www/thirdbridge
 EOF
 
 while read line; do
@@ -101,80 +101,80 @@ sudo -u "$USERNAME" svn up php5.2 offspring chrome-plugins base sphinx yii &>/de
 # create symlinks
 # later on version control file and pull from gitlab
 cat > "${SYMLINKS_FILE}" <<EOF
-$INFRASTRUCTURE_BASE/base/bin/* /***REMOVED***/bin/
-$PROJECTS_BASE/intranet/bin/ /***REMOVED***/bin/intranet
-$PROJECTS_BASE/website/bin/ /***REMOVED***/bin/website
-$PROJECTS_BASE/common/lib/php/* /***REMOVED***/lib/php5/
-$PROJECTS_BASE/common/lib/js/* /***REMOVED***/lib/js/
-$PROJECTS_BASE/common/src/phplib/* /***REMOVED***/lib/php5/***REMOVED***/
-$PROJECTS_BASE/common/src/css/fck_custom.css /***REMOVED***/lib/css/***REMOVED***/
-$PROJECTS_BASE/common/src/js /***REMOVED***/lib/shared/
-$PROJECTS_BASE/common/src/css /***REMOVED***/lib/shared/
-$PROJECTS_BASE/common/config/dev/offspring /***REMOVED***/config/common/
-$PROJECTS_BASE/intranet/config/dev/config.xml /***REMOVED***/config/intranet/
-$PROJECTS_BASE/intranet/config/dev/config.inc.php /***REMOVED***/config/intranet/
-$PROJECTS_BASE/intranet/config/dev/db.properties /***REMOVED***/config/intranet/
-$PROJECTS_BASE/intranet/config/dev/offspring /***REMOVED***/config/intranet/
-$PROJECTS_BASE/website/config/dev/config.xml /***REMOVED***/config/website/
-$PROJECTS_BASE/website/config/dev/config.inc.php /***REMOVED***/config/website/
-$PROJECTS_BASE/website/src/forms /***REMOVED***/config/website/
-$PROJECTS_BASE/website/config/dev/offspring /***REMOVED***/config/website/
-$PROJECTS_BASE/zaibatsu/config/dev /***REMOVED***/config/zaibatsu
-$PROJECTS_BASE/zaibatsu/src/protected /***REMOVED***/lib/php5/projects/zaibatsu
-$PROJECTS_BASE/intranet/src/html/ /***REMOVED***/www/intranet
-$PROJECTS_BASE/website/src/html/ /***REMOVED***/www/website
-$PROJECTS_BASE/zaibatsu/src/html/ /***REMOVED***/www/zaibatsu
-$PROJECTS_BASE/restserver/src /***REMOVED***/www/restserver
-$PROJECTS_BASE/intranet/src/js /***REMOVED***/www/intranet/
-$PROJECTS_BASE/intranet/src/css /***REMOVED***/www/intranet/
-$PROJECTS_BASE/website/src/js /***REMOVED***/www/website/
-$PROJECTS_BASE/website/src/css /***REMOVED***/www/website/
-$PROJECTS_BASE/intranet/resources/img /***REMOVED***/www/intranet/
-$PROJECTS_BASE/intranet/resources/fonts /***REMOVED***/www/intranet/
-$PROJECTS_BASE/website/resources/img /***REMOVED***/www/website/
-$PROJECTS_BASE/website/resources/fonts /***REMOVED***/www/website/
-$PROJECTS_BASE/intranet/src/phplib/ /***REMOVED***/lib/php5/***REMOVED***/projects/intranet
-$PROJECTS_BASE/website/src/phplib/ /***REMOVED***/lib/php5/***REMOVED***/projects/website
-$PROJECTS_BASE/intranet/lib/pear/OLE /***REMOVED***/lib/php5/
-$PROJECTS_BASE/intranet/lib/pear/PHPUnit /***REMOVED***/lib/php5/
-$PROJECTS_BASE/website/src/htmltemplates/ /***REMOVED***/lib/templates/website
-$PROJECTS_BASE/intranet/src/htmltemplates/ /***REMOVED***/lib/templates/intranet
-$PROJECTS_BASE/intranet/resources/fonts/ /***REMOVED***/www/intranet/fonts
-$PROJECTS_BASE/website/resources/flash/ /***REMOVED***/www/website/
-$PROJECTS_BASE/website/lib/ /***REMOVED***/lib/php5/projects/website
-$PROJECTS_BASE/website/src/library/dist/scripts /***REMOVED***/www/website/js/v2
-$PROJECTS_BASE/website/src/library/dist/css /***REMOVED***/www/website/css/v2
-$PROJECTS_BASE/website/src/library/dist/images /***REMOVED***/www/website/img/v2
-$PROJECTS_BASE/website/src/library/dist/fonts /***REMOVED***/www/website/fonts/v2
-$PROJECTS_BASE/website/src/static/ /***REMOVED***/www/website/static
-$PROJECTS_BASE/website/src/static/ /***REMOVED***/www/***REMOVED***/static
-/***REMOVED***/lib/php5/***REMOVED***/v1_deprecated /***REMOVED***/lib/php5/Cognolink
-/***REMOVED***/lib/php5/***REMOVED***/v1_deprecated/eventLog /***REMOVED***/lib/php5/***REMOVED***/v1_deprecated/EventLog
-/***REMOVED***/lib/php5/***REMOVED***/v1_deprecated/invoice /***REMOVED***/lib/php5/***REMOVED***/v1_deprecated/Invoice
-/***REMOVED***/lib/php5/***REMOVED***/v1_deprecated/mail /***REMOVED***/lib/php5/***REMOVED***/v1_deprecated/Mail
-/***REMOVED***/lib/php5/Dwoo /***REMOVED***/lib/php5/dwoo/Dwoo
-/***REMOVED***/lib/php5/fckeditor/ /***REMOVED***/www/intranet/fckeditor_templates
-/***REMOVED***/lib/js/dojo/ /***REMOVED***/www/intranet/js/
-$INFRASTRUCTURE_BASE/offspring/src/phplib/offspring-core.php /***REMOVED***/lib/php5/offspring/
-$INFRASTRUCTURE_BASE/offspring/src/phplib/packages /***REMOVED***/lib/php5/offspring/
-$INFRASTRUCTURE_BASE/offspring/config/dev/offspring-rules.xml /***REMOVED***/config/offspring/
-$INFRASTRUCTURE_BASE/php5.2/config/dev/* /***REMOVED***/config/
-$INFRASTRUCTURE_BASE/base/config/dev/comm.yml /***REMOVED***/config/
-$INFRASTRUCTURE_BASE/base/lib/perl/comm.pm /***REMOVED***/lib/perl/
-$INFRASTRUCTURE_BASE/yii/lib/yii /***REMOVED***/lib/php5/
+$INFRASTRUCTURE_BASE/base/bin/* /somecomp/bin/
+$PROJECTS_BASE/intranet/bin/ /somecomp/bin/intranet
+$PROJECTS_BASE/website/bin/ /somecomp/bin/website
+$PROJECTS_BASE/common/lib/php/* /somecomp/lib/php5/
+$PROJECTS_BASE/common/lib/js/* /somecomp/lib/js/
+$PROJECTS_BASE/common/src/phplib/* /somecomp/lib/php5/somecomp/
+$PROJECTS_BASE/common/src/css/fck_custom.css /somecomp/lib/css/somecomp/
+$PROJECTS_BASE/common/src/js /somecomp/lib/shared/
+$PROJECTS_BASE/common/src/css /somecomp/lib/shared/
+$PROJECTS_BASE/common/config/dev/offspring /somecomp/config/common/
+$PROJECTS_BASE/intranet/config/dev/config.xml /somecomp/config/intranet/
+$PROJECTS_BASE/intranet/config/dev/config.inc.php /somecomp/config/intranet/
+$PROJECTS_BASE/intranet/config/dev/db.properties /somecomp/config/intranet/
+$PROJECTS_BASE/intranet/config/dev/offspring /somecomp/config/intranet/
+$PROJECTS_BASE/website/config/dev/config.xml /somecomp/config/website/
+$PROJECTS_BASE/website/config/dev/config.inc.php /somecomp/config/website/
+$PROJECTS_BASE/website/src/forms /somecomp/config/website/
+$PROJECTS_BASE/website/config/dev/offspring /somecomp/config/website/
+$PROJECTS_BASE/zaibatsu/config/dev /somecomp/config/zaibatsu
+$PROJECTS_BASE/zaibatsu/src/protected /somecomp/lib/php5/projects/zaibatsu
+$PROJECTS_BASE/intranet/src/html/ /somecomp/www/intranet
+$PROJECTS_BASE/website/src/html/ /somecomp/www/website
+$PROJECTS_BASE/zaibatsu/src/html/ /somecomp/www/zaibatsu
+$PROJECTS_BASE/restserver/src /somecomp/www/restserver
+$PROJECTS_BASE/intranet/src/js /somecomp/www/intranet/
+$PROJECTS_BASE/intranet/src/css /somecomp/www/intranet/
+$PROJECTS_BASE/website/src/js /somecomp/www/website/
+$PROJECTS_BASE/website/src/css /somecomp/www/website/
+$PROJECTS_BASE/intranet/resources/img /somecomp/www/intranet/
+$PROJECTS_BASE/intranet/resources/fonts /somecomp/www/intranet/
+$PROJECTS_BASE/website/resources/img /somecomp/www/website/
+$PROJECTS_BASE/website/resources/fonts /somecomp/www/website/
+$PROJECTS_BASE/intranet/src/phplib/ /somecomp/lib/php5/somecomp/projects/intranet
+$PROJECTS_BASE/website/src/phplib/ /somecomp/lib/php5/somecomp/projects/website
+$PROJECTS_BASE/intranet/lib/pear/OLE /somecomp/lib/php5/
+$PROJECTS_BASE/intranet/lib/pear/PHPUnit /somecomp/lib/php5/
+$PROJECTS_BASE/website/src/htmltemplates/ /somecomp/lib/templates/website
+$PROJECTS_BASE/intranet/src/htmltemplates/ /somecomp/lib/templates/intranet
+$PROJECTS_BASE/intranet/resources/fonts/ /somecomp/www/intranet/fonts
+$PROJECTS_BASE/website/resources/flash/ /somecomp/www/website/
+$PROJECTS_BASE/website/lib/ /somecomp/lib/php5/projects/website
+$PROJECTS_BASE/website/src/library/dist/scripts /somecomp/www/website/js/v2
+$PROJECTS_BASE/website/src/library/dist/css /somecomp/www/website/css/v2
+$PROJECTS_BASE/website/src/library/dist/images /somecomp/www/website/img/v2
+$PROJECTS_BASE/website/src/library/dist/fonts /somecomp/www/website/fonts/v2
+$PROJECTS_BASE/website/src/static/ /somecomp/www/website/static
+$PROJECTS_BASE/website/src/static/ /somecomp/www/thirdbridge/static
+/somecomp/lib/php5/somecomp/v1_deprecated /somecomp/lib/php5/somecomp
+/somecomp/lib/php5/somecomp/v1_deprecated/eventLog /somecomp/lib/php5/somecomp/v1_deprecated/EventLog
+/somecomp/lib/php5/somecomp/v1_deprecated/invoice /somecomp/lib/php5/somecomp/v1_deprecated/Invoice
+/somecomp/lib/php5/somecomp/v1_deprecated/mail /somecomp/lib/php5/somecomp/v1_deprecated/Mail
+/somecomp/lib/php5/Dwoo /somecomp/lib/php5/dwoo/Dwoo
+/somecomp/lib/php5/fckeditor/ /somecomp/www/intranet/fckeditor_templates
+/somecomp/lib/js/dojo/ /somecomp/www/intranet/js/
+$INFRASTRUCTURE_BASE/offspring/src/phplib/offspring-core.php /somecomp/lib/php5/offspring/
+$INFRASTRUCTURE_BASE/offspring/src/phplib/packages /somecomp/lib/php5/offspring/
+$INFRASTRUCTURE_BASE/offspring/config/dev/offspring-rules.xml /somecomp/config/offspring/
+$INFRASTRUCTURE_BASE/php5.2/config/dev/* /somecomp/config/
+$INFRASTRUCTURE_BASE/base/config/dev/comm.yml /somecomp/config/
+$INFRASTRUCTURE_BASE/base/lib/perl/comm.pm /somecomp/lib/perl/
+$INFRASTRUCTURE_BASE/yii/lib/yii /somecomp/lib/php5/
 $PROJECTS_BASE/intranet/config/dev/apache/intranet-v2 /etc/apache2/sites-available/intranet
 $PROJECTS_BASE/intranet/config/dev/apache/sms-v2 /etc/apache2/sites-available/sms
 $PROJECTS_BASE/intranet/config/dev/apache/umg-v2 /etc/apache2/sites-available/umg
 $PROJECTS_BASE/website/config/dev/apache/website-v2 /etc/apache2/sites-available/website
-$PROJECTS_BASE/website/config/dev/apache/***REMOVED***-v2 /etc/apache2/sites-available/***REMOVED***
+$PROJECTS_BASE/website/config/dev/apache/thirdbridge-v2 /etc/apache2/sites-available/thirdbridge
 $PROJECTS_BASE/zaibatsu/config/dev/apache/zaibatsu-v2 /etc/apache2/sites-available/zaibatsu
 $PROJECTS_BASE/restserver/config/dev/restserver /etc/apache2/sites-available/restserver
 $PROJECTS_BASE/intranet/cron/dev/cron /etc/cron.d/intranet
-$PROJECTS_BASE/website/config/dev/apache/apache_passwords /***REMOVED***/secure/website/
+$PROJECTS_BASE/website/config/dev/apache/apache_passwords /somecomp/secure/website/
 $PROJECTS_BASE/website/cron/errorcheck /etc/cron.d/website
 EOF
 
-[ -h /***REMOVED***/lib/php5/***REMOVED***/projects/intranet/phplib ] && echo "WARNING: Found dodgy link" 
+[ -h /somecomp/lib/php5/somecomp/projects/intranet/phplib ] && echo "WARNING: Found dodgy link"
 
 
 
@@ -182,22 +182,22 @@ while read line; do
         #echo "INFO: Creating symlinks...."
         #echo "INFO: Creating symlink for $line"
         ln -snf $line
-        #[ -h /***REMOVED***/lib/php5/***REMOVED***/projects/intranet/phplib ] && echo "WARNING: Found dodgy link" 
+        #[ -h /somecomp/lib/php5/somecomp/projects/intranet/phplib ] && echo "WARNING: Found dodgy link"
 done < "${SYMLINKS_FILE}"
 
 # Initialise rabbitmq exchange / queue
-php /***REMOVED***/bin/intranet/amqpExchangeAndQueueSetup.php -e***REMOVED*** -qsymfony --run
+php /somecomp/bin/intranet/amqpExchangeAndQueueSetup.php -esomecomp -qsymfony --run
 # directories to make after symlinking
-mkdir -p /***REMOVED***/lib/php5/dwoo/compiled
-mkdir -p /***REMOVED***/log/zaibatsu
+mkdir -p /somecomp/lib/php5/dwoo/compiled
+mkdir -p /somecomp/log/zaibatsu
 
 # permissions
 chown $USERNAME:dev -R "$DEV_BASE"
-chmod 777 /***REMOVED***/lib/php5/dwoo/compiled
-chmod 777 -R /***REMOVED***/var/compiled/
-chmod 777 -R /***REMOVED***/var/cache/
-chmod 777 -R /***REMOVED***/log/
-chmod 777 -R /***REMOVED***/lib/php5/projects/zaibatsu/runtime
+chmod 777 /somecomp/lib/php5/dwoo/compiled
+chmod 777 -R /somecomp/var/compiled/
+chmod 777 -R /somecomp/var/cache/
+chmod 777 -R /somecomp/log/
+chmod 777 -R /somecomp/lib/php5/projects/zaibatsu/runtime
 
 # set hostname
 # dev-<initial><surname>
@@ -210,7 +210,7 @@ hostname "$HOSTNAME"
 cat > ${GIT_CONFIG} <<EOF
 [user]
         name = $PRETTY_FNAME $PRETTY_LNAME
-        email = ${FIRSTNAME}.${LASTNAME}@***REMOVED***.com
+        email = ${FIRSTNAME}.${LASTNAME}@somecomp.com
 
 [color]
         ui = true
@@ -253,14 +253,14 @@ for AP_CONFIG in $CONFIGS_TO_EDIT; do
 done
 
 chown ${USERNAME}:dev /var/lock/apache2/ -R
-chown ${USERNAME}:dev /var/www/fast***REMOVED***i/ -R
+chown ${USERNAME}:dev /var/www/fastcgi/ -R
 chown ${USERNAME}:dev /var/run/apache2/ -R
 chown ${USERNAME}:dev /var/lib/apache2/ -R
-chown ${USERNAME}:dev /***REMOVED***/log/ -R
+chown ${USERNAME}:dev /somecomp/log/ -R
 
 
 
-# Setup specialist-extranet - in future, when common repo's moved into its own namespace, loop this routine for all repo's in ***REMOVED***_web_v2 namespace
+# Setup specialist-extranet - in future, when common repo's moved into its own namespace, loop this routine for all repo's in somecomp_web_v2 namespace
 #cd /etc/php5/fpm/pool.d
 ## Setup user as owner, so cache and log access isn't a problem (user pulls files down as themselves)
 #sed "s/^user =.*/user = $USERNAME/" -i specialist-extranet.conf
@@ -284,12 +284,12 @@ iface lo inet loopback
 auto eth0
 iface eth0 inet static
         address $OWNIP
-        gateway ***REMOVED***.1
+        gateway somegateway
         netmask 255.255.252.0
         post-up /sbin/ip route add default dev eth0
         # dns-* options are implemented by the resolvconf package, if installed
-        dns-nameservers ***REMOVED***.11
-        dns-search dev.***REMOVED***.com corp.***REMOVED***.com
+        dns-nameservers somedns
+        dns-search dev.somecomp.com corp.somecomp.com
 EOF
 
 #service networking restart # will complain file exists, maybe best to reboot right at the end
@@ -300,17 +300,17 @@ echo "ServerName $HOSTNAME" >> /etc/apache2/apache2.conf
 
 # hosts file
 echo "$OWNIP    $HOSTNAME" >> /etc/hosts
-echo "$OWNIP    www.***REMOVED***.com" >> /etc/hosts
-echo "$OWNIP    www.dev.***REMOVED***.com" >> /etc/hosts
-echo "$OWNIP    intranet.dev.***REMOVED***.com" >> /etc/hosts
-echo "$OWNIP    umg.dev.***REMOVED***.com" >> /etc/hosts
-echo "$OWNIP    zaibatsu.dev.***REMOVED***.com" >> /etc/hosts
-echo "$OWNIP    specialist.dev.***REMOVED***.com" >> /etc/hosts
-echo "$OWNIP    restserver.dev.***REMOVED***.com" >> /etc/hosts
-echo "$OWNIP    auth.dev.***REMOVED***.com" >> /etc/hosts
-echo "$OWNIP    externalapi.dev.***REMOVED***.com" >> /etc/hosts
-echo "$OWNIP    pluginapi.dev.***REMOVED***.com" >> /etc/hosts
-echo "$OWNIP    intranet-v2.dev.***REMOVED***.com" >> /etc/hosts
+echo "$OWNIP    www.somecomp.com" >> /etc/hosts
+echo "$OWNIP    www.dev.somecomp.com" >> /etc/hosts
+echo "$OWNIP    intranet.dev.somecomp.com" >> /etc/hosts
+echo "$OWNIP    umg.dev.somecomp.com" >> /etc/hosts
+echo "$OWNIP    zaibatsu.dev.somecomp.com" >> /etc/hosts
+echo "$OWNIP    specialist.dev.somecomp.com" >> /etc/hosts
+echo "$OWNIP    restserver.dev.somecomp.com" >> /etc/hosts
+echo "$OWNIP    auth.dev.somecomp.com" >> /etc/hosts
+echo "$OWNIP    externalapi.dev.somecomp.com" >> /etc/hosts
+echo "$OWNIP    pluginapi.dev.somecomp.com" >> /etc/hosts
+echo "$OWNIP    intranet-v2.dev.somecomp.com" >> /etc/hosts
 
 # enable sites
 echo "INFO: Enabling apache vhosts..."

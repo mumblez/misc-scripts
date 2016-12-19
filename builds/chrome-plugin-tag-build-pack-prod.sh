@@ -14,13 +14,13 @@ TIMESTAMP=$(date +%Y-%m-%d-%H%M)
 #PLUGIN=""   # provide via rundeck
 PLUGIN="capture-specialist"   # git repo / project
 TAG="v1.12.10"
-REPO_URL="git@***REMOVED***.***REMOVED***.com:chrome-plugins/chrome-plugin-live-process-test.git"
-#REPO_KEY="/***REMOVED***/keys/cl_deploy" # for rundeck
+REPO_URL="git@gitlab.dev.cognolink.com:chrome-plugins/chrome-plugin-live-process-test.git"
+#REPO_KEY="/root/keys/cl_deploy" # for rundeck
 BUILD_ROOT="/srv/chrome-plugin-build"
-REPO_KEY="/***REMOVED***/keys/cl_deploy" # for debug
+REPO_KEY="/root/keys/cl_deploy" # for debug
 KEY_NAME="${PLUGIN}.pem"
 WEB_ROOT="/srv/chrome-plugin/${PLUGIN}/release/${TIMESTAMP}"
-WEB_HOST_URL="http://plugins.***REMOVED***.com"
+WEB_HOST_URL="http://some.plugin.url"
 mkdir -p "${WEB_ROOT}"
 
 ### chrome packing settings
@@ -53,7 +53,7 @@ done
 
 ssh-agent bash -c "ssh-add $REPO_KEY &>/dev/null && git clone $REPO_URL ${BUILD_ROOT}/${PLUGIN}" ||\
 	die "ERROR: Git clone from $REPO_URL failed"
-# assumes if repo branch folder doesn't exist it's branch in web***REMOVED*** also doesn't exist
+# assumes if repo branch folder doesn't exist it's branch in webroot also doesn't exist
 [ ! -e "$WEB_ROOT" ] && mkdir -p "$WEB_ROOT"
 
 
@@ -94,7 +94,7 @@ sig_len_hex=$(byte_swap $(printf '%08x\n' $(ls -l "$sig" | awk '{print $5}')))
 mv "${PLUGIN}.crx" "$WEB_ROOT" || die "ERROR: Failed to transfer crx to webserver"
 mv "${PLUGIN}.xml" "$WEB_ROOT" || die "ERROR: Failed to transfer xml to webserver"
 
-# Symlink both files to web***REMOVED***
+# Symlink both files to webroot
 ln -snf "${WEB_ROOT}/${PLUGIN}.crx" "${WEB_ROOT}/../../"
 ln -snf "${WEB_ROOT}/${PLUGIN}.xml" "${WEB_ROOT}/../../"
 
@@ -107,7 +107,7 @@ echo "${WEB_HOST_URL}/${PLUGIN}"
 echo "Extension ID: $EID"
 echo "=================================================================================================="
 
-# CLEANUP 
+# CLEANUP
 echo "INFO: Cleaning up..."
 # Clearing old releases
 CURRENT_RELEASE=$(basename $(readlink "/srv/chrome-plugin/${PLUGIN}/${PLUGIN}.crx"))

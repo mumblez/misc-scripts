@@ -12,7 +12,7 @@ process_ref() {
         refname_type="tag"
         short_refname=${refname##refs/tags/}
         if echo "$short_refname" | grep -sqE ".*v?[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"; then
-          /usr/bin/sudo /***REMOVED***/scripts/tag-latest.sh `pwd` "$short_refname"
+          /usr/bin/sudo /root/scripts/tag-latest.sh `pwd` "$short_refname"
         fi
         ;;
     esac

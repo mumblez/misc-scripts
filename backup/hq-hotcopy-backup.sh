@@ -2,10 +2,10 @@
 
 die() { echo $* 1>&2 ; exit 1 ; }
 
-HOT_COPY_DIRS="/srv/r5/hq/FinanceDBs /srv/r5/hq/fileserver /srv/r5/hq/marketing /srv/r5/hq/***REMOVED***"
-#HOT_COPY_DIRS="/srv/r5/hq/marketing /srv/r5/hq/***REMOVED***"
+HOT_COPY_DIRS="/srv/r5/hq/FinanceDBs /srv/r5/hq/fileserver /srv/r5/hq/marketing /srv/r5/hq/thirdbridge"
+#HOT_COPY_DIRS="/srv/r5/hq/marketing /srv/r5/hq/thirdbridge"
 ZB_REPO="/srv/r5/backups/zbackup-repos/hq-fileserver"
-ZB_KEY="/***REMOVED***/keys/zbackup"
+ZB_KEY="/root/keys/zbackup"
 
 # add check for zbackup binary
 test -x /usr/local/bin/zbackup && ZB_BIN="/usr/local/bin/zbackup" || ZB_BIN="/bin/zbackup"

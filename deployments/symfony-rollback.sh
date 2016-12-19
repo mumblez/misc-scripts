@@ -8,7 +8,7 @@ die() { echo $* 1>&2 ; exit 1 ; }
 
 RELEASE="@option.release@"
 RELEASE_FOLDER="/srv/symfony/releases"
-SYMFONY_ROOT="/***REMOVED***/lib/php5/symfony2"
+SYMFONY_ROOT="/somecomp/lib/php5/symfony2"
 CURRENT_RELEASE=$(basename $(readlink $SYMFONY_ROOT))
 
 # Validate

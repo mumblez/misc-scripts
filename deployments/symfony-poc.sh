@@ -10,17 +10,17 @@ PHP="/usr/bin/php"
 PHP_FPM="/etc/init.d/php5-fpm"
 SITE_USER="www-data"
 SITE_GROUP="www-data"
-DEPLOY_KEY="/***REMOVED***/web/cl_deploy"
+DEPLOY_KEY="/root/web/cl_deploy"
 GIT_REPO="@option.repository_url@"
 GIT_OPTIONS="--recursive" #(optional, if using submodules)
 GIT_BRANCH="@option.branch@"
 GIT_TAG="@option.tag@"
-REAL_DIR="/***REMOVED***/lib/php5/symfony2"
+REAL_DIR="/somecomp/lib/php5/symfony2"
 SYMFONY_ROOT="/srv/symfony"
 DEPLOY_ROOT="${SYMFONY_ROOT}/releases"
 SHARED_ROOT="${DEPLOY_ROOT}/shared"
 DEPLOY_DIR="${DEPLOY_ROOT}/${TIMESTAMP}"
-WEBROOT="/***REMOVED***/www/symfony2"
+WEBROOT="/somecomp/www/symfony2"
 APP_ENV="@option.environment@"
 COMPOSER="${SYMFONY_ROOT}/binaries/composer.phar"
 #COMPOSER_OPTIONS="--no-interaction --working-dir=$DEPLOY_DIR"
@@ -155,10 +155,10 @@ ln -snf "$DEPLOY_DIR" "$REAL_DIR" && echo "INFO: Symlinked deployment release di
 # Set permission to symlink (incase apache only follows symlinks with same owner)
 chown -h "$SITE_USER":"$SITE_GROUP" "$REAL_DIR" -R
 
-#symlink web***REMOVED***
-ln -snf "$REAL_DIR/web" "$WEBROOT" && echo "INFO: Symlinked deployment release web ***REMOVED*** - $REAL_DIR to $WEBROOT" || die "ERROR: Symlinking deployment release web***REMOVED*** - $REAL_DIR to $WEBROOT failed"
+#symlink webroot
+ln -snf "$REAL_DIR/web" "$WEBROOT" && echo "INFO: Symlinked deployment release web root - $REAL_DIR to $WEBROOT" || die "ERROR: Symlinking deployment release webroot - $REAL_DIR to $WEBROOT failed"
 
-# Set permission to web***REMOVED*** (incase apache only follows symlinks with same owner)
+# Set permission to webroot (incase apache only follows symlinks with same owner)
 chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
 
 # Restart php-fpm as it keeps handles open from previous files!
@@ -174,7 +174,7 @@ chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
 ### no more steps
 echo "INFO: Deployment suceeded!"
 
-# CLEANUP 
+# CLEANUP
 echo "INFO: Cleaning up..."
 # Clearing old releases
 CURRENT_RELEASE=$(basename $(readlink $REAL_DIR))

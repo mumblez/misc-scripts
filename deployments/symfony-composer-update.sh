@@ -25,7 +25,7 @@
 die() { echo $* 1>&2 ; exit 1 ; }
 
 ### Settings ###
-CODE_FREEZE_KEY="/***REMOVED***/keys/codefreezegitlab"
+CODE_FREEZE_KEY="/root/keys/codefreezegitlab"
 GIT_REPO="@option.repository_url@"
 CODE_FREEZE_ROOT="/tmp"
 COMPOSER_OPTIONS="--no-progress --no-interaction --no-scripts"
@@ -57,7 +57,7 @@ if [ -e ~/.gitconfig ]; then
 	GITCONFIGEXISTS="yes"
 fi
 git config --global user.name "codefreeze"
-git config --global user.email "it-admin@***REMOVED***.com"
+git config --global user.email "it-admin@somecompany.com"
 
 # Pull repository down
 git clone "$GIT_REPO" "$WORKING_DIR"

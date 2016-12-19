@@ -5,7 +5,7 @@
 
 die() { echo $* 1>&2 ; exit 1 ; }
 ### Settings ###
-#S_PROJECT="specialistextranet" # replace with RD dynamic option for ***REMOVED***_web_v2 namespace
+#S_PROJECT="specialistextranet" # replace with RD dynamic option for somecomp_web_v2 namespace
 # or use the repository RD job option value
 S_PROJECT="@option.repository@"
 TIMESTAMP=$(date +%Y-%m-%d-%H%M%S)
@@ -15,18 +15,18 @@ PHP_FPM="/etc/init.d/php5-fpm"
 APACHE_SERVICE="/etc/init.d/apache2"
 SITE_USER="www-data"
 SITE_GROUP="www-data"
-DEPLOY_KEY="/***REMOVED***/web/cl_deploy"
+DEPLOY_KEY="/root/web/cl_deploy"
 GIT_REPO="@option.repository_url@"
 GIT_OPTIONS="--recursive" #(optional, if using submodules)
 GIT_BRANCH="@option.branch@"
 GIT_TAG="@option.tag@"
 VENDORS_CLEAR="@option.vendors_clear@"
-REAL_DIR="/***REMOVED***/lib/php5/${S_PROJECT}" # Is this even necessary? exposes .git directory of project!!!
+REAL_DIR="/somecomp/lib/php5/${S_PROJECT}" # Is this even necessary? exposes .git directory of project!!!
 SYMFONY_ROOT="/srv/symfony"
 DEPLOY_ROOT="${SYMFONY_ROOT}/${S_PROJECT}"
 SHARED_ROOT="${DEPLOY_ROOT}/shared" # any point in sharing the vendors directory?
 DEPLOY_DIR="${DEPLOY_ROOT}/${TIMESTAMP}"
-WEBROOT="/***REMOVED***/www/${S_PROJECT}"  # amend vhosts to reflect
+WEBROOT="/somecomp/www/${S_PROJECT}"  # amend vhosts to reflect
 APP_ENV="@option.environment@"
 COMPOSER="/usr/local/bin/composer.phar"
 #COMPOSER_OPTIONS="--no-interaction --working-dir=$DEPLOY_DIR"
@@ -123,7 +123,7 @@ if [ "$APP_ENV" = "uat" ]; then
   ### If UAT then replace template variables in parameters.yml with passed in values ###
   UAT_FE="@option.uat_frontend@"
   #UAT_DB="@option.uat_db@"
-  
+
   echo "INFO: UAT FE: $UAT_FE"
   #echo "INFO: UAT DB: $UAT_DB"
   echo "INFO: Applying uat configuration..."
@@ -164,9 +164,9 @@ chmod 775 "${SHARED_ROOT}/vendor" -R
 chown -h "$SITE_USER":"$SITE_GROUP" "${DEPLOY_DIR}/vendor"
 rm -f "${SHARED_ROOT}/vendor/zzzzzzbla.txt"
 
-# delete ***REMOVED*** vendor, always causes issues!!!
-echo "INFO: clearing ***REMOVED*** vendor..."
-rm -rf ${DEPLOY_DIR}/vendor/***REMOVED***
+# delete somecomp vendor, always causes issues!!!
+echo "INFO: clearing somecomp vendor..."
+rm -rf ${DEPLOY_DIR}/vendor/somecomp
 
 # clear vendors directory if asked to
 if [[ "$VENDORS_CLEAR" == 'yes' ]]; then
@@ -237,14 +237,14 @@ fi
 
 
 # Employee images / db migration steps
-#if [[ $(hostname) == "qa-fe" || $(hostname) == "***REMOVED***.uk.***REMOVED***.com" && "$S_PROJECT" == 'intranet-v2' ]]; then
+#if [[ $(hostname) == "qa-fe" || $(hostname) == "somehost.somecomp.com" && "$S_PROJECT" == 'intranet-v2' ]]; then
 if [[ "$S_PROJECT" == 'intranet-v2' ]]; then
     cd "${DEPLOY_DIR}"
-    
+
     # symlink employee images
     [ ! -d "${SHARED_ROOT}/employee-images"  ] && mkdir -p "${SHARED_ROOT}/employee-images"
     ln -snf "${SHARED_ROOT}/employee-images" "${DEPLOY_DIR}/web/assets/images/employees"
-    
+
     # DB Migration steps
     echo "INFO: running DB scripts..."
     sudo -u "$SITE_USER" "$PHP" "$CONSOLE" doctrine:migrations:migrate --no-interaction
@@ -279,20 +279,20 @@ ln -snf "$DEPLOY_DIR" "$REAL_DIR" && echo "INFO: Symlinked deployment release di
 # Set permission to symlink (incase apache only follows symlinks with same owner)
 chown -h "$SITE_USER":"$SITE_GROUP" "$REAL_DIR" -R
 
-#symlink web***REMOVED***
-ln -snf "$REAL_DIR/web" "$WEBROOT" && echo "INFO: Symlinked deployment release web ***REMOVED*** - $REAL_DIR/web to $WEBROOT" || die "ERROR: Symlinking deployment release web***REMOVED*** - $REAL_DIR to $WEBROOT failed"
+#symlink webroot
+ln -snf "$REAL_DIR/web" "$WEBROOT" && echo "INFO: Symlinked deployment release web root - $REAL_DIR/web to $WEBROOT" || die "ERROR: Symlinking deployment release webroot - $REAL_DIR to $WEBROOT failed"
 
-# Set permission to web***REMOVED*** (incase apache only follows symlinks with same owner)
+# Set permission to webroot (incase apache only follows symlinks with same owner)
 chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
 
 # Set convenience 'current' directory to release
 ln -snf "$DEPLOY_DIR" "${DEPLOY_ROOT}/current"
 
-# Expose symfony log files to /***REMOVED***/logs/<project>/symfony
+# Expose symfony log files to /somecomp/logs/<project>/symfony
 if [ ! -d "${DEPLOY_DIR}/var" ]; then
-  ln -snf "${REAL_DIR}/app/logs" "/***REMOVED***/log/${S_PROJECT}/symfony"
+  ln -snf "${REAL_DIR}/app/logs" "/somecomp/log/${S_PROJECT}/symfony"
 else
-  ln -snf "${REAL_DIR}/var/logs" "/***REMOVED***/log/${S_PROJECT}/symfony"
+  ln -snf "${REAL_DIR}/var/logs" "/somecomp/log/${S_PROJECT}/symfony"
 fi
 
 # Restart php-fpm as it keeps handles open from previous files!
@@ -309,7 +309,7 @@ $APACHE_SERVICE reload || die "ERROR: Failed to reload apache service"
 ### no more steps
 echo "INFO: Deployment suceeded!"
 
-# CLEANUP 
+# CLEANUP
 echo "INFO: Cleaning up..."
 # Clearing old releases
 CURRENT_RELEASE=$(basename $(readlink $REAL_DIR))

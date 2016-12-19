@@ -6,11 +6,11 @@ die() { echo $* 1>&2 ; exit 1 ; }
 PROJECT="@option.project@"
 WORKING_DIR=$(mktemp -d /mnt/ssd/temp/${PROJECT}-version-update-XXX)
 NEW_VERSION="@option.new_version@"
-#GIT_OPTIONS='--author="Code Freeze <it-admin@***REMOVED***.com>"'
-#GIT_REPOS_FILE_ROOT="/mnt/ssd/git_repositories/***REMOVED***"
-FREEZE_KEY="/***REMOVED***/keys/codefreezegitlab"
+#GIT_OPTIONS='--author="Code Freeze <it-admin@cognolink.com>"'
+#GIT_REPOS_FILE_ROOT="/mnt/ssd/git_repositories/cognolink"
+FREEZE_KEY="/root/keys/codefreezegitlab"
 #REPO_URL="//${GIT_REPOS_FILE_ROOT}/${PROJECT}.git"
-REPO_URL="git@***REMOVED***.***REMOVED***.com:***REMOVED***/${PROJECT}.git"
+REPO_URL="git@gitlab.dev.cognolink.com:cognolink/${PROJECT}.git"
 GITCONFIGEXISTS="no"
 
 #REPO_ID=$(curl --header "PRIVATE-TOKEN: ${GL_KEY}" -k -s "${GL_API_URL}/projects/all?per_page=10000" | jq --arg NSWP "${GL_CL_NAMESPACE}/${PROJECT}" '.[] | select(.path_with_namespace == $NSWP ) | .id')
@@ -44,7 +44,7 @@ if [ -e ~/.gitconfig ]; then
 fi
 
 git config --global user.name "Code Freeze"
-git config --global user.email "it-admin@***REMOVED***.com"
+git config --global user.email "it-admin@cognolink.com"
 
 
 git clone $REPO_URL &>/dev/null || die "ERROR: Failed to clone $REPO_URL"
@@ -74,13 +74,13 @@ rm -f /tmp/changelog
 
 # set user to codefreeze
 #git config user.name "codefreeze"
-#git config user.email "it-admin@***REMOVED***.com"
+#git config user.email "it-admin@cognolink.com"
 
 # commit and push
 
 git add "$FILE1"
 git add "$FILE2"
-#git commit --author="Code Freeze <it-admin@***REMOVED***.com>" -m 'incremented changelog and version' || die "ERROR: Failed to commit changes!"
+#git commit --author="Code Freeze <it-admin@cognolink.com>" -m 'incremented changelog and version' || die "ERROR: Failed to commit changes!"
 git commit -m 'incremented changelog and version' || die "ERROR: Failed to commit changes!"
 git push -u origin "$CHECKOUT_BRANCH" || die "ERROR: Failed to push changes back to repository!"
 

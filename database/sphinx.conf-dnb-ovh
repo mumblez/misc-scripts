@@ -2,8 +2,8 @@ source dnb_company
 {
 	type			=mysql
 	sql_host		=localhost
-	sql_user		=***REMOVED***
-	sql_pass		=***REMOVED***1557
+	sql_user		=someone.one
+	sql_pass		=somepass
 	sql_db			=dnb
 	sql_port		=3306
 	sql_sock		=/var/lib/mysql/mysql.sock
@@ -246,7 +246,7 @@ indexer
 	# memory limit, in bytes, kiloytes (16384K) or megabytes (256M)
 	# optional, default is 32M, max is 2047M, recommended is 256M to 1024M
 	mem_limit				= 1536M
-	
+
 	# maximum IO calls per second (for I/O throttling)
 	# optional, default is 0 (unlimited)
 	# max_iops				= 40

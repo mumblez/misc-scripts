@@ -9,7 +9,7 @@ policy.
 RETENTION POLICY
     full backup every 6h, keep for 3 days -> 12
     full backup every day, keep for 8 days
-    full backup every week, Sunday, keep for 8 weeks 
+    full backup every week, Sunday, keep for 8 weeks
     full backup every month, upload to ovh also
 
 Daily purges will be done in the originating backup scripts
@@ -17,11 +17,11 @@ Weekly purges will be done by this script when called by cron
 INTRO
 
 
-die() 
-{ 
+die()
+{
 	echo $* 1>&2
-	#echo "$*" | mail -s "Backup - archive, rotate, purge issue: $*" ***REMOVED***@***REMOVED***.com
-	exit 1 
+	#echo "$*" | mail -s "Backup - archive, rotate, purge issue: $*" someone@company.com
+	exit 1
 }
 
 # SETTINGS

@@ -4,12 +4,12 @@
 die() { echo $* 1>&2 ; exit 1 ; }
 ### Settings ###
 PHP="/usr/local/php52/bin/php"
-CL_ROOT="/***REMOVED***"
+CL_ROOT="/cognolink"
 EVENTLOGTRIGGERS_SCRIPT="${CL_ROOT}/bin/eventLogTriggers.php"
 DB_PROPERTIES="${CL_ROOT}/config/intranet/db.properties"
 DB_SERVER=$(grep 'DB_HOST=' "$DB_PROPERTIES" | head -n 1 | cut -d'=' -f2)
 SQL_OUTPUT_FILE="/tmp/triggers.sql"
-TRIGGER_CONFIG="${CL_ROOT}/lib/php5/***REMOVED***/common/prototypes/eventlog/configuration.properties"
+TRIGGER_CONFIG="${CL_ROOT}/lib/php5/cognolink/common/prototypes/eventlog/configuration.properties"
 
 ### Validate ####
 [[ -f "$PHP" && -x "$PHP" ]] || die "ERROR: php 5.2 binary not found"
@@ -25,7 +25,7 @@ echo "INFO: Generating triggers.sql..."
   --output=$SQL_OUTPUT_FILE \
   --trigger-config=$TRIGGER_CONFIG \
   --recreate-procedure \
-  --drop-triggers-for-database=***REMOVED***,cognoweb,conference_call_management \
+  --drop-triggers-for-database=cognolink,cognoweb,conference_call_management \
   --create-triggers &>/dev/null && echo "$SQL_OUTPUT_FILE successfully produced" || die "ERROR: Failed to produce $SQL_OUTPUT_FILE"
 
 

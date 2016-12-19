@@ -2,9 +2,9 @@
 
 
 
-for link in $(find /***REMOVED*** -type l); do
+for link in $(find /somecomp -type l); do
   ORIGINALLINK=$(readlink $link)
-  NEWLINK=$(echo $ORIGINALLINK | sed 's/***REMOVED***/***REMOVED***/g')
+  NEWLINK=$(echo $ORIGINALLINK | sed 's/olduser/newuser/g')
 #  echo "File: $link"
 #  echo "Original Link: $ORIGINALLINK"
 #  echo "New link: $NEWLINK"

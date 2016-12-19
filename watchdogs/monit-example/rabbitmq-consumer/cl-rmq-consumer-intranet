@@ -4,19 +4,19 @@
 
 PHP_BIN="/usr/local/php52/bin/php"
 PNAME="cl-rmq-consumer-intranet"
-AMQPD="/***REMOVED***/bin/intranet/amqpMessageDispatch.php"
+AMQPD="/cognolink/bin/intranet/amqpMessageDispatch.php"
 
 [ ! -e $AMQPD ] && echo "ERROR: $AMQP missing!"; exit 0
 [ ! -x $PHP_BIN ] && echo "ERROR: $PHP_BIN missing!"; exit 0
 
 case $1 in
    start)
-      echo $$ > /***REMOVED***/var/run/${PNAME}.pid;
-      #sudo -u www-data $PHP_BIN /***REMOVED***/bin/intranet/amqpMessageDispatch.php -qsymfony -rintranet --run  > /***REMOVED***/log/${PNAME}.log 2>&1 &
-      exec 2>&1 sudo -u www-data $PHP_BIN /***REMOVED***/bin/intranet/amqpMessageDispatch.php -qsymfony -rintranet --run 1> /***REMOVED***/log/${PNAME}.log
+      echo $$ > /cognolink/var/run/${PNAME}.pid;
+      #sudo -u www-data $PHP_BIN /cognolink/bin/intranet/amqpMessageDispatch.php -qsymfony -rintranet --run  > /cognolink/log/${PNAME}.log 2>&1 &
+      exec 2>&1 sudo -u www-data $PHP_BIN /cognolink/bin/intranet/amqpMessageDispatch.php -qsymfony -rintranet --run 1> /cognolink/log/${PNAME}.log
       ;;
     stop)  
-      kill `cat /***REMOVED***/var/run/${PNAME}.pid` ;;
+      kill `cat /cognolink/var/run/${PNAME}.pid` ;;
     *)  
       echo "usage: ${PNAME} {start|stop}" ;;
 esac

@@ -8,7 +8,7 @@ INTRO
 die() { echo $* 1>&2 ; exit 1 ; }
 
 ZB_REPOS_BASE="/srv/r5/backups/zbackup-repos"
-ZB_KEY="/***REMOVED***/keys/zbackup"
+ZB_KEY="/root/keys/zbackup"
 ZB_BIN="/usr/local/bin/zbackup"
 ZB_ARGS="--password-file $ZB_KEY --cache-size 1024mb"
 DIRECTORIES="ZB_REPOS_BASE ZB_KEY ZB_BIN"

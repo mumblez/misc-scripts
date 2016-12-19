@@ -13,9 +13,9 @@ Add the crons if not already added, e.g.
 
 # mysql backup
 # incremental
-00 * * * *	***REMOVED***	/***REMOVED***/scripts/mysql-backup.sh incremental &>> /var/log/innobackupex/incremental-backup.log
+00 * * * *	root	/root/scripts/mysql-backup.sh incremental &>> /var/log/innobackupex/incremental-backup.log
 # full
-15 23 * * *	***REMOVED***	/***REMOVED***/scripts/mysql-backup.sh full &>> /var/log/innobackupex/full-backup.log
+15 23 * * *	root	/root/scripts/mysql-backup.sh full &>> /var/log/innobackupex/full-backup.log
 
 
 NOTES
@@ -63,13 +63,13 @@ Use lzma as it's multi-threaded!!!
 
 zbackup commands
 ================
-backup - ```START=$(date); tar -cf - -C /srv/r5/backups/mysql-innobackupex/mysql-hotcopy . | zbackup --password-file /***REMOVED***/keys/zbackup backup /srv/r5/backups/zbackup-repo/backups/<something....with...date>.tar```
+backup - ```START=$(date); tar -cf - -C /srv/r5/backups/mysql-innobackupex/mysql-hotcopy . | zbackup --password-file /root/keys/zbackup backup /srv/r5/backups/zbackup-repo/backups/<something....with...date>.tar```
 
 (best to cd to directory and tar else restore looks confusing)
 DO NOT COMPRESS OR ENCRYPT FILES AHEAD OF TIME else will alleviate benefit of deduplication
 (defaults to 16 threads if needed, add cache setting when extracting but no larger than a couple gig)
 
-restore - ```START=$(date); date; zbackup --cache-size 3000mb --password-file /***REMOVED***/keys/zbackup restore <backup to restore>.tar | tar -xf - -C /path/to/extract/to; echo "start: $START"; echo "end: $(date)"; echo "zbackup restore test complete" | mail -s "zbackup restore test complete" ***REMOVED***@***REMOVED***.com```
+restore - ```START=$(date); date; zbackup --cache-size 3000mb --password-file /root/keys/zbackup restore <backup to restore>.tar | tar -xf - -C /path/to/extract/to; echo "start: $START"; echo "end: $(date)"; echo "zbackup restore test complete" | mail -s "zbackup restore test complete" yusuf.tran@cognolink.com```
 
 
 prune old backups (bundle files)

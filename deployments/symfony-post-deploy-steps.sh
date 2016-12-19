@@ -2,20 +2,20 @@
 
 
 PROJECT="@option.repository@"
-PROJECT_SYMFONY_ROOT="/***REMOVED***/lib/php5/$PROJECT"
+PROJECT_SYMFONY_ROOT="/somecomp/lib/php5/$PROJECT"
 PROJECT_FPM_CONF="/etc/php5/fpm/pool.d/${PROJECT}.conf"
 
 die() { echo $* 1>&2 ; exit 1 ; }
 
 ### Validation checks ###
-[ -d "$PROJECT_SYMFONY_ROOT" ] || die "ERROR: $PROJECT_SYMFONY_ROOT symfony ***REMOVED*** not found"
+[ -d "$PROJECT_SYMFONY_ROOT" ] || die "ERROR: $PROJECT_SYMFONY_ROOT symfony root not found"
 
 ### externalapi project ###
 p_externalapi () {
-  KEYS_PATH="/***REMOVED***/keys"
-  GCAL_PATH="/***REMOVED***/web"
-  GCAL_KEY="***REMOVED***"
-  
+  KEYS_PATH="/root/keys"
+  GCAL_PATH="/root/web"
+  GCAL_KEY="somekey"
+
   # Validation Checks
   if [ -e "${GCAL_PATH}/${GCAL_KEY}" ]; then
     echo "INFO: intranet-calendar key found"
@@ -24,7 +24,7 @@ p_externalapi () {
     mkdir -p "$GCAL_PATH"
     cp "${KEYS_PATH}/${GCAL_KEY}" "$GCAL_PATH"
   fi
-  
+
   # Find user and group perms of project and set permissions on key
   P_USER=$(awk '/^user = .*/ {print $3}' $PROJECT_FPM_CONF)
   P_GROUP=$(awk '/^group = .*/ {print $3}' $PROJECT_FPM_CONF)

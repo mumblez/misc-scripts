@@ -13,15 +13,15 @@ case $BUILD_TYPE in
   tag ) BRANCH="@option.tag@" ;;
 esac
 
-#BRANCH="***REMOVED***"
-REPO_URL="git@***REMOVED***.***REMOVED***.com:chrome-plugins/${PLUGIN}.git"
-#REPO_KEY="/***REMOVED***/keys/cl_deploy" # for rundeck
+#BRANCH="yusuf-test"
+REPO_URL="git@some.git.server:chrome-plugins/${PLUGIN}.git"
+#REPO_KEY="/root/keys/cl_deploy" # for rundeck
 BUILD_ROOT="/srv/chrome-plugin-build"
 REPO_KEY="${BUILD_ROOT}/cl_deploy" # for debug
 TEST_KEYS_ROOT="/srv/chrome-plugin-build/test-keys"
 KEY_NAME="test.pem"
 WEB_ROOT="/srv/chrome-plugins/${PLUGIN}/${BRANCH}"
-WEB_HOST_URL="http://***REMOVED***.***REMOVED***.com"
+WEB_HOST_URL="http://some.plugin.url"
 REG="/srv/chrome-plugins/windows-whitelist.reg"
 
 ### chrome packing settings
@@ -55,7 +55,7 @@ done
 
 ssh-agent bash -c "ssh-add $REPO_KEY &>/dev/null && git clone $REPO_URL ${BUILD_ROOT}/${PLUGIN}" ||\
 	die "ERROR: Git clone from $REPO_URL failed"
-# assumes if repo branch folder doesn't exist it's branch in web***REMOVED*** also doesn't exist
+# assumes if repo branch folder doesn't exist it's branch in webroot also doesn't exist
 [ ! -e "$WEB_ROOT" ] && mkdir -p "$WEB_ROOT"
 
 cd "${BUILD_ROOT}/${PLUGIN}"
@@ -125,7 +125,7 @@ cat > "${REG}" <<'EOF'
 Windows Registry Editor Version 5.00
 
 [HKEY_CURRENT_USER\Software\Policies\Google\Chrome\ExtensionInstallSources]
-"1"="http://***REMOVED***.***REMOVED***.com/*"
+"1"="http://some.plugin.url/*"
 
 [HKEY_CURRENT_USER\Software\Policies\Google\Chrome\ExtensionInstallWhitelist]
 EOF
@@ -148,6 +148,6 @@ echo "INFO: URL to install from:"
 echo "=================================================================================================="
 echo "${WEB_HOST_URL}/${PLUGIN}/${BRANCH}"
 echo "INFO: Browse there and click ${PLUGIN}.crx to install!"
-echo "INFO: download windows-whitelist.reg file at ***REMOVED*** of the site"
+echo "INFO: download windows-whitelist.reg file at root of the site"
 echo "INFO: ${WEB_HOST_URL}"
 echo "=================================================================================================="

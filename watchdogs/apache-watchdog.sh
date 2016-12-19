@@ -7,11 +7,11 @@
 
 PATH=/bin:/usr/bin
 THEDIR=/srv/apache-watchdog
-EMAILS="it-monitoring@***REMOVED***.com it-team@***REMOVED***.com ***REMOVED***"
-#EMAILS="***REMOVED***@***REMOVED***.com"
-#URLFILE="https://intranet.***REMOVED***.com/VERSION"
+EMAILS="it-monitoring@somecomp.com it-team@somecomp.com"
+#EMAILS="someuser@somecomp.com"
+#URLFILE="https://intranet.somecomp.com/VERSION"
 #use a php file instead as sometimes apache doesn't quite crash but hangs, still serves txt files but not php
-URLFILE="https://intranet.***REMOVED***.com/_watchdog.php"
+URLFILE="https://intranet.somecomp.com/_watchdog.php"
 LOCKFILE="/tmp/apacheCheck"
 
 if [ -e "$LOCKFILE" ]; then
@@ -22,8 +22,8 @@ fi
 
 mkdir -p $THEDIR
 
-if [ ! -e /***REMOVED***/www/intranet/_watchdog.php ]; then
-  echo '<?php echo "watchdog" ?>' > /***REMOVED***/www/intranet/_watchdog.php
+if [ ! -e /somecomp/www/intranet/_watchdog.php ]; then
+  echo '<?php echo "watchdog" ?>' > /somecomp/www/intranet/_watchdog.php
 fi
 
 #if ( wget --timeout=30 -q -P "$THEDIR" "$URLFILE" )
@@ -39,25 +39,25 @@ else
         echo >> $THEDIR/mail
         echo "Access log - Intranet:" >> $THEDIR/mail
         echo "======================" >> $THEDIR/mail
-        tail -n 400 /var/log/***REMOVED***/intranet/access_log >> $THEDIR/mail
+        tail -n 400 /var/log/somecomp/intranet/access_log >> $THEDIR/mail
         echo "###########################################################" >> $THEDIR/mail
         echo >> $THEDIR/mail
         echo "Access log 1 - Website:" >> $THEDIR/mail
         echo "======================" >> $THEDIR/mail
-        tail -n 200 /var/log/***REMOVED***/website/access_log >> $THEDIR/mail
+        tail -n 200 /var/log/somecomp/website/access_log >> $THEDIR/mail
         echo "###########################################################" >> $THEDIR/mail
         echo >> $THEDIR/mail
 #        echo "Access log 1 - Website:" >> $THEDIR/mail
-#        tail -n 100 /var/log/***REMOVED***/intranet/access.log >> $THEDIR/mail
+#        tail -n 100 /var/log/somecomp/intranet/access.log >> $THEDIR/mail
         echo >> $THEDIR/mail
         echo "Error log - Intranet:" >> $THEDIR/mail
         echo "======================" >> $THEDIR/mail
-        tail -n 200 /var/log/***REMOVED***/intranet/error_log >> $THEDIR/mail
+        tail -n 200 /var/log/somecomp/intranet/error_log >> $THEDIR/mail
         echo "###########################################################" >> $THEDIR/mail
         echo >> $THEDIR/mail
         echo "Error log - Website:" >> $THEDIR/mail
         echo "======================" >> $THEDIR/mail
-        tail -n 200 /var/log/***REMOVED***/website/error_log >> $THEDIR/mail
+        tail -n 200 /var/log/somecomp/website/error_log >> $THEDIR/mail
         echo "###########################################################" >> $THEDIR/mail
         echo >> $THEDIR/mail
         echo "Error log - apache:" >> $THEDIR/mail
@@ -104,7 +104,7 @@ else
 fi
 
 # email using mutt to add attachments
-# echo bla body | mutt -s "bla bla 222" ***REMOVED***@***REMOVED***.com ***REMOVED***@***REMOVED***.com -a abc.html apc.html
+# echo bla body | mutt -s "bla bla 222" someuser@somecomp.com someuser@somecomp2.com -a abc.html apc.html
 
 rm -rf $THEDIR
 rm -f "$LOCKFILE"

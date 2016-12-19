@@ -7,10 +7,10 @@ WORK_DIR=$(mktemp -d $TEMP_AREA/sql_deploy.XXX)
 PROJECT="@option.project@" # SINGLE PROJECT
 GIT_TAG="@option.tag@"
 DB_FILE="@option.db_file@"
-GITLAB_BASE="***REMOVED***.***REMOVED***.com"
-NAMESPACE="***REMOVED***"
+GITLAB_BASE="gitlab.dev.cognolink.com"
+NAMESPACE="cognolink"
 DB_PATH="db"
-DEPLOY_KEY="/***REMOVED***/keys/cl_deploy"   # GIT
+DEPLOY_KEY="/root/keys/cl_deploy"   # GIT
 TOOLS="git mysql mktemp curl"
 ENVIRONMENT="@option.environment@"
 
@@ -67,8 +67,8 @@ configure_checkout_type () {
 execute_sql () {
   project="$1"
   sql_file="$2"
-	# assumes we're sudo'ing and running as ***REMOVED***
-  HOME="/***REMOVED***"
+	# assumes we're sudo'ing and running as root
+  HOME="/root"
   echo "INFO: Executing sql file ${project}-${sql_file}..."
 	mysql --default-character-set=utf8 --show-warnings < "${project}-${sql_file}" 2>&1 || die "ERROR: error executing sql commands"
   echo "INFO: finished executing sql file ${project}-${sql_file}"

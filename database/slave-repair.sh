@@ -78,7 +78,7 @@ cat > ${EXCLUDE_FILE} <<EOF
 EOF
 
 # TODO: ADD CHECK TO ENSURE REPLICATION USER, HOST EXISTS ON SOURCE / MASTER FOR SLAVE / DESTINATION
-# e.g. show grants for 'slave_user'@'10.179.68.87'; 
+# e.g. show grants for 'some-slave'@'some-ip';
 # grep for 'GRANT REPLICATION SLAVE'
 
 # Check data directory location (locally, remote will actually be the snapshot location)
@@ -133,7 +133,7 @@ MASTER_USER=$(sed -n '5p' ${SNAPSHOT_MYSQL_DIR}/master.info)
 MASTER_PASS=$(sed -n '6p' ${SNAPSHOT_MYSQL_DIR}/master.info)
 
 # do a clean mysql instance on datadir and shutdown
-## get innodb_log_file_size 
+## get innodb_log_file_size
 INNODB_LOG_SIZE=$(mysqladmin variables | grep innodb_log_file_size | awk '{print $4}')
 SNAPSHOT_SOCKET="/var/run/mysqld/mysqld-snapshot.sock"
 ( mysqld_safe --no-defaults --port=3307 --socket="$SNAPSHOT_SOCKET" --datadir="$FINAL_MYSQL_DIR" --innodb-log-file-size="$INNODB_LOG_SIZE" --skip-slave-start & )

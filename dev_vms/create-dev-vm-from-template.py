@@ -17,12 +17,12 @@ lastname = "@option.last_name@".lower()
 rundeck_execid = "@job.execid@"
 vm_clone_name = "dev-" + firstname[0:1] + lastname
 #vm_clone_name = 'dev-kwong' # pass in later (sys.argv[1])
-vcenter_server = '***REMOVED***.12'
+vcenter_server = 'someip'
 vcenter_server = 'vcenter'
-vcenter_username = '***REMOVED***'           # REPLACE WITH VAULT!!!
-vcenter_password = '***REMOVED***'    # REPLACE WITH VAULT
+vcenter_username = 'someuser'           # REPLACE WITH VAULT!!!
+vcenter_password = 'somepass'    # REPLACE WITH VAULT
 vcenter_folder = 'Dev VMs'
-dev_hypervisor = 'vmware-hyp-1.dev.***REMOVED***.com'
+dev_hypervisor = 'some.hypervisor'
 #host_datastore = 'SSD-2-1-160'
 host_datastore = "@option.datastore@"
 verbose = False
@@ -127,7 +127,7 @@ print "INFO: Clone complete, IP: " + vm_clone_ip
 
 # ADD VM CLONE IP TO etcd
 print "INFO: add old IP to etcd..."
-url = "http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/" + rundeck_execid + "/old_ip"
+url = "http://someip:4001/v2/keys/rundeck/jobqueue/" + rundeck_execid + "/old_ip"
 param = {'value':vm_clone_ip}
 requests.put(url, params=param)
 

@@ -4,11 +4,11 @@
 # WORK IN PROGRESS
 
 
-# https://***REMOVED***.***REMOVED***.com/project/Everything/job/edit/bdcbc20c-55db-4b55-b012-64bb825165f9
+# https://some.server/project/Everything/job/edit/bdcbc20c-55db-4b55-b012-64bb825165f9
 
 die() { echo $* 1>&2 ; exit 1 ; }
 ### Settings ###
-#S_PROJECT="specialistextranet" # replace with RD dynamic option for ***REMOVED***_web_v2 namespace
+#S_PROJECT="specialistextranet" # replace with RD dynamic option for some_web_v2 namespace
 # or use the repository RD job option value
 S_PROJECT="@option.repository@"
 TIMESTAMP=$(date +%Y-%m-%d-%H%M%S)
@@ -16,18 +16,18 @@ PHP="/usr/bin/php"
 # in future add a check to see if systemd init
 
 
-DEPLOY_KEY="/***REMOVED***/web/cl_deploy"
+DEPLOY_KEY="/root/web/cl_deploy"
 GIT_REPO="@option.repository_url@"
 GIT_OPTIONS="--recursive" #(optional, if using submodules)
 GIT_BRANCH="@option.branch@"
 GIT_TAG="@option.tag@"
 VENDORS_CLEAR="@option.vendors_clear@"
-REAL_DIR="/***REMOVED***/lib/php5/${S_PROJECT}" # Is this even necessary? exposes .git directory of project!!!
+REAL_DIR="/some/lib/php5/${S_PROJECT}" # Is this even necessary? exposes .git directory of project!!!
 SYMFONY_ROOT="/srv/symfony"
 DEPLOY_ROOT="${SYMFONY_ROOT}/${S_PROJECT}"
 SHARED_ROOT="${DEPLOY_ROOT}/shared" # any point in sharing the vendors directory?
 DEPLOY_DIR="${DEPLOY_ROOT}/${TIMESTAMP}"
-WEBROOT="/***REMOVED***/www/${S_PROJECT}"  # amend vhosts to reflect
+WEBROOT="/some/www/${S_PROJECT}"  # amend vhosts to reflect
 APP_ENV="@option.environment@"
 COMPOSER="/usr/local/bin/composer.phar"
 #COMPOSER_OPTIONS="--no-interaction --working-dir=$DEPLOY_DIR"
@@ -50,7 +50,7 @@ FE_ENV="@option.fe_environment@"
 
 # pull down code, run setup.sh, restart monit
 
-# mkdir nodejs ***REMOVED*** if doesn't exist
+# mkdir nodejs root if doesn't exist
 # either under /home/<user>/dev/git_repos or /srv
 
 # determine if dev or environment box
@@ -135,7 +135,7 @@ if [ "$APP_ENV" = "uat" ]; then
   ### If UAT then replace template variables in parameters.yml with passed in values ###
   UAT_FE="@option.uat_frontend@"
   UAT_DB="@option.uat_db@"
-  
+
   echo "INFO: UAT FE: $UAT_FE"
   echo "INFO: UAT DB: $UAT_DB"
   echo "INFO: Applying uat configuration..."
@@ -175,9 +175,9 @@ chmod 775 "${SHARED_ROOT}/vendor" -R
 chown -h "$SITE_USER":"$SITE_GROUP" "${DEPLOY_DIR}/vendor"
 rm -f "${SHARED_ROOT}/vendor/zzzzzzbla.txt"
 
-# delete ***REMOVED*** vendor, always causes issues!!!
-echo "INFO: clearing ***REMOVED*** vendor..."
-rm -rf ${DEPLOY_DIR}/vendor/***REMOVED***
+# delete some vendor, always causes issues!!!
+echo "INFO: clearing some vendor..."
+rm -rf ${DEPLOY_DIR}/vendor/some
 
 # clear vendors directory if asked to
 if [[ "$VENDORS_CLEAR" == 'yes' ]]; then
@@ -278,17 +278,17 @@ ln -snf "$DEPLOY_DIR" "$REAL_DIR" && echo "INFO: Symlinked deployment release di
 # Set permission to symlink (incase apache only follows symlinks with same owner)
 chown -h "$SITE_USER":"$SITE_GROUP" "$REAL_DIR" -R
 
-#symlink web***REMOVED***
-ln -snf "$REAL_DIR/web" "$WEBROOT" && echo "INFO: Symlinked deployment release web ***REMOVED*** - $REAL_DIR/web to $WEBROOT" || die "ERROR: Symlinking deployment release web***REMOVED*** - $REAL_DIR to $WEBROOT failed"
+#symlink webroot
+ln -snf "$REAL_DIR/web" "$WEBROOT" && echo "INFO: Symlinked deployment release web root - $REAL_DIR/web to $WEBROOT" || die "ERROR: Symlinking deployment release webroot - $REAL_DIR to $WEBROOT failed"
 
-# Set permission to web***REMOVED*** (incase apache only follows symlinks with same owner)
+# Set permission to webroot (incase apache only follows symlinks with same owner)
 chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
 
-# Expose symfony log files to /***REMOVED***/logs/<project>/symfony
+# Expose symfony log files to /some/logs/<project>/symfony
 if [ ! -d "${DEPLOY_DIR}/var" ]; then
-  ln -snf "${REAL_DIR}/app/logs" "/***REMOVED***/log/${S_PROJECT}/symfony"
+  ln -snf "${REAL_DIR}/app/logs" "/some/log/${S_PROJECT}/symfony"
 else
-  ln -snf "${REAL_DIR}/var/logs" "/***REMOVED***/log/${S_PROJECT}/symfony"
+  ln -snf "${REAL_DIR}/var/logs" "/some/log/${S_PROJECT}/symfony"
 fi
 
 # Restart php-fpm as it keeps handles open from previous files!
@@ -305,7 +305,7 @@ $APACHE_SERVICE reload || die "ERROR: Failed to reload apache service"
 ### no more steps
 echo "INFO: Deployment suceeded!"
 
-# CLEANUP 
+# CLEANUP
 echo "INFO: Cleaning up..."
 # Clearing old releases
 CURRENT_RELEASE=$(basename $(readlink $REAL_DIR))
@@ -324,4 +324,4 @@ exit 0
 
 
 
-# 
+#

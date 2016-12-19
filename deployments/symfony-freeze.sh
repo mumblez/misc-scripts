@@ -2,27 +2,27 @@
 
 # for code freeze (RH):
 # ================
-#  
+#
 # 1/ git pull origin/master into origin/release
-#  
+#
 # needs 1 parameter for into which tagged commit on release, in case we had hotfix on it that got fixed on both release and master already.
-#  
+#
 # This way there should be no conflict at all, if there is any, stop the process right there
-#  
+#
 # 2/ push the result back to release
 # 3/ tag the merged commit
-#  
+#
 # need 1 parameter of the new tag name
-#  
+#
 
 #
 #pre-requisites
 #===============
 #
-#codefree / ***REMOVED***
+#codefree / somepass
 #
 #-user / key to do the above actions with!!! - codefreeze
-#-server to perform action on - 
+#-server to perform action on -
 #-codefreeze ssh key
 #-working directory to use /tmp/codefreeze-<random chars>
 
@@ -34,7 +34,7 @@
 die() { echo $* 1>&2 ; exit 1 ; }
 
 ### Settings ###
-CODE_FREEZE_KEY="/***REMOVED***/keys/codefreezegitlab"
+CODE_FREEZE_KEY="/root/keys/codefreezegitlab"
 GIT_REPO="@option.repository_url@"
 GIT_TAG="@option.tag@"
 TAG_LATEST="@option.tag_latest@"
@@ -59,7 +59,7 @@ if [ -e ~/.gitconfig ]; then
 	GITCONFIGEXISTS="yes"
 fi
 git config --global user.name "codefreeze"
-git config --global user.email "it-admin@***REMOVED***.com"
+git config --global user.email "it-admin@some.comp"
 
 
 # Pull repository down

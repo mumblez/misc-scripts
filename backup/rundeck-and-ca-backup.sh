@@ -5,11 +5,11 @@ DIR=$(cd "$(dirname "$0")" && pwd)
 SSH_USER="rundeck"
 SSH_OPTIONS="-o StrictHostKeyChecking=no"
 SSH_KEY="/var/lib/rundeck/.ssh/id_rsa"
-#REMOTE_SERVER="***REMOVED***.209"
-REMOTE_SERVER="***REMOVED***"
+#REMOTE_SERVER="123.456.789.123"
+REMOTE_SERVER="somebackup-server"
 ZB_REPOS_BASE_REMOTE="/srv/r5/backups/zbackup-repos"
 ZB_REPO_REMOTE="${ZB_REPOS_BASE_REMOTE}/files"
-ZB_KEY_REMOTE="/***REMOVED***/keys/zbackup"
+ZB_KEY_REMOTE="/root/keys/zbackup"
 ZB_INFO_REMOTE="${ZB_REPO_REMOTE}/info"
 ZB_APP_NAME="rundeck_and_ca"
 CA_DIR="/srv/ca"
@@ -25,7 +25,7 @@ ZB_INFO="/srv/info"
 # run local backups
 echo "INFO: Backing up Rundeck and CA..."
 rd-jobs list -p Everything -f "$JOBS" --format yaml &>/dev/null
-/usr/bin/mysqldump --defaults-file=/***REMOVED***/.my.cnf -B rundeck > "$DB"
+/usr/bin/mysqldump --defaults-file=/root/.my.cnf -B rundeck > "$DB"
 tar -cf "$ARCHIVE" "$JOBS" "$DB" --remove-files &>/dev/null
 tar --append --file="$ARCHIVE" "$RD_PROJECTS"
 tar --append --file="$ARCHIVE" "$CA_DIR"
@@ -55,7 +55,7 @@ rsync -ar -e "ssh -i $SSH_KEY $SSH_OPTIONS" --rsync-path="sudo rsync" "${ZB_REPO
 rsync -ar -e "ssh -i $SSH_KEY $SSH_OPTIONS" --rsync-path="sudo rsync" "${ZB_REPO}/bundles/" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/bundles"
 rsync -ar -e "ssh -i $SSH_KEY $SSH_OPTIONS" --rsync-path="sudo rsync" "${ZB_REPO}/index/" "${SSH_USER}"@"${REMOTE_SERVER}":"${ZB_REPO_REMOTE}/index"
 
-# delete backup files, bundles and index 
+# delete backup files, bundles and index
 echo "INFO: cleaning up..."
 set -x
 rm -f "$ARCHIVE"

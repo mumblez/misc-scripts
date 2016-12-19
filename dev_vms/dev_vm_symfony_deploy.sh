@@ -11,18 +11,18 @@ PROJECT="@option.repository@"
 PHP_FPM="/etc/init.d/php5-fpm"
 SITE_USER="@node.CL_USER@"
 SITE_GROUP="dev"
-DEPLOY_KEY="/***REMOVED***/keys/cl_deploy"
+DEPLOY_KEY="/root/keys/cl_deploy"
 GIT_REPO="@option.repository_url@"
 GIT_OPTIONS="--recursive" #(optional, if using submodules)
 GIT_BRANCH="@option.branch@"
 GIT_TAG="@option.tag@"
-REAL_DIR="/***REMOVED***/lib/php5/${PROJECT}"
+REAL_DIR="/somecomp/lib/php5/${PROJECT}"
 SYMFONY_ROOT="/home/@node.CL_USER@/dev/git_repos/symfony_repos"
 SYMFONY_BINARIES_ROOT="/home/@node.CL_USER@/dev/git_repos/binaries"
 DEPLOY_ROOT="${SYMFONY_ROOT}/${PROJECT}"
 #SHARED_ROOT="${DEPLOY_ROOT}/shared"
 #DEPLOY_DIR="${DEPLOY_ROOT}/${TIMESTAMP}"
-WEBROOT="/***REMOVED***/www/${PROJECT}"
+WEBROOT="/somecomp/www/${PROJECT}"
 APP_ENV="@option.environment@"
 COMPOSER="${SYMFONY_BINARIES_ROOT}/composer.phar"
 #COMPOSER_OPTIONS="--no-interaction --working-dir=$DEPLOY_DIR"
@@ -59,7 +59,7 @@ mkdir -p "$DEPLOY_ROOT"
 # cp deploy key
 cp $DEPLOY_KEY /home/$SITE_USER
 DEPLOY_KEY="/home/$SITE_USER/cl_deploy"
-chown $SITE_USER:***REMOVED*** $DEPLOY_KEY
+chown $SITE_USER:root $DEPLOY_KEY
 chmod 600 $DEPLOY_KEY
 
 # Download latest composer.phar #
@@ -69,7 +69,7 @@ chown "$SITE_USER":"$SITE_GROUP" "$COMPOSER"
 
 
 ## REPLACE WHEN SALTSTACK SETUP AND NAMESPACE SORTED FOR COMMON REPOS
-# Setup specialist-extranet - in future, when common repo's moved into its own namespace, loop this routine for all repo's in ***REMOVED***_web_v2 namespace
+# Setup specialist-extranet - in future, when common repo's moved into its own namespace, loop this routine for all repo's in somecomp_web_v2 namespace
 cd /etc/php5/fpm/pool.d
 ## Setup user as owner, so cache and log access isn't a problem (user pulls files down as themselves)
 sed "s/^user =.*/user = $SITE_USER/" -i ${PROJECT}.conf
@@ -90,12 +90,12 @@ sed "s/^listen.owner =.*/listen.owner = $SITE_USER/" -i ${PROJECT}.conf
 #mkdir "$DEPLOY_ROOT" || die "ERROR: Failed to create deployment directory - $DEPLOY_ROOT"
 
 # add gitlab server as known ssh host
-ssh-keyscan -H ***REMOVED***.***REMOVED***.com >> /home/$SITE_USER/.ssh/known_hosts || die "ERROR: failed to find gitlab server and it's public key"
+ssh-keyscan -H gitlab.dev.somecomp.com >> /home/$SITE_USER/.ssh/known_hosts || die "ERROR: failed to find gitlab server and it's public key"
 #doesn't work, user has to do themselves
 
 # Copy github oauth key
 mkdir /home/${SITE_USER}/.composer
-cp /***REMOVED***/.composer/config.json /home/${SITE_USER}/.composer/
+cp /root/.composer/config.json /home/${SITE_USER}/.composer/
 chown ${SITE_USER} /home/${SITE_USER}/.composer -R
 
 #Pull latest code
@@ -186,7 +186,7 @@ fi
 # document
 #ln -snf "$DEPLOY_DIR/app/config/parameters.$APP_ENV.yml" "$DEPLOY_DIR/app/config/parameters.yml"
 
-echo "Deploy ***REMOVED***: $DEPLOY_ROOT"
+echo "Deploy root: $DEPLOY_ROOT"
 echo "Real Dir: $REAL_DIR"
 #symlink deploy_dir to real_dir
 ln -snf "$DEPLOY_ROOT" "$REAL_DIR" && echo "INFO: Symlinked deployment release directory - $DEPLOY_ROOT to $REAL_DIR" || die "ERROR: Symlinking deployment release directory - $DEPLOY_DIR to $REAL_DIR failed"
@@ -194,15 +194,15 @@ ln -snf "$DEPLOY_ROOT" "$REAL_DIR" && echo "INFO: Symlinked deployment release d
 # Set permission to symlink (incase apache only follows symlinks with same owner)
 #chown -h "$SITE_USER":"$SITE_GROUP" "$REAL_DIR" -R
 
-#symlink web***REMOVED***
-ln -snf "${REAL_DIR}/web" "$WEBROOT" && echo "INFO: Symlinked deployment release web ***REMOVED*** - $REAL_DIR/web to $WEBROOT" || die "ERROR: Symlinking deployment release web***REMOVED*** - $REAL_DIR to $WEBROOT failed"
+#symlink webroot
+ln -snf "${REAL_DIR}/web" "$WEBROOT" && echo "INFO: Symlinked deployment release web root - $REAL_DIR/web to $WEBROOT" || die "ERROR: Symlinking deployment release webroot - $REAL_DIR to $WEBROOT failed"
 
-# Set permission to web***REMOVED*** (incase apache only follows symlinks with same owner)
+# Set permission to webroot (incase apache only follows symlinks with same owner)
 #chown -h "$SITE_USER":"$SITE_GROUP" "$WEBROOT"
 chown -h "$SITE_USER":"$SITE_GROUP" "$SYMFONY_ROOT"
 
 # create log dir
-mkdir -p /***REMOVED***/log/${PROJECT}
+mkdir -p /somecomp/log/${PROJECT}
 
 # enable site
 a2ensite ${PROJECT}
@@ -219,14 +219,14 @@ a2ensite ${PROJECT}
 
 # cleanup ssh known hosts
 > /home/$SITE_USER/.ssh/known_hosts
-sudo -u @node.CL_USER@ ssh-keyscan -H ***REMOVED***.***REMOVED***.com >> /home/$SITE_USER/.ssh/known_hosts
+sudo -u @node.CL_USER@ ssh-keyscan -H gitlab.dev.somecomp.com >> /home/$SITE_USER/.ssh/known_hosts
 chown @node.CL_USER@ /home/@node.CL_USER@/.ssh/known_hosts
 
 ### no more steps
 echo "INFO: Deployment suceeded!"
 
 
-IP=$(curl -s -L http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/@option.parent_exec_id@/ip | jq -r '.node.value')
+IP=$(curl -s -L http://10.10.100.50:4001/v2/keys/rundeck/jobqueue/@option.parent_exec_id@/ip | jq -r '.node.value')
 
 # reboot box - mainly so networking / static IP takes effect
 # (MOVE to it's own rundeck step (last) at some point)
@@ -236,13 +236,13 @@ IP=$(curl -s -L http://***REMOVED***.50:4001/v2/keys/rundeck/jobqueue/@option.pa
 #echo "INFO: Remember to add your public ssh key to your /home/${SITE_USER}/.ssh/authorized_keys"
 #echo "INFO: (check under c:\users\@node.CL_USER@\.ssh\ for your private key to add to pagent shortcut!"
 #echo "INFO: And setup your putty connection to use agent forwarding with pagent enabled:"
-#echo "INFO: https://sites.google.com/a/***REMOVED***.com/development/home/quick-start/ssh-key-generation"
+#echo "INFO: https://sites.google.com/a/somecomp.com/development/home/quick-start/ssh-key-generation"
 #echo "INFO: And setup new dns entries in your workstation hosts file"
 #echo "INFO: And setup your share from your workstation - \\\\${IP}\dev"
 #echo "==============================================================================================="
 #echo
 
-# CLEANUP 
+# CLEANUP
 rm -f "$DEPLOY_KEY"
 
 #echo "INFO: Cleaning up..."

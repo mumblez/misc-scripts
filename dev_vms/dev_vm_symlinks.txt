@@ -21,32 +21,32 @@ dev-ytran:~/dev# find . -type l
 ./projects/website/src/html/static
 ./projects/website/src/css/v2
 dev-ytran:~/dev# find . -type l -exec readlink {} \;
-/***REMOVED***/lib/js/dojo/
-/home/***REMOVED***/dev/projects/intranet/src/js/
-/home/***REMOVED***/dev/projects/intranet/src/css/
-/***REMOVED***/lib/php5/fckeditor/
-/home/***REMOVED***/dev/projects/intranet/resources/img/
-/home/***REMOVED***/dev/projects/intranet/resources/fonts/
-/***REMOVED***/lib/php5/***REMOVED***/v1_deprecated/eventLog
-/***REMOVED***/lib/php5/***REMOVED***/v1_deprecated/invoice
-/***REMOVED***/lib/php5/***REMOVED***/v1_deprecated/mail
-/home/***REMOVED***/dev/projects/website/src/library/dist/images
-/home/***REMOVED***/dev/projects/website/src/library/dist/fonts
-/home/***REMOVED***/dev/projects/website/src/library/dist/scripts
-/home/***REMOVED***/dev/projects/website/src/js/
-/home/***REMOVED***/dev/projects/website/resources/flash/
-/home/***REMOVED***/dev/projects/website/src/css/
-/home/***REMOVED***/dev/projects/website/resources/img/
-/home/***REMOVED***/dev/projects/website/resources/fonts/
-/home/***REMOVED***/dev/projects/website/src/static/
-/home/***REMOVED***/dev/projects/website/src/library/dist/css
+/somecomp/lib/js/dojo/
+/home/someuser/dev/projects/intranet/src/js/
+/home/someuser/dev/projects/intranet/src/css/
+/somecomp/lib/php5/fckeditor/
+/home/someuser/dev/projects/intranet/resources/img/
+/home/someuser/dev/projects/intranet/resources/fonts/
+/somecomp/lib/php5/somecomp/v1_deprecated/eventLog
+/somecomp/lib/php5/somecomp/v1_deprecated/invoice
+/somecomp/lib/php5/somecomp/v1_deprecated/mail
+/home/someuser/dev/projects/website/src/library/dist/images
+/home/someuser/dev/projects/website/src/library/dist/fonts
+/home/someuser/dev/projects/website/src/library/dist/scripts
+/home/someuser/dev/projects/website/src/js/
+/home/someuser/dev/projects/website/resources/flash/
+/home/someuser/dev/projects/website/src/css/
+/home/someuser/dev/projects/website/resources/img/
+/home/someuser/dev/projects/website/resources/fonts/
+/home/someuser/dev/projects/website/src/static/
+/home/someuser/dev/projects/website/src/library/dist/css
 
 
 
 
 
-symlinks in /***REMOVED***
-dev-ytran:/***REMOVED***# find . -type l
+symlinks in /somecomp
+dev-ytran:/somecomp# find . -type l
 ./secure/website/apache_passwords
 ./config/intranet/config.inc.php
 ./config/intranet/config.xml
@@ -64,20 +64,20 @@ dev-ytran:/***REMOVED***# find . -type l
 ./www/intranet
 ./www/website
 ./lib/php5/PHPUnit
-./lib/php5/Cognolink
+./lib/php5/somecomp
 ./lib/php5/OLE
 ./lib/php5/dwoo
 ./lib/php5/Zend
 ./lib/php5/nanoserv-compat
 ./lib/php5/fckeditor
 ./lib/php5/Twig
-./lib/php5/***REMOVED***/common
-./lib/php5/***REMOVED***/Spreadsheet
-./lib/php5/***REMOVED***/security
-./lib/php5/***REMOVED***/xmlDBMetaData
-./lib/php5/***REMOVED***/v1_deprecated
-./lib/php5/***REMOVED***/projects/intranet
-./lib/php5/***REMOVED***/projects/website
+./lib/php5/somecomp/common
+./lib/php5/somecomp/Spreadsheet
+./lib/php5/somecomp/security
+./lib/php5/somecomp/xmlDBMetaData
+./lib/php5/somecomp/v1_deprecated
+./lib/php5/somecomp/projects/intranet
+./lib/php5/somecomp/projects/website
 ./lib/php5/projects/website
 ./lib/php5/offspring/packages
 ./lib/php5/offspring/offspring-core.php
@@ -85,7 +85,7 @@ dev-ytran:/***REMOVED***# find . -type l
 ./lib/perl/comm.pm
 ./lib/templates/intranet
 ./lib/templates/website
-./lib/css/***REMOVED***/fck_custom.css
+./lib/css/somecomp/fck_custom.css
 ./lib/shared/js
 ./lib/shared/css
 ./bin/intranet

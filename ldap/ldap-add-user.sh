@@ -12,10 +12,10 @@ which tr  > /dev/null || die "ERROR: tr needs to be installed"
 which slappasswd  > /dev/null || die "ERROR: openldap needs to be installed"
 
 # SETTINGS #
-LDAPURL="ldaps://***REMOVED***.***REMOVED***.com:10636"
+LDAPURL="ldaps://someserver:10636"
 BASEURL="ou=users,o=cl"
 LDAPOPTIONS="-x -H"
-# https://***REMOVED***.***REMOVED***.com/index.php?page=items&group=10&id=17
+# https://someserver/index.php?page=items&group=10&id=17
 . $DIR/.ldapcreds
 USERPASS=@option.last_name@
 USERPASSHASH=$(slappasswd -h {sha} -s $USERPASS)
@@ -24,7 +24,7 @@ SNAME=$(echo @option.last_name@ | tr -d ' ')
 DISPLAYNAME="$FNAME $SNAME"
 DN="cn=$DISPLAYNAME,$BASEURL"
 LUID="$(echo "$FNAME.$SNAME" | tr [A-Z] [a-z])"
-EMAILDOMAIN="***REMOVED***.com"
+EMAILDOMAIN="cognolink.com"
 EMAIL=$LUID@$EMAILDOMAIN
 
 # MORE VALIDATION #
@@ -53,7 +53,7 @@ userPassword: $USERPASSHASH
 EOF
 
 if [ $? = 0 ]
-	then 
+	then
 		echo "SUCCESS: user $DISPLAYNAME added."
 	else
 		die "ERROR: Failed adding user."
@@ -69,7 +69,7 @@ uniqueMember: $DN
 EOF
 
 if [ $? = 0 ]
-	then 
+	then
 		echo "SUCCESS: user $DISPLAYNAME added to core groups"
 	else
 		die "ERROR: Failed adding user to core groups"

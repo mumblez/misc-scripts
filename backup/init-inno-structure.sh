@@ -13,7 +13,7 @@ LOG_FULL="${LOG_BASE}/full-backup.log"
 CRON="/etc/cron.d/intranet-db"
 IBI_LOCK="/var/run/dbbackup"
 ZB_LOCK="/var/run/zbackup-intranet-db"
-BACKUP_SCRIPT="/***REMOVED***/scripts/mysql-backup.sh"
+BACKUP_SCRIPT="/root/scripts/mysql-backup.sh"
 
 # delete cron to stop jobs
 [ -e "$CRON" ] && rm -f "$CRON"
@@ -47,9 +47,9 @@ cat > $CRON <<_EOF_
 MAILTO=""
 # mysql backup - intranet
 # incremental
-00 5,11,17,23 * * *     ***REMOVED***     dogwrap -n "DB - CL-WEB - incremental backup" -k \$(cat /***REMOVED***/keys/datadogapi) --priority=normal --submit_mode all "/***REMOVED***/scripts/mysql-backup.sh incremental" --notify_error "@***REMOVED***@***REMOVED***.com"
+00 5,11,17,23 * * *     root     dogwrap -n "DB - CL-WEB - incremental backup" -k \$(cat /root/keys/datadogapi) --priority=normal --submit_mode all "/root/scripts/mysql-backup.sh incremental" --notify_error "@someone@company.com"
 # full
-25 23 * * *     ***REMOVED***    dogwrap -n "DB - CL-WEB - full backup" -k \$(cat /***REMOVED***/keys/datadogapi) --priority=normal --submit_mode all "/***REMOVED***/scripts/mysql-backup.sh full" --notify_error "@***REMOVED***@***REMOVED***.com"
+25 23 * * *     root    dogwrap -n "DB - CL-WEB - full backup" -k \$(cat /root/keys/datadogapi) --priority=normal --submit_mode all "/root/scripts/mysql-backup.sh full" --notify_error "@someone@company.com"
 _EOF_
 
 else
@@ -57,9 +57,9 @@ cat > $CRON <<_EOF_
 MAILTO=""
 # mysql backup - intranet
 # incremental
-00 5,11,17,23 * * *	***REMOVED***	$BACKUP_SCRIPT incremental &>/dev/null
+00 5,11,17,23 * * *	root	$BACKUP_SCRIPT incremental &>/dev/null
 # full
-30 23 * * *	***REMOVED***	$BACKUP_SCRIPT full &>/dev/null
+30 23 * * *	root	$BACKUP_SCRIPT full &>/dev/null
 _EOF_
 
 fi

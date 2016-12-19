@@ -18,7 +18,7 @@ iptables -P OUTPUT ACCEPT
 iptables -P FORWARD ACCEPT
 
 # change ssh - do by hand
-# AllowGroups, password authentication, permit***REMOVED***login, port 22
+# AllowGroups, password authentication, permitrootlogin, port 22
 
 Port 22
 PermitRootLogin yes

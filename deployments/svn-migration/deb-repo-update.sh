@@ -3,7 +3,7 @@
 APP_ENV="@option.environment@"
 die() { echo $* 1>&2 ; exit 1 ; }
 
-REPO_UPDATE_SCRIPT="/***REMOVED***/bin/update_rep_poc"
+REPO_UPDATE_SCRIPT="/cognolink/bin/update_rep_poc"
 
 [ -e "$REPO_UPDATE_SCRIPT" ] || die "ERROR: repo update script not found - $REPO_UPDATE_SCRIPT"
 

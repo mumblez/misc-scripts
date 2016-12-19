@@ -11,11 +11,11 @@ which tr  > /dev/null || die "ERROR: tr needs to be installed"
 which ldapmodify  > /dev/null || die "ERROR: openldap needs to be installed"
 
 # SETTINGS #
-LDAPURL="ldaps://***REMOVED***.***REMOVED***.com:10636"
+LDAPURL="ldaps://somead:10636"
 BASEURL="ou=users,o=cl"
 LDAPOPTIONS="-x -H"
-# https://***REMOVED***.***REMOVED***.com/index.php?page=items&group=10&id=17
-. /***REMOVED***/scripts/.ldapcreds
+# https://someserver/index.php?page=items&group=10&id=17
+. /root/scripts/.ldapcreds
 FNAME=$(echo @option.first_name@ | tr -d ' ') # aka givenName
 SNAME=$(echo @option.last_name@ | tr -d ' ')
 DISPLAYNAME="$FNAME $SNAME"

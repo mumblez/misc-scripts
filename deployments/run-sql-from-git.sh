@@ -4,16 +4,16 @@
 die() { echo $* 1>&2 ; exit 1 ; }
 TEMP_AREA=/tmp
 WORK_DIR=$(mktemp -d $TEMP_AREA/sql_deploy.XXX)
-REPO_PREFIX="git@***REMOVED***.***REMOVED***.com:***REMOVED***"
+REPO_PREFIX="git@gitlab.dev.someserver:somerepo"
 PROJECTS="@option.projects@"
 RELEASE="@option.tag@"
 RELEASE_PREFIX="release-"
 GIT_TAG="${RELEASE_PREFIX}${RELEASE}"
 RELEASE_ESCAPED=$(echo "$RELEASE" | sed -r 's/\./\\./g')
-GITLAB_BASE="***REMOVED***.***REMOVED***.com"
-NAMESPACE="***REMOVED***"
-DEPLOY_TOKEN="***REMOVED***"
-DEPLOY_KEY="/***REMOVED***/keys/cl_deploy"
+GITLAB_BASE="gitlab.dev.someserver.com"
+NAMESPACE="somenamespace"
+DEPLOY_TOKEN="somedeploytoken"
+DEPLOY_KEY="/root/keys/cl_deploy"
 
 
 # Validate
@@ -23,14 +23,14 @@ which mktemp >/dev/null 2>&1 || die "ERROR: mktemp is not installed"
 which curl >/dev/null 2>&1 || die "ERROR: curl is not installed"
 [ -e /usr/local/bin/jq ] || die "ERROR: jq - json parsing tool missing (from /usr/local/bin)"
 # http://stedolan.github.io/jq/download/linux64/jq
-# assume /***REMOVED***/.my.cnf or /etc/mysql/deployment.cnf exists
+# assume /root/.my.cnf or /etc/mysql/deployment.cnf exists
 
 
 # Functions
 execute_sql () {
     project="$1"
   sql_file="$2"
-  # assumes we're sudo'ing and running as ***REMOVED***
+  # assumes we're sudo'ing and running as root
   mysql < $project-$sql_file || die "ERROR: error executing sql commands"
 }
 
@@ -45,7 +45,7 @@ get_sql_files () {
     https://$GITLAB_BASE/api/v3/projects/$PROJECT_ID/repository/tree?path=db | \
     jq '.[].name' | \
     grep -oE "release-([0-9]{1,3}\.+){2}[0-9]{1,3}(-release)?-$RELEASE_ESCAPED.sql")
-  echo "$SQL_FILE"  
+  echo "$SQL_FILE"
   ssh-agent bash -c "ssh-add $DEPLOY_KEY >/dev/null 2>&1 && \
     git archive --remote=git@"$GITLAB_BASE:$NAMESPACE/$project.git" "$GIT_TAG":db --format=tar $SQL_FILE --prefix="$project-" | tar xf - " \
   || die "ERROR: could not download $project sql file"

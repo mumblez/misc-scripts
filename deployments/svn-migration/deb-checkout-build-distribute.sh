@@ -7,16 +7,16 @@
 die() { echo $* 1>&2 ; exit 1 ; }
 ### Settings ###
 #TIMESTAMP=$(date +%Y-%m-%d-%H%M)
-DEPLOY_KEY="/***REMOVED***/keys/cl_deploy"
+DEPLOY_KEY="/root/keys/cl_deploy"
 #PROJECTS_DIR="/var/lib/webistrano/git" # webistrano
 PROJECTS_DIR="/srv/git" # bishop
 GIT_OPTIONS="--force"
 RELEASE="@option.tag@"
 PROJECTS="@option.projects@"
-BUILDSCRIPT="/***REMOVED***/bin/package"
+BUILDSCRIPT="/cognolink/bin/package"
 APP_ENVIRONMENT="@option.environment@"
-GIT_URL="git@***REMOVED***.***REMOVED***.com"
-GIT_NAMESPACE="***REMOVED***"
+GIT_URL="git@gitlab.dev.cognolink.com"
+GIT_NAMESPACE="cognolink"
 #TAG_PREFIX="release-"
 PKG_REPO_URL="rundeck@bishop" # change to new repo if non prod in future
 

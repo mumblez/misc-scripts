@@ -15,11 +15,11 @@ fi
 
 for project in $PROJECTS; do
   echo "INFO: installing $project ..."
-  #/srv/***REMOVED***/bin/inst ***REMOVED***-$project || die "ERROR: failed to install ***REMOVED***-$project"
-  sudo aptitude --allow-untrusted --allow-new-upgrades --allow-new-installs -y -V install "***REMOVED***-$project"  || die "ERROR: failed to install ***REMOVED***-$project"
+  #/srv/cognolink/bin/inst cognolink-$project || die "ERROR: failed to install cognolink-$project"
+  sudo aptitude --allow-untrusted --allow-new-upgrades --allow-new-installs -y -V install "cognolink-$project"  || die "ERROR: failed to install cognolink-$project"
   VS=`echo $* | grep '='`
   if [ -z "$VS" ]; then
-    sudo aptitude --allow-untrusted --allow-new-upgrades -y -V reinstall "***REMOVED***-$project"
+    sudo aptitude --allow-untrusted --allow-new-upgrades -y -V reinstall "cognolink-$project"
   fi
 done
 

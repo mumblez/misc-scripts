@@ -11,18 +11,18 @@ if [ -n "$2" ]; then
 	MANUAL_DATE="$2"
 fi
 
-die() 
-{ 
+die()
+{
 	echo $* 1>&2
-	echo "$*" | mail -s "DB Backup Issue: $*" ***REMOVED***@***REMOVED***.com
-	exit 1 
+	echo "$*" | mail -s "DB Backup Issue: $*" someone@company.com
+	exit 1
 }
 
 # SETTINGS
 IB_BASE="/srv/r5/backups/mysql-innobackupex"
 ZBACKUP_REPOS_BASE="/srv/r5/backups/zbackup-repos"
 ZBACKUP_BASE="${ZBACKUP_REPOS_BASE}/intranet-db/backups/intranet/daily"
-ZB_KEY="/***REMOVED***/keys/zbackup"
+ZB_KEY="/root/keys/zbackup"
 INCREMENTALS_TO_KEEP="13"
 IB_INCREMENTAL_BASE="${IB_BASE}/incrementals"
 IB_CHECKPOINT="${IB_BASE}/last-checkpoint"
@@ -84,19 +84,19 @@ ibi_lock_check()
 # turn on and off datadog mysql slave monitoring whilst incremental backup in progress
 monitor_slave ()
 {
-    #dog --api-key `cat /***REMOVED***/keys/datadogapi` --application-key `cat /***REMOVED***/keys/datadogappkey` monitor update 165855 'metric alert' 'min(last_15m):avg:mysql.replication.slave_running{!host:***REMOVED***,mysql-slave} by {host} < 1'
-    # dog --api-key `cat /***REMOVED***/keys/datadogapi` --application-key `cat /***REMOVED***/keys/datadogappkey` monitor update 165855 'metric alert' 'min(last_15m):avg:mysql.replication.slave_running{mysql-slave} by {host} < 1'
+    #dog --api-key `cat /root/keys/datadogapi` --application-key `cat /root/keys/datadogappkey` monitor update 165855 'metric alert' 'min(last_15m):avg:mysql.replication.slave_running{!host:somehost,mysql-slave} by {host} < 1'
+    # dog --api-key `cat /root/keys/datadogapi` --application-key `cat /root/keys/datadogappkey` monitor update 165855 'metric alert' 'min(last_15m):avg:mysql.replication.slave_running{mysql-slave} by {host} < 1'
 
     MONITOR_ID=165855
     if [ "$1" = OFF ]; then
         # add exception to remove host from monitoring
-        dog --api-key `cat /***REMOVED***/keys/datadogapi` --application-key `cat /***REMOVED***/keys/datadogappkey`  monitor update 165855 'metric alert' 'min(last_15m):avg:mysql.replication.slave_running{!host:***REMOVED***,mysql-slave} by {host} < 1'
+        dog --api-key `cat /root/keys/datadogapi` --application-key `cat /root/keys/datadogappkey`  monitor update 165855 'metric alert' 'min(last_15m):avg:mysql.replication.slave_running{!host:somehost,mysql-slave} by {host} < 1'
     fi
     if [ "$1" = ON ]; then
         # remove exception
-        dog --api-key `cat /***REMOVED***/keys/datadogapi` --application-key `cat /***REMOVED***/keys/datadogappkey` monitor update 165855 'metric alert' 'min(last_15m):avg:mysql.replication.slave_running{mysql-slave} by {host} < 1'
+        dog --api-key `cat /root/keys/datadogapi` --application-key `cat /root/keys/datadogappkey` monitor update 165855 'metric alert' 'min(last_15m):avg:mysql.replication.slave_running{mysql-slave} by {host} < 1'
     fi
-    
+
 }
 
 incremental_backup()
@@ -121,7 +121,7 @@ incremental_backup()
 
 
 	# check it completed successfully
-	if tail -n 1 "$INC_APPLY_LOG" | grep -q 'completed OK!'; then 
+	if tail -n 1 "$INC_APPLY_LOG" | grep -q 'completed OK!'; then
 		echo "INFO: incremental backup successful - `date`"
 		rm -f "$INC_APPLY_LOG"
 	else
@@ -157,7 +157,7 @@ full_backup()
 	while [ -e $IBI_LOCK ]; do
 		sleep 60;
 	done
-	
+
 	[ -e $ZB_LOCK ] && die "ERROR: zbackup still running..."
 	[ -e $ZB_KEY ] || die "ERROR: zbackup key file not found"
 
@@ -186,7 +186,7 @@ full_backup()
                 --use-memory=4GB \
                 &> "$INC_APPLY_LOG"
 			# validate completed successfully
-			if tail -n 1 "$INC_APPLY_LOG" | grep -q 'completed OK!'; then 
+			if tail -n 1 "$INC_APPLY_LOG" | grep -q 'completed OK!'; then
 				echo "INFO: FULL - applying incremental - $INC_COUNTER successful - $INCREMENTAL_DIR - `date`"
 			else
 				echo "ERROR: FULL - applying incremental - $INC_COUNTER failed - $INCREMENTAL_DIR - `date`"
@@ -205,7 +205,7 @@ full_backup()
 			rm -rf "$IB_HOTCOPY"
             	innobackupex --no-timestamp --slave-info --extra-lsndir "$IB_CHECKPOINT" "$IB_HOTCOPY" &> "$INC_APPLY_LOG"
         		# check it completed successfully
-        		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'completed OK!'; then 
+        		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'completed OK!'; then
         			echo "INFO: FULL backup successful - `date`"
         			rm -f "$INC_APPLY_LOG"
         		else
@@ -214,20 +214,20 @@ full_backup()
 
             	innobackupex --apply-log --redo-only "$IB_HOTCOPY" &> "$INC_APPLY_LOG"
         		# check it completed successfully
-        		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'completed OK!'; then 
+        		if tail -n 1 "$INC_APPLY_LOG" | grep -q 'completed OK!'; then
         			echo "INFO: FULL apply log successful - `date`"
         			rm -f "$INC_APPLY_LOG"
         		else
         			die "ERROR: FULL apply log failed - `date`"
         		fi
-                
-                
+
+
         	fi
 	else
 		echo "WARN: No incremental backups found for today - $INCREMENTAL_DATE - inside $IB_INCREMENTAL_BASE"
 	fi
 
-	echo "### Start daily zbackup of $IB_HOTCOPY - $(date) ###"	
+	echo "### Start daily zbackup of $IB_HOTCOPY - $(date) ###"
 
 	[ -e "$ZB_LOCK" ] && die "ERROR: zbackup lock found, skiping zbackup backup"
 
@@ -237,7 +237,7 @@ full_backup()
 	[ -e "$ZBACKUP_FILE" ] && rm -f "$ZBACKUP_FILE" && "WARN: Found and deleted existing version of backup"
 
 	echo "INFO: `date` - running zbackup of $IB_HOTCOPY to $ZBACKUP_FILE..." | tee >> "$ZB_LOG"
-	
+
 	# run prepared hotcopy through zbackup
 	tar -cf - -C "$IB_HOTCOPY" . | "$ZBACKUP_BIN" --password-file "$ZB_KEY" backup "$ZBACKUP_FILE" &>> "$ZB_LOG"
 
@@ -250,7 +250,7 @@ full_backup()
 		done
 	fi
 
-	echo "### Finished daily zbackup of $IB_HOTCOPY - $(date) ###"	
+	echo "### Finished daily zbackup of $IB_HOTCOPY - $(date) ###"
 	rm -f "$ZB_LOCK"
 }
 

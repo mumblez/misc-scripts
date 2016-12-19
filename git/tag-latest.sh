@@ -30,7 +30,7 @@ if [ -e ~/.gitconfig ]; then
         GITCONFIGEXISTS="yes"
 fi
 git config --global user.name "codefreeze"
-git config --global user.email "it-admin@***REMOVED***.com"
+git config --global user.email "it-admin@somecomp"
 
 
 # Pull repository down

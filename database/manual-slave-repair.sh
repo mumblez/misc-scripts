@@ -1,8 +1,8 @@
 #!/bin/bash
 
 DIR=$(cd "$(dirname "$0")" && pwd)
-REMOTE_DB_SERVER="***REMOVED***.129" # in future generalise in rundeck
-SSH_USER="***REMOVED***" # using ssh-agent feature in RD 2.4.0+
+REMOTE_DB_SERVER="someIP" # in future generalise in rundeck
+SSH_USER="some-ssh-user" # using ssh-agent feature in RD 2.4.0+
 SSH_OPTIONS="-T -c arcfour -o StrictHostKeyChecking=no -o Compression=no -x"
 EXCLUDE_FILE="$DIR/excludeFiles.txt" # converted for tar --exclude-from feature
 MYSQL_VERSION_MASTER=$(mysqladmin version | grep 'Server version' | grep -oE "5.[56]")
@@ -131,7 +131,7 @@ MASTER_USER=$(sed -n '5p' ${SNAPSHOT_MYSQL_DIR}/master.info)
 MASTER_PASS=$(sed -n '6p' ${SNAPSHOT_MYSQL_DIR}/master.info)
 
 # do a clean mysql instance on datadir and shutdown
-## get innodb_log_file_size 
+## get innodb_log_file_size
 INNODB_LOG_SIZE=$(mysqladmin variables | grep innodb_log_file_size | awk '{print $4}')
 SNAPSHOT_SOCKET="/var/run/mysqld/mysqld-snapshot.sock"
 ( mysqld_safe --no-defaults --port=3307 --socket="$SNAPSHOT_SOCKET" --datadir="$FINAL_MYSQL_DIR" --innodb-log-file-size="$INNODB_LOG_SIZE" --skip-slave-start & )

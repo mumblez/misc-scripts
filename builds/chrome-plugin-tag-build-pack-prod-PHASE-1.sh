@@ -15,12 +15,12 @@ TIMESTAMP=$(date +%Y-%m-%d-%H%M)
 PLUGIN="@option.plugin@"   # git repo / project
 TAG="@option.tag@"
 REPO_URL="@option.repo_url@"
-#REPO_KEY="/***REMOVED***/keys/cl_deploy" # for rundeck
+#REPO_KEY="/root/keys/cl_deploy" # for rundeck
 BUILD_ROOT="/srv/chrome-plugin-build"
-REPO_KEY="/***REMOVED***/keys/cl_deploy" # for debug
+REPO_KEY="/root/keys/cl_deploy" # for debug
 KEY_NAME="${PLUGIN}.pem"
 WEB_ROOT="/srv/chrome-plugin/${PLUGIN}/release/${TIMESTAMP}"
-WEB_HOST_URL="http://plugins.***REMOVED***.com"
+WEB_HOST_URL="http://some.plugin.url"
 mkdir -p "${WEB_ROOT}"
 PHASE="@option.phase@" # we'll keep original urls in manifest and xml and create symlinks
 #PHASE=2 # When Matt / Kris have created sub groups / organisations in google apps console and we can deploy via new url,
@@ -56,7 +56,7 @@ done
 
 ssh-agent bash -c "ssh-add $REPO_KEY &>/dev/null && git clone $REPO_URL ${BUILD_ROOT}/${PLUGIN}" ||\
 	die "ERROR: Git clone from $REPO_URL failed"
-# assumes if repo branch folder doesn't exist it's branch in web***REMOVED*** also doesn't exist
+# assumes if repo branch folder doesn't exist it's branch in webroot also doesn't exist
 [ ! -e "$WEB_ROOT" ] && mkdir -p "$WEB_ROOT"
 
 
@@ -97,14 +97,14 @@ sig_len_hex=$(byte_swap $(printf '%08x\n' $(ls -l "$sig" | awk '{print $5}')))
 mv "${PLUGIN}.crx" "$WEB_ROOT" || die "ERROR: Failed to transfer crx to webserver"
 mv "${PLUGIN}.xml" "$WEB_ROOT" || die "ERROR: Failed to transfer xml to webserver"
 
-# Symlink both files to web***REMOVED***
+# Symlink both files to webroot
 ln -snf "${WEB_ROOT}/${PLUGIN}.crx" "${WEB_ROOT}/../../"
 ln -snf "${WEB_ROOT}/${PLUGIN}.xml" "${WEB_ROOT}/../../"
 
-# Symlink from intranet.***REMOVED***.com/chrome-plugin/<plugin>.{xml,crx} (until users have been re-organised in google apps console)
+# Symlink from intranet.cognolink.com/chrome-plugin/<plugin>.{xml,crx} (until users have been re-organised in google apps console)
 if [ "$PHASE" = "1" ]; then
 	# create symlinks to original domain
-	OLD_CRX_WEB_ROOT="/***REMOVED***/www/intranet/chrome-plugin"
+	OLD_CRX_WEB_ROOT="/cognolink/www/intranet/chrome-plugin"
 
 	# random names!!!
 	OLD_CAPTURE_SPECIALIST_CRX="${OLD_CRX_WEB_ROOT}/capture-specialist.crx"
@@ -138,7 +138,7 @@ if [ "$PHASE" = "1" ]; then
 			ln -snf "${WEB_ROOT}/${PLUGIN}.xml" "${OLD_CRX_WEB_ROOT}/"
 			;;
 	esac
-	echo "INFO: symlinks to intranet.***REMOVED***.com/chrome-plugin created (PHASE 1)"
+	echo "INFO: symlinks to intranet.cognolink.com/chrome-plugin created (PHASE 1)"
 	chown www-data:www-data "$OLD_CRX_WEB_ROOT" -R
 fi
 
@@ -151,7 +151,7 @@ echo "INFO: Symlinks from old urls are pointing to the latest release"
 echo "INFO: Extension ID: $EID"
 echo "=================================================================================================="
 
-# CLEANUP 
+# CLEANUP
 echo "INFO: Cleaning up..."
 # Clearing old releases
 CURRENT_RELEASE=$(basename $(readlink "/srv/chrome-plugin/${PLUGIN}/${PLUGIN}.crx"))

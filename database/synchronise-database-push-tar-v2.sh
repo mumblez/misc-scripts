@@ -25,7 +25,7 @@ EXCLUDE_FILE="$DIR/excludeFiles.txt" # converted for tar --exclude-from feature
 SNAPSHOT_FREESPACE="@option.snapshot_freespace@" # at least 1-2GB to be safe
 EXCLUDE_LIST="services service_configuration scheduled_task mailqueue" # turn into RD multi-valued list from high
 USE_BACKUP="@option.use_backup@" # don't use to repair slave, always errors, but fine for non-slaves
-MYSQL_VERSION_MASTER=$(HOME=/***REMOVED*** mysqladmin version | grep 'Server version' | grep -oE "5.[56]")
+MYSQL_VERSION_MASTER=$(HOME=/root mysqladmin version | grep 'Server version' | grep -oE "5.[56]")
 SLAVE_SETUP="@option.slave_setup@" # Add RD option for slave setup
 MASTER_LOG="/tmp/master.log"
 
@@ -72,17 +72,17 @@ env_tables () {
   for TABLE in $EXCLUDE_LIST; do
     if [ "$1" == "backup" ]; then
       # see if file exists first
-      if rcc test -f "$DIR/***REMOVED***.$TABLE.sql"; then
+      if rcc test -f "$DIR/somedb.$TABLE.sql"; then
         echo "INFO: $TABLE backup already exists, skipping..."
       else
-        echo "INFO: Backing up ***REMOVED***.$TABLE...$(date)"
-        rcc "mysqldump -B ***REMOVED*** --tables $TABLE --create-options > $DIR/***REMOVED***.$TABLE.sql"  || die "ERROR: backup of env tables failed"
+        echo "INFO: Backing up somedb.$TABLE...$(date)"
+        rcc "mysqldump -B somedb --tables $TABLE --create-options > $DIR/somedb.$TABLE.sql"  || die "ERROR: backup of env tables failed"
       fi
     elif [ "$1" == "restore" ]; then
-      echo "INFO: Restoring ***REMOVED***.$TABLE...$(date)"
-      rcc "mysql -B ***REMOVED*** < $DIR/***REMOVED***.$TABLE.sql" || die "ERROR: restore of env tables failed"
+      echo "INFO: Restoring somedb.$TABLE...$(date)"
+      rcc "mysql -B somedb < $DIR/somedb.$TABLE.sql" || die "ERROR: restore of env tables failed"
       # cleanup / delete sql file after successful restore
-      rcc "rm -f $DIR/***REMOVED***.$TABLE.sql"
+      rcc "rm -f $DIR/somedb.$TABLE.sql"
     fi
   done
 }
@@ -148,7 +148,7 @@ REMOTE_MYSQL_DIR_CAPACITY=$(rc "df -P $REMOTE_MYSQL_DIR" | tail -n1 | awk '{prin
 # In future amend this condition to take into account hq office slave and grab master info details from the backup
 # NOTE, that repairing from slaves from the innobackupex backups is spotty, try to use snapshot method for reliable repairs! unless
 # repairing office slave
-if [[ "$USE_BACKUP" == "yes"  && "$SLAVE_SETUP" == "no" && "$(hostname)" == "***REMOVED***" ]]; then
+if [[ "$USE_BACKUP" == "yes"  && "$SLAVE_SETUP" == "no" && "$(hostname)" == "somebackupserver" ]]; then
   # find latest backup and send - Assumes we're using backup server at RS
   HOT_COPY="/srv/r5/backups/mysql-innobackupex/hotcopy"
   [ -d "${HOT_COPY}" ] || die "ERROR: Can not locate latest backup at ${HOT_COPY}."
@@ -175,8 +175,8 @@ else
   # Flush data to disk before transfer, create snapshot and resume # swap for local (and no need to specifiy host nor ssh)
   echo "INFO: Connecting to source database..."
 
-  # so mysql can find .my.cnf for ***REMOVED*** user using environment variable (when using sudo -E)
-  HOME=/***REMOVED***
+  # so mysql can find .my.cnf for root user using environment variable (when using sudo -E)
+  HOME=/root
 
 mysql << EOF
 STOP SLAVE;
@@ -207,7 +207,7 @@ if [ "$SLAVE_SETUP" = "yes" ]; then
   MASTER_PASS=$(sed -n '6p' ${SNAPSHOT_MYSQL_DIR}/master.info)
 
   # do a clean mysql instance on datadir and shutdown
-  ## get innodb_log_file_size 
+  ## get innodb_log_file_size
   INNODB_LOG_SIZE=$(mysqladmin variables | grep innodb_log_file_size | awk '{print $4}')
   SNAPSHOT_SOCKET="/var/run/mysqld/mysqld-snapshot.sock"
   ( mysqld_safe --no-defaults --port=3307 --socket="$SNAPSHOT_SOCKET" --datadir="$FINAL_MYSQL_DIR" --innodb-log-file-size="$INNODB_LOG_SIZE" --skip-slave-start & )

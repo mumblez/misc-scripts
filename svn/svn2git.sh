@@ -4,7 +4,7 @@ DIR=$(cd "$(dirname "$0")" && pwd)
 die() { echo $* 1>&2 ; exit 1 ; }
 
 # Settings
-SVNPROJECTSBASE="https://***REMOVED***.***REMOVED***.com/svn/trunk/projects"
+SVNPROJECTSBASE="https://somesvnserver/svn/trunk/projects"
 AUTHORS_FILE="--authors-file=${DIR}/authors.txt"
 CLONE_OPTIONS="--no-metadata --prefix=svn/ --preserve-empty-dirs"
 PROJECTS="restserver social zaibatsu"
@@ -30,7 +30,7 @@ for project in $PROJECTS; do
   git config --remove-section svn
   git config --remove-section svn-remote.svn
   rm -rf .git/svn .git/{logs/,}refs/remotes/{git-,}svn/
-  git remote add origin git@***REMOVED***.***REMOVED***.com:***REMOVED***/${project}.git
+  git remote add origin git@somegitserver:somecomp/${project}.git
   git push --force -u origin master
   cd -
 done
@@ -47,7 +47,7 @@ for project in $CORE_PROJECTS; do
   git config --remove-section svn
   git config --remove-section svn-remote.svn
   rm -rf .git/svn .git/{logs/,}refs/remotes/{git-,}svn/
-  #git remote add origin git@***REMOVED***.***REMOVED***.com:***REMOVED***/core.git
+  #git remote add origin git@somegitserver:somecomp/core.git
   #git push --force -u origin master
   cd -
 done
@@ -64,7 +64,7 @@ make_core () {
   for i in intranet website common; do
     #cd ${WORKDIR}/core
   	git remote add -f local_$i file://${WORKDIR}/$i
-  	git merge local_$i/master -m "Merging $i into core" 
+  	git merge local_$i/master -m "Merging $i into core"
   	mkdir $i
     #git mv * $i # change as doesn't work
     #for proj_file in `ls -A`; do [[ "$proj_file" != "$i" && "$proj_file" != .git ]] && git mv $proj_file $i; done
@@ -79,7 +79,7 @@ make_core () {
   git commit -m "Clean up dummy file"
   #git reset --soft HEAD~7
   #git commit -m "svn 2 git"
-  git remote add origin git@***REMOVED***.***REMOVED***.com:***REMOVED***/core.git
+  git remote add origin git@somegitserver:somecomp/core.git
   git push --force -u origin master
 }
 
